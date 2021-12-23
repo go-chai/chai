@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"github.com/go-chai/chai/example/celler/httputil"
 	"github.com/go-chai/chai/example/celler/model"
 )
 
@@ -23,19 +21,18 @@ import (
 // @Failure      500  {object}  httputil.HTTPError
 // @Security     ApiKeyAuth
 // @Router       /admin/auth [post]
-func (c *Controller) Auth(ctx *gin.Context) {
-	authHeader := ctx.GetHeader("Authorization")
+func (c *Controller) Auth(m *map[string]interface{}, w http.ResponseWriter, r *http.Request) (*model.Admin, int, error) {
+	authHeader := r.Header.Get("Authorization")
 	if len(authHeader) == 0 {
-		httputil.NewError(ctx, http.StatusBadRequest, errors.New("please set Header Authorization"))
-		return
+		return nil, http.StatusBadRequest, errors.New("please set Header Authorization")
 	}
 	if authHeader != "admin" {
-		httputil.NewError(ctx, http.StatusUnauthorized, fmt.Errorf("this user isn't authorized to operation key=%s expected=admin", authHeader))
-		return
+		return nil, http.StatusUnauthorized, fmt.Errorf("this user isn't authorized to operation key=%s expected=admin", authHeader)
 	}
 	admin := model.Admin{
 		ID:   1,
 		Name: "admin",
 	}
-	ctx.JSON(http.StatusOK, admin)
+
+	return &admin, http.StatusOK, nil
 }

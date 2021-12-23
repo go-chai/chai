@@ -2,13 +2,15 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/ghodss/yaml"
 	"github.com/go-chai/chai"
 	"github.com/go-chai/chai/example/celler/controller"
 	_ "github.com/go-chai/chai/example/celler/docs"
 	"github.com/go-chai/chai/example/celler/httputil"
+	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -63,9 +65,9 @@ func main() {
 			chai.Get(r, "/{id}", c.ShowAccount)
 			chai.Get(r, "/", c.ListAccounts)
 			chai.Post(r, "/", c.AddAccount)
-			// chai.Delete(r, "/{id}", c.DeleteAccount)
-			// chai.Patch(r, "/{id}", c.UpdateAccount)
-			chai.Post(r, "/{id}/images", c.UploadAccountImage)
+			r.Delete("/{id}", c.DeleteAccount)
+			r.Patch("/{id}", c.UpdateAccount)
+			r.Post("/{id}/images", c.UploadAccountImage)
 		})
 
 		r.Route("/bottles", func(r chi.Router) {
@@ -74,7 +76,7 @@ func main() {
 		})
 
 		r.Route("/admin", func(r chi.Router) {
-			r.Use(auth())
+			r.Use(auth)
 
 			chai.Post(r, "/auth", c.Auth)
 		})
@@ -86,20 +88,39 @@ func main() {
 			chai.Get(r, "/header", c.HeaderExample)
 			chai.Get(r, "/securities", c.SecuritiesExample)
 			chai.Get(r, "/attribute", c.AttributeExample)
+			chai.Post(r, "/attribute", c.PostExample)
 		})
 	})
 
 	// r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	t, err := openapi2.Docs(r)
+	if err != nil {
+		panic(err)
+	}
+
+	logYAML(t)
+
 	http.ListenAndServe(":8080", r)
 }
 
-func auth() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if len(c.GetHeader("Authorization")) == 0 {
-			httputil.NewError(c, http.StatusUnauthorized, errors.New("Authorization is required Header"))
-			c.Abort()
+func auth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if len(r.Header.Get("Authorization")) == 0 {
+			httputil.NewError(w, http.StatusUnauthorized, errors.New("Authorization is required Header"))
+			return
 		}
-		c.Next()
+		next.ServeHTTP(w, r)
+	})
+}
+
+func logYAML(v interface{}) {
+	bytes, err := yaml.Marshal(v)
+	if err != nil {
+		panic(err)
 	}
+
+	fmt.Println(string(bytes))
+
+	return
 }

@@ -4,9 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
 
-	"github.com/go-chai/chai/example/celler/httputil"
 	"github.com/go-chai/chai/example/celler/model"
 )
 
@@ -23,19 +22,17 @@ import (
 // @Failure      404  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /bottles/{id} [get]
-func (c *Controller) ShowBottle(ctx *gin.Context) {
-	id := ctx.Param("id")
+func (c *Controller) ShowBottle(w http.ResponseWriter, r *http.Request) (*model.Bottle, int, error) {
+	id := chi.URLParam(r, "id")
 	bid, err := strconv.Atoi(id)
 	if err != nil {
-		httputil.NewError(ctx, http.StatusBadRequest, err)
-		return
+		return nil, http.StatusBadRequest, err
 	}
 	bottle, err := model.BottleOne(bid)
 	if err != nil {
-		httputil.NewError(ctx, http.StatusNotFound, err)
-		return
+		return nil, http.StatusNotFound, err
 	}
-	ctx.JSON(http.StatusOK, bottle)
+	return bottle, http.StatusOK, nil
 }
 
 // ListBottles godoc
@@ -49,11 +46,10 @@ func (c *Controller) ShowBottle(ctx *gin.Context) {
 // @Failure      404  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /bottles [get]
-func (c *Controller) ListBottles(ctx *gin.Context) {
+func (c *Controller) ListBottles(w http.ResponseWriter, r *http.Request) (*[]model.Bottle, int, error) {
 	bottles, err := model.BottlesAll()
 	if err != nil {
-		httputil.NewError(ctx, http.StatusNotFound, err)
-		return
+		return nil, http.StatusNotFound, err
 	}
-	ctx.JSON(http.StatusOK, bottles)
+	return &bottles, http.StatusOK, nil
 }

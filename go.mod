@@ -4,11 +4,14 @@ go 1.18
 
 require (
 	github.com/bxcodec/faker/v3 v3.6.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/getkin/kin-openapi v0.87.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/docgen v1.2.0
+	github.com/go-chi/render v1.0.1
 	github.com/go-openapi/spec v0.20.4
+	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/swaggo/swag v1.7.6
 	gopkg.in/yaml.v2 v2.4.0

@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chai/chai/example/celler/httputil"
+	"github.com/go-chai/chai/example/celler/model"
+	"github.com/go-chi/chi/v5"
 )
 
 // ShowAccount godoc
@@ -20,19 +22,18 @@ import (
 // @Failure      404  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /accounts/{id} [get]
-func (c *Controller) ShowAccount(ctx *gin.Context) {
-	id := ctx.Param("id")
+func (c *Controller) ShowAccount(w http.ResponseWriter, r *http.Request) (*model.Account, int, error) {
+	id := chi.URLParam(r, "id")
 	aid, err := strconv.Atoi(id)
 	if err != nil {
-		httputil.NewError(ctx, http.StatusBadRequest, err)
-		return
+		return nil, http.StatusBadRequest, err
 	}
 	account, err := model.AccountOne(aid)
 	if err != nil {
-		httputil.NewError(ctx, http.StatusNotFound, err)
-		return
+		return nil, http.StatusNotFound, err
 	}
-	ctx.JSON(http.StatusOK, account)
+
+	return &account, http.StatusOK, nil
 }
 
 // ListAccounts godoc
@@ -47,14 +48,14 @@ func (c *Controller) ShowAccount(ctx *gin.Context) {
 // @Failure      404  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /accounts [get]
-func (c *Controller) ListAccounts(ctx *gin.Context) {
-	q := ctx.Request.URL.Query().Get("q")
+func (c *Controller) ListAccounts(w http.ResponseWriter, r *http.Request) (*[]model.Account, int, error) {
+	q := r.URL.Query().Get("q")
 	accounts, err := model.AccountsAll(q)
 	if err != nil {
-		httputil.NewError(ctx, http.StatusNotFound, err)
-		return
+		return nil, http.StatusNotFound, err
 	}
-	ctx.JSON(http.StatusOK, accounts)
+
+	return &accounts, http.StatusOK, nil
 }
 
 // AddAccount godoc
@@ -69,26 +70,20 @@ func (c *Controller) ListAccounts(ctx *gin.Context) {
 // @Failure      404      {object}  httputil.HTTPError
 // @Failure      500      {object}  httputil.HTTPError
 // @Router       /accounts [post]
-func (c *Controller) AddAccount(ctx *gin.Context) {
-	var addAccount model.AddAccount
-	if err := ctx.ShouldBindJSON(&addAccount); err != nil {
-		httputil.NewError(ctx, http.StatusBadRequest, err)
-		return
-	}
+func (c *Controller) AddAccount(addAccount *model.AddAccount, w http.ResponseWriter, r *http.Request) (*model.Account, int, error) {
 	if err := addAccount.Validation(); err != nil {
-		httputil.NewError(ctx, http.StatusBadRequest, err)
-		return
+		return nil, http.StatusBadRequest, err
 	}
 	account := model.Account{
 		Name: addAccount.Name,
 	}
 	lastID, err := account.Insert()
 	if err != nil {
-		httputil.NewError(ctx, http.StatusBadRequest, err)
-		return
+		return nil, http.StatusBadRequest, err
 	}
 	account.ID = lastID
-	ctx.JSON(http.StatusOK, account)
+
+	return &account, http.StatusOK, nil
 }
 
 // UpdateAccount godoc
@@ -104,16 +99,15 @@ func (c *Controller) AddAccount(ctx *gin.Context) {
 // @Failure      404      {object}  httputil.HTTPError
 // @Failure      500      {object}  httputil.HTTPError
 // @Router       /accounts/{id} [patch]
-func (c *Controller) UpdateAccount(ctx *gin.Context) {
-	id := ctx.Param("id")
+func (c *Controller) UpdateAccount(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
 	aid, err := strconv.Atoi(id)
-	if err != nil {
-		httputil.NewError(ctx, http.StatusBadRequest, err)
+	if httputil.NewError(w, http.StatusBadRequest, err) {
 		return
 	}
 	var updateAccount model.UpdateAccount
-	if err := ctx.ShouldBindJSON(&updateAccount); err != nil {
-		httputil.NewError(ctx, http.StatusBadRequest, err)
+	err = httputil.Decode(r, updateAccount)
+	if httputil.NewError(w, http.StatusBadRequest, err) {
 		return
 	}
 	account := model.Account{
@@ -121,11 +115,10 @@ func (c *Controller) UpdateAccount(ctx *gin.Context) {
 		Name: updateAccount.Name,
 	}
 	err = account.Update()
-	if err != nil {
-		httputil.NewError(ctx, http.StatusNotFound, err)
+	if httputil.NewError(w, http.StatusNotFound, err) {
 		return
 	}
-	ctx.JSON(http.StatusOK, account)
+	httputil.Respond(w, r, account)
 }
 
 // DeleteAccount godoc
@@ -140,19 +133,17 @@ func (c *Controller) UpdateAccount(ctx *gin.Context) {
 // @Failure      404  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /accounts/{id} [delete]
-func (c *Controller) DeleteAccount(ctx *gin.Context) {
-	id := ctx.Param("id")
+func (c *Controller) DeleteAccount(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
 	aid, err := strconv.Atoi(id)
-	if err != nil {
-		httputil.NewError(ctx, http.StatusBadRequest, err)
+	if httputil.NewError(w, http.StatusBadRequest, err) {
 		return
 	}
 	err = model.Delete(aid)
-	if err != nil {
-		httputil.NewError(ctx, http.StatusNotFound, err)
+	if httputil.NewError(w, http.StatusNotFound, err) {
 		return
 	}
-	ctx.JSON(http.StatusNoContent, gin.H{})
+	httputil.Respond(w, r, struct{}{})
 }
 
 // UploadAccountImage godoc
@@ -168,16 +159,15 @@ func (c *Controller) DeleteAccount(ctx *gin.Context) {
 // @Failure      404   {object}  httputil.HTTPError
 // @Failure      500   {object}  httputil.HTTPError
 // @Router       /accounts/{id}/images [post]
-func (c *Controller) UploadAccountImage(ctx *gin.Context) {
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		httputil.NewError(ctx, http.StatusBadRequest, err)
+func (c *Controller) UploadAccountImage(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if httputil.NewError(w, http.StatusBadRequest, err) {
 		return
 	}
-	file, err := ctx.FormFile("file")
-	if err != nil {
-		httputil.NewError(ctx, http.StatusBadRequest, err)
+	_, h, err := r.FormFile("file")
+	if httputil.NewError(w, http.StatusBadRequest, err) {
 		return
 	}
-	ctx.JSON(http.StatusOK, Message{Message: fmt.Sprintf("upload complete userID=%d filename=%s", id, file.Filename)})
+
+	httputil.Respond(w, r, Message{Message: fmt.Sprintf("upload complete userID=%d filename=%s", id, h.Filename)})
 }

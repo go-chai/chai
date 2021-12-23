@@ -7,12 +7,18 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
+	"github.com/go-chai/chai"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v2"
-	"github.com/go-chai/chai"
 )
 
-func Docs(r chi.Router, t *openapi3.T) error {
+func NewDocs() *openapi3.T {
+	return &openapi3.T{}
+}
+
+func Docs(r chi.Router) (*openapi3.T, error) {
+	t := NewDocs()
+
 	gen := openapi3gen.NewGenerator()
 	schemas := make(openapi3.Schemas)
 
@@ -44,7 +50,7 @@ func Docs(r chi.Router, t *openapi3.T) error {
 		return nil
 	})
 
-	return err
+	return t, err
 }
 
 func log(v interface{}) {
