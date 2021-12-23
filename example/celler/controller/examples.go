@@ -20,9 +20,8 @@ import (
 // @Failure      404  {string}  string  "ok"
 // @Failure      500  {string}  string  "ok"
 // @Router       /examples/ping [get]
-func (c *Controller) PingExample(w http.ResponseWriter, r *http.Request) (*string, int, error) {
-	s := "pong"
-	return &s, http.StatusOK, nil
+func (c *Controller) PingExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+	return "pong", http.StatusOK, nil
 }
 
 // CalcExample godoc
@@ -38,18 +37,17 @@ func (c *Controller) PingExample(w http.ResponseWriter, r *http.Request) (*strin
 // @Failure      404   {string}   string  "ok"
 // @Failure      500   {string}   string  "ok"
 // @Router       /examples/calc [get]
-func (c *Controller) CalcExample(w http.ResponseWriter, r *http.Request) (*string, int, error) {
+func (c *Controller) CalcExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
 	if err != nil {
-		return nil, http.StatusBadRequest, err
+		return "", http.StatusBadRequest, err
 	}
 	val2, err := strconv.Atoi(r.URL.Query().Get("val2"))
 	if err != nil {
-		return nil, http.StatusBadRequest, err
+		return "", http.StatusBadRequest, err
 	}
 	ans := val1 + val2
-	ansStr := fmt.Sprintf("%d", ans)
-	return &ansStr, http.StatusOK, nil
+	return fmt.Sprintf("%d", ans), http.StatusOK, nil
 }
 
 // PathParamsExample godoc
@@ -65,18 +63,17 @@ func (c *Controller) CalcExample(w http.ResponseWriter, r *http.Request) (*strin
 // @Failure      404         {string}  string  "ok"
 // @Failure      500         {string}  string  "ok"
 // @Router       /examples/groups/{group_id}/accounts/{account_id} [get]
-func (c *Controller) PathParamsExample(w http.ResponseWriter, r *http.Request) (*string, int, error) {
+func (c *Controller) PathParamsExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	groupID, err := strconv.Atoi(chi.URLParam(r, "group_id"))
 	if err != nil {
-		return nil, http.StatusBadRequest, err
+		return "", http.StatusBadRequest, err
 	}
 	accountID, err := strconv.Atoi(chi.URLParam(r, "account_id"))
 	if err != nil {
-		return nil, http.StatusBadRequest, err
+		return "", http.StatusBadRequest, err
 	}
 
-	res := fmt.Sprintf("group_id=%d account_id=%d", groupID, accountID)
-	return &res, http.StatusOK, nil
+	return fmt.Sprintf("group_id=%d account_id=%d", groupID, accountID), http.StatusOK, nil
 }
 
 // HeaderExample godoc
@@ -91,9 +88,8 @@ func (c *Controller) PathParamsExample(w http.ResponseWriter, r *http.Request) (
 // @Failure      404            {string}  string  "ok"
 // @Failure      500            {string}  string  "ok"
 // @Router       /examples/header [get]
-func (c *Controller) HeaderExample(w http.ResponseWriter, r *http.Request) (*string, int, error) {
-	str := r.Header.Get("Authorization")
-	return &str, http.StatusOK, nil
+func (c *Controller) HeaderExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+	return r.Header.Get("Authorization"), http.StatusOK, nil
 }
 
 // SecuritiesExample godoc
@@ -110,9 +106,8 @@ func (c *Controller) HeaderExample(w http.ResponseWriter, r *http.Request) (*str
 // @Security     ApiKeyAuth
 // @Security     OAuth2Implicit[admin, write]
 // @Router       /examples/securities [get]
-func (c *Controller) SecuritiesExample(w http.ResponseWriter, r *http.Request) (*string, int, error) {
-	str := "ok"
-	return &str, http.StatusOK, nil
+func (c *Controller) SecuritiesExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+	return "ok", http.StatusOK, nil
 }
 
 // AttributeExample godoc
@@ -132,17 +127,15 @@ func (c *Controller) SecuritiesExample(w http.ResponseWriter, r *http.Request) (
 // @Failure      404         {string}  string  "ok"
 // @Failure      500         {string}  string  "ok"
 // @Router       /examples/attribute [get]
-func (c *Controller) AttributeExample(w http.ResponseWriter, r *http.Request) (*string, int, error) {
-	str := fmt.Sprintf("enumstring=%s enumint=%s enumnumber=%s string=%s int=%s default=%s",
+func (c *Controller) AttributeExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+	return fmt.Sprintf("enumstring=%s enumint=%s enumnumber=%s string=%s int=%s default=%s",
 		r.URL.Query().Get("enumstring"),
 		r.URL.Query().Get("enumint"),
 		r.URL.Query().Get("enumnumber"),
 		r.URL.Query().Get("string"),
 		r.URL.Query().Get("int"),
 		r.URL.Query().Get("default"),
-	)
-
-	return &str, http.StatusOK, nil
+	), http.StatusOK, nil
 }
 
 // PostExample godoc
@@ -154,6 +147,6 @@ func (c *Controller) AttributeExample(w http.ResponseWriter, r *http.Request) (*
 // @Success      200      {string}  string         "success"
 // @Failure      500      {string}  string         "fail"
 // @Router       /examples/post [post]
-func (c *Controller) PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (*string, int, error) {
-	return &account.Name, http.StatusOK, nil
+func (c *Controller) PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (string, int, error) {
+	return account.Name, http.StatusOK, nil
 }

@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type resHandlerFunc[Res any] func(http.ResponseWriter, *http.Request) (*Res, int, error)
+type resHandlerFunc[Res any] func(http.ResponseWriter, *http.Request) (Res, int, error)
 
 func newResHandlerFunc[Res any](h resHandlerFunc[Res]) *resHandler[Res] {
 	return &resHandler[Res]{

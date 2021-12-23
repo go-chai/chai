@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-type reqResHandlerFunc[Req any, Res any, Err ErrType] func(*Req, http.ResponseWriter, *http.Request) (*Res, int, Err)
+type reqResHandlerFunc[Req any, Res any, Err ErrType] func(Req, http.ResponseWriter, *http.Request) (Res, int, Err)
 
 func newReqResHandlerFunc[Req any, Res any, Err ErrType](h reqResHandlerFunc[Req, Res, Err]) *reqResHandler[Req, Res, Err] {
 	return &reqResHandler[Req, Res, Err]{
@@ -35,7 +35,7 @@ func (h *reqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.
 		return
 	}
 
-	res, code, err := h.f(req, w, r)
+	res, code, err := h.f(*req, w, r)
 
 	if !errors.Is(err, nil) {
 		if code == 0 {
