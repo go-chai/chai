@@ -65,41 +65,6 @@ func main() {
 	http.ListenAndServe(":8080", r)
 }
 
-func addCustomDocs(docs *specc.Swagger) {
-	docs.Swagger.Swagger = "2.0"
-	docs.Host = "localhost:8080"
-	docs.Info = &spec.Info{
-		InfoProps: spec.InfoProps{
-			Description:    "This is a sample celler server.",
-			Title:          "Swagger Example API",
-			TermsOfService: "http://swagger.io/terms/",
-			Contact: &spec.ContactInfo{
-				ContactInfoProps: spec.ContactInfoProps{
-					Name:  "API Support",
-					URL:   "http://www.swagger.io/support",
-					Email: "support@swagger.io",
-				},
-			},
-			License: &spec.License{
-				LicenseProps: spec.LicenseProps{
-					Name: "Apache 2.0",
-					URL:  "http://www.apache.org/licenses/LICENSE-2.0.html",
-				},
-			},
-			Version: "1.0",
-		},
-	}
-	docs.SecurityDefinitions = map[string]*spec.SecurityScheme{
-		"ApiKeyAuth": {
-			SecuritySchemeProps: spec.SecuritySchemeProps{
-				Type: "apiKey",
-				In:   "header",
-				Name: "Authorization",
-			},
-		},
-	}
-}
-
 // PostExample godoc
 // @Summary      post request example
 // @Description  post request example
@@ -219,6 +184,41 @@ func AttributeExample(w http.ResponseWriter, r *http.Request) (string, int, erro
 		r.URL.Query().Get("int"),
 		r.URL.Query().Get("default"),
 	), http.StatusOK, nil
+}
+
+func addCustomDocs(docs *specc.Swagger) {
+	docs.Swagger.Swagger = "2.0"
+	docs.Host = "localhost:8080"
+	docs.Info = &spec.Info{
+		InfoProps: spec.InfoProps{
+			Description:    "This is a sample celler server.",
+			Title:          "Swagger Example API",
+			TermsOfService: "http://swagger.io/terms/",
+			Contact: &spec.ContactInfo{
+				ContactInfoProps: spec.ContactInfoProps{
+					Name:  "API Support",
+					URL:   "http://www.swagger.io/support",
+					Email: "support@swagger.io",
+				},
+			},
+			License: &spec.License{
+				LicenseProps: spec.LicenseProps{
+					Name: "Apache 2.0",
+					URL:  "http://www.apache.org/licenses/LICENSE-2.0.html",
+				},
+			},
+			Version: "1.0",
+		},
+	}
+	docs.SecurityDefinitions = map[string]*spec.SecurityScheme{
+		"ApiKeyAuth": {
+			SecuritySchemeProps: spec.SecuritySchemeProps{
+				Type: "apiKey",
+				In:   "header",
+				Name: "Authorization",
+			},
+		},
+	}
 }
 
 func LogYAML(v interface{}) {
