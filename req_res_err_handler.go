@@ -28,12 +28,12 @@ type reqResErrHandler[Req any, Res any, Err ErrType] struct {
 }
 
 type FromErrorer interface {
-	FromError(error) interface{}
+	FromError(error) any
 }
 
 type defaultFromErrorer struct{}
 
-func (defaultFromErrorer) FromError(err error) interface{} {
+func (defaultFromErrorer) FromError(err error) any {
 	return &APIError{Message: err.Error()}
 }
 
@@ -70,6 +70,10 @@ func (h *reqResErrHandler[Req, Res, Err]) Req() any {
 
 func (h *reqResErrHandler[Req, Res, Err]) Res() any {
 	return h.res
+}
+
+func (h *reqResErrHandler[Req, Res, Err]) Err() any {
+	return h.err
 }
 
 func (h *reqResErrHandler[Req, Res, Err]) Comment() string {

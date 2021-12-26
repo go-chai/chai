@@ -5,31 +5,35 @@ import (
 	"go/ast"
 	"net/http"
 
+	"errors"
+
+	"github.com/ghodss/yaml"
 	"github.com/go-chi/docgen"
-	"gopkg.in/yaml.v2"
 )
 
-type resHandlerFunc[Res any] func(http.ResponseWriter, *http.Request) (Res, int, error)
+type resHandlerFunc[Res any, Err ErrType] func(http.ResponseWriter, *http.Request) (Res, int, Err)
 
-func newResHandlerFunc[Res any](h resHandlerFunc[Res]) *resHandler[Res] {
-	return &resHandler[Res]{
+func newResHandlerFunc[Res any, Err ErrType](h resHandlerFunc[Res, Err]) *resHandler[Res, Err] {
+	return &resHandler[Res, Err]{
 		f:       h,
 		res:     new(Res),
+		err:     new(Err),
 		comment: docgen.GetFuncInfo(h).Comment,
 		astFile: GetFuncInfo(h).ASTFile,
 	}
 }
 
-type resHandler[Res any] struct {
-	f       resHandlerFunc[Res]
+type resHandler[Res any, Err ErrType] struct {
+	f       resHandlerFunc[Res, Err]
 	res     *Res
+	err     *Err
 	comment string
 	astFile *ast.File
 }
 
-func (h *resHandler[Res]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *resHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	res, code, err := h.f(w, r)
-	if err != nil {
+	if !errors.Is(err, nil) {
 		if code == 0 {
 			code = http.StatusInternalServerError
 		}
@@ -45,14 +49,18 @@ func (h *resHandler[Res]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	write(w, code, res)
 }
 
-func (h *resHandler[Res]) Res() any {
+func (h *resHandler[Res, Err]) Res() any {
 	return h.res
 }
 
-func (h *resHandler[Res]) Comment() string {
+func (h *resHandler[Res, Err]) Err() any {
+	return h.err
+}
+
+func (h *resHandler[Res, Err]) Comment() string {
 	return h.comment
 }
-func (h *resHandler[Res]) ASTFile() *ast.File {
+func (h *resHandler[Res, Err]) ASTFile() *ast.File {
 	return h.astFile
 }
 

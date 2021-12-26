@@ -43,7 +43,9 @@ func (c *Controller) ShowAccount(w http.ResponseWriter, r *http.Request) (*model
 // @Accept       json
 // @Produce      json
 // @Param        q    query     string  false  "name search by q"  Format(email)
-// @Success      200  {array}   model.Account
+// @Success      201  {array}   model.Account
+// @Success      202  {array}   model.Account
+// @Success      203  {array}   model.Account
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      404  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError

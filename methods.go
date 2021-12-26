@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func Get[Res any](r Methoder, path string, fn resHandlerFunc[Res]) {
+func Get[Res any, Err ErrType](r Methoder, path string, fn resHandlerFunc[Res, Err]) {
 	r.Method(http.MethodGet, path, newResHandlerFunc(fn))
 }
 

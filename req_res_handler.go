@@ -5,6 +5,7 @@ import (
 	"errors"
 	"go/ast"
 	"net/http"
+	"reflect"
 )
 
 type reqResHandlerFunc[Req any, Res any, Err ErrType] func(Req, http.ResponseWriter, *http.Request) (Res, int, Err)
@@ -14,6 +15,8 @@ func newReqResHandlerFunc[Req any, Res any, Err ErrType](h reqResHandlerFunc[Req
 		f:       h,
 		req:     new(Req),
 		res:     new(Res),
+		err:     new(Err),
+		ht:      reflect.TypeOf(h),
 		comment: GetFuncInfo(h).Comment,
 		astFile: GetFuncInfo(h).ASTFile,
 	}
@@ -23,6 +26,8 @@ type reqResHandler[Req any, Res any, Err ErrType] struct {
 	f       reqResHandlerFunc[Req, Res, Err]
 	req     *Req
 	res     *Res
+	err     *Err
+	ht      reflect.Type
 	comment string
 	astFile *ast.File
 }
@@ -59,6 +64,14 @@ func (h *reqResHandler[Req, Res, Err]) Req() any {
 
 func (h *reqResHandler[Req, Res, Err]) Res() any {
 	return h.res
+}
+
+func (h *reqResHandler[Req, Res, Err]) Err() any {
+	return h.err
+}
+
+func (h *reqResHandler[Req, Res, Err]) HT() reflect.Type {
+	return h.ht
 }
 
 func (h *reqResHandler[Req, Res, Err]) Comment() string {

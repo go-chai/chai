@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-chai/chai"
 	"github.com/go-chai/chai/example/celler/model"
 	"github.com/go-chi/chi/v5"
 )
@@ -145,8 +146,7 @@ func (c *Controller) AttributeExample(w http.ResponseWriter, r *http.Request) (s
 // @Produce      plain
 // @Param        message  body      model.Account  true  "Account Info"
 // @Success      200      {string}  string         "success"
-// @Failure      500      {string}  string         "fail"
 // @Router       /examples/post [post]
-func (c *Controller) PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (string, int, error) {
+func (c *Controller) PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (string, int, *chai.APIError) {
 	return account.Name, http.StatusOK, nil
 }

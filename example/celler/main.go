@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,7 +12,9 @@ import (
 	_ "github.com/go-chai/chai/example/celler/docs"
 	"github.com/go-chai/chai/example/celler/httputil"
 	"github.com/go-chai/chai/openapi2"
+	"github.com/go-chai/chai/specc"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-openapi/spec"
 )
 
 // @title           Swagger Example API
@@ -94,14 +97,43 @@ func main() {
 
 	// r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	t, err := openapi2.Docs(r)
+	docs, err := openapi2.Docs(r)
 	if err != nil {
 		panic(err)
 	}
 
-	logYAML(t)
+	addCustomDocs(docs)
+
+	// LogJSON(docs, "swagger")
+	LogYAML(docs, "")
 
 	http.ListenAndServe(":8080", r)
+}
+
+func addCustomDocs(docs *specc.Swagger) {
+	docs.Host = "localhost:8080"
+	docs.Swagger.Swagger = "2.0"
+	docs.Info = &spec.Info{
+		InfoProps: spec.InfoProps{
+			Description:    "This is a sample server celler server.",
+			Title:          "Swagger Example API",
+			TermsOfService: "http://swagger.io/terms/",
+			Contact: &spec.ContactInfo{
+				ContactInfoProps: spec.ContactInfoProps{
+					Name:  "API Support",
+					URL:   "http://www.swagger.io/support",
+					Email: "support@swagger.io",
+				},
+			},
+			License: &spec.License{
+				LicenseProps: spec.LicenseProps{
+					Name: "Apache 2.0",
+					URL:  "http://www.apache.org/licenses/LICENSE-2.0.html",
+				},
+			},
+			Version: "1.0",
+		},
+	}
 }
 
 func auth(next http.Handler) http.Handler {
@@ -114,13 +146,33 @@ func auth(next http.Handler) http.Handler {
 	})
 }
 
-func logYAML(v interface{}) {
+func LogYAML(v interface{}, label string) {
 	bytes, err := yaml.Marshal(v)
 	if err != nil {
 		panic(err)
 	}
 
+	if label != "" {
+		fmt.Printf("%s:\n", label)
+	}
 	fmt.Println(string(bytes))
+	// spew.Dump(v)
+
+	return
+}
+
+func LogJSON(v interface{}, label string) {
+	bytes, err := json.MarshalIndent(v, "", "  ")
+
+	if err != nil {
+		panic(err)
+	}
+
+	if label != "" {
+		fmt.Printf("%s:\n", label)
+	}
+	fmt.Println(string(bytes))
+	// spew.Dump(v)
 
 	return
 }

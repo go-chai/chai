@@ -7,9 +7,9 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
+	"github.com/ghodss/yaml"
 	"github.com/go-chai/chai"
 	"github.com/go-chi/chi/v5"
-	"gopkg.in/yaml.v2"
 )
 
 func NewDocs() *openapi3.T {
