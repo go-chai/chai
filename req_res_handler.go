@@ -8,10 +8,10 @@ import (
 	"reflect"
 )
 
-type reqResHandlerFunc[Req any, Res any, Err ErrType] func(Req, http.ResponseWriter, *http.Request) (Res, int, Err)
+type ReqResHandlerFunc[Req any, Res any, Err ErrType] func(Req, http.ResponseWriter, *http.Request) (Res, int, Err)
 
-func newReqResHandlerFunc[Req any, Res any, Err ErrType](h reqResHandlerFunc[Req, Res, Err]) *reqResHandler[Req, Res, Err] {
-	return &reqResHandler[Req, Res, Err]{
+func NewReqResHandlerFunc[Req any, Res any, Err ErrType](h ReqResHandlerFunc[Req, Res, Err]) *ReqResHandler[Req, Res, Err] {
+	return &ReqResHandler[Req, Res, Err]{
 		f:       h,
 		req:     new(Req),
 		res:     new(Res),
@@ -22,8 +22,8 @@ func newReqResHandlerFunc[Req any, Res any, Err ErrType](h reqResHandlerFunc[Req
 	}
 }
 
-type reqResHandler[Req any, Res any, Err ErrType] struct {
-	f       reqResHandlerFunc[Req, Res, Err]
+type ReqResHandler[Req any, Res any, Err ErrType] struct {
+	f       ReqResHandlerFunc[Req, Res, Err]
 	req     *Req
 	res     *Res
 	err     *Err
@@ -32,7 +32,7 @@ type reqResHandler[Req any, Res any, Err ErrType] struct {
 	astFile *ast.File
 }
 
-func (h *reqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *ReqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var req *Req
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -58,26 +58,26 @@ func (h *reqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.
 	write(w, code, res)
 }
 
-func (h *reqResHandler[Req, Res, Err]) Req() any {
+func (h *ReqResHandler[Req, Res, Err]) Req() any {
 	return h.req
 }
 
-func (h *reqResHandler[Req, Res, Err]) Res() any {
+func (h *ReqResHandler[Req, Res, Err]) Res() any {
 	return h.res
 }
 
-func (h *reqResHandler[Req, Res, Err]) Err() any {
+func (h *ReqResHandler[Req, Res, Err]) Err() any {
 	return h.err
 }
 
-func (h *reqResHandler[Req, Res, Err]) HT() reflect.Type {
+func (h *ReqResHandler[Req, Res, Err]) HT() reflect.Type {
 	return h.ht
 }
 
-func (h *reqResHandler[Req, Res, Err]) Comment() string {
+func (h *ReqResHandler[Req, Res, Err]) Comment() string {
 	return h.comment
 }
 
-func (h *reqResHandler[Req, Res, Err]) ASTFile() *ast.File {
+func (h *ReqResHandler[Req, Res, Err]) ASTFile() *ast.File {
 	return h.astFile
 }

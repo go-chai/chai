@@ -7,10 +7,10 @@ import (
 	"errors"
 )
 
-type resHandlerFunc[Res any, Err ErrType] func(http.ResponseWriter, *http.Request) (Res, int, Err)
+type ResHandlerFunc[Res any, Err ErrType] func(http.ResponseWriter, *http.Request) (Res, int, Err)
 
-func newResHandlerFunc[Res any, Err ErrType](h resHandlerFunc[Res, Err]) *resHandler[Res, Err] {
-	return &resHandler[Res, Err]{
+func NewResHandlerFunc[Res any, Err ErrType](h ResHandlerFunc[Res, Err]) *ResHandler[Res, Err] {
+	return &ResHandler[Res, Err]{
 		f:       h,
 		res:     new(Res),
 		err:     new(Err),
@@ -19,22 +19,22 @@ func newResHandlerFunc[Res any, Err ErrType](h resHandlerFunc[Res, Err]) *resHan
 	}
 }
 
-type resHandler[Res any, Err ErrType] struct {
-	f       resHandlerFunc[Res, Err]
+type ResHandler[Res any, Err ErrType] struct {
+	f       ResHandlerFunc[Res, Err]
 	res     *Res
 	err     *Err
 	comment string
 	astFile *ast.File
 }
 
-func (h *resHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *ResHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	res, code, err := h.f(w, r)
 	if !errors.Is(err, nil) {
 		if code == 0 {
 			code = http.StatusInternalServerError
 		}
 
-		write(w, code, JSONError{Message: err.Error()})
+		write(w, code, err)
 		return
 	}
 
@@ -45,17 +45,17 @@ func (h *resHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	write(w, code, res)
 }
 
-func (h *resHandler[Res, Err]) Res() any {
+func (h *ResHandler[Res, Err]) Res() any {
 	return h.res
 }
 
-func (h *resHandler[Res, Err]) Err() any {
+func (h *ResHandler[Res, Err]) Err() any {
 	return h.err
 }
 
-func (h *resHandler[Res, Err]) Comment() string {
+func (h *ResHandler[Res, Err]) Comment() string {
 	return h.comment
 }
-func (h *resHandler[Res, Err]) ASTFile() *ast.File {
+func (h *ResHandler[Res, Err]) ASTFile() *ast.File {
 	return h.astFile
 }
