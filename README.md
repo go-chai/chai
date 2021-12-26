@@ -14,6 +14,7 @@ Chai is still a work in progress
 ## Gotchas
 
 - Compiler optimizations
+
     The way the swaggo annotations are obtained from the source code currently relies on the caller frames and go's compiler optimizations sometimes change those which results in the annotations for "small" handlers to get ignored. As a workaround, the optimizations can be disabled for the binary that generates the docs by passing `-gcflags '-N'` to the compiler, e.g. `go run -gcflags='-N' ./example/basic2/main.go`
 
 ## Use
