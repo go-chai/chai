@@ -1,30 +1,73 @@
-package controller
+package main
 
 import (
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/ghodss/yaml"
 	"github.com/go-chai/chai"
 	"github.com/go-chai/chai/example/celler/model"
+	"github.com/go-chai/chai/openapi2"
+	"github.com/go-chai/chai/specc"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-openapi/spec"
 )
 
-// PingExample godoc
-// @Summary      ping example
-// @Description  do ping
-// @Tags         example
-// @Accept       json
-// @Produce      json
-// @Success      200  {string}  string  "pong"
-// @Failure      400  {string}  string  "ok"
-// @Failure      404  {string}  string  "ok"
-// @Failure      500  {string}  string  "ok"
-func (c *Controller) PingExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
-	return "pong", http.StatusOK, nil
+func main() {
+	r := chi.NewRouter()
+
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Route("/examples", func(r chi.Router) {
+			chai.Get(r, "/calc", CalcExample)
+			chai.Get(r, "/ping", Ping)
+			chai.Get(r, "/groups/{group_id}/accounts/{account_id}", PathParamsExample)
+			chai.Get(r, "/header", HeaderExample)
+			chai.Get(r, "/securities", SecuritiesExample)
+			chai.Get(r, "/attribute", AttributeExample)
+			chai.Post(r, "/post", PostExample)
+		})
+	})
+
+	docs, err := openapi2.Docs(r)
+	if err != nil {
+		panic(err)
+	}
+
+	addCustomDocs(docs)
+
+	LogYAML(docs)
+
+	http.ListenAndServe(":8080", r)
 }
 
-// CalcExample godoc
+func addCustomDocs(docs *specc.Swagger) {
+	docs.Swagger.Swagger = "2.0"
+	docs.Host = "localhost:8080"
+	docs.Info = &spec.Info{
+		InfoProps: spec.InfoProps{
+			Description:    "This is a sample celler server.",
+			Title:          "Swagger Example API",
+			TermsOfService: "http://swagger.io/terms/",
+			Contact: &spec.ContactInfo{
+				ContactInfoProps: spec.ContactInfoProps{
+					Name:  "API Support",
+					URL:   "http://www.swagger.io/support",
+					Email: "support@swagger.io",
+				},
+			},
+			License: &spec.License{
+				LicenseProps: spec.LicenseProps{
+					Name: "Apache 2.0",
+					URL:  "http://www.apache.org/licenses/LICENSE-2.0.html",
+				},
+			},
+			Version: "1.0",
+		},
+	}
+}
+
+// CalcExampleee godoc
 // @Summary      calc example
 // @Description  plus
 // @Tags         example
@@ -36,7 +79,7 @@ func (c *Controller) PingExample(w http.ResponseWriter, r *http.Request) (string
 // @Failure      400   {string}   string  "ok"
 // @Failure      404   {string}   string  "ok"
 // @Failure      500   {string}   string  "ok"
-func (c *Controller) CalcExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func CalcExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
 	if err != nil {
 		return "", http.StatusBadRequest, err
@@ -47,6 +90,19 @@ func (c *Controller) CalcExample(w http.ResponseWriter, r *http.Request) (string
 	}
 	ans := val1 + val2
 	return fmt.Sprintf("%d", ans), http.StatusOK, nil
+}
+
+// PingExample godoc
+// @Summary      ping example
+// @Description  do ping
+// @Tags         example
+// @Produce      json
+// @Success      200  {string}  string  "pong"
+// @Failure      400  {string}  string  "ok"
+// @Failure      404  {string}  string  "ok"
+// @Failure      500  {string}  string  "ok"
+func Ping(w http.ResponseWriter, r *http.Request) (string, int, error) {
+	return "pong", http.StatusOK, nil
 }
 
 // PathParamsExample godoc
@@ -61,7 +117,7 @@ func (c *Controller) CalcExample(w http.ResponseWriter, r *http.Request) (string
 // @Failure      400         {string}  string  "ok"
 // @Failure      404         {string}  string  "ok"
 // @Failure      500         {string}  string  "ok"
-func (c *Controller) PathParamsExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func PathParamsExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	groupID, err := strconv.Atoi(chi.URLParam(r, "group_id"))
 	if err != nil {
 		return "", http.StatusBadRequest, err
@@ -85,7 +141,7 @@ func (c *Controller) PathParamsExample(w http.ResponseWriter, r *http.Request) (
 // @Failure      400            {string}  string  "ok"
 // @Failure      404            {string}  string  "ok"
 // @Failure      500            {string}  string  "ok"
-func (c *Controller) HeaderExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func HeaderExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return r.Header.Get("Authorization"), http.StatusOK, nil
 }
 
@@ -102,7 +158,7 @@ func (c *Controller) HeaderExample(w http.ResponseWriter, r *http.Request) (stri
 // @Failure      500            {string}  string  "ok"
 // @Security     ApiKeyAuth
 // @Security     OAuth2Implicit[admin, write]
-func (c *Controller) SecuritiesExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func SecuritiesExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "ok", http.StatusOK, nil
 }
 
@@ -118,11 +174,11 @@ func (c *Controller) SecuritiesExample(w http.ResponseWriter, r *http.Request) (
 // @Param        string      query     string  false  "string valid"    minlength(5)  maxlength(10)
 // @Param        int         query     int     false  "int valid"       minimum(1)    maximum(10)
 // @Param        default     query     string  false  "string default"  default(A)
-// @Success      200         {string}  string  "answer"
-// @Failure      400         {string}  string  "ok"
-// @Failure      404         {string}  string  "ok"
-// @Failure      500         {string}  string  "ok"
-func (c *Controller) AttributeExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+// @Success      200 "answer"
+// @Failure      400 "ok"
+// @Failure      404 "ok"
+// @Failure      500 "ok"
+func AttributeExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return fmt.Sprintf("enumstring=%s enumint=%s enumnumber=%s string=%s int=%s default=%s",
 		r.URL.Query().Get("enumstring"),
 		r.URL.Query().Get("enumint"),
@@ -140,6 +196,18 @@ func (c *Controller) AttributeExample(w http.ResponseWriter, r *http.Request) (s
 // @Produce      plain
 // @Param        message  body      model.Account  true  "Account Info"
 // @Success      200      {string}  string         "success"
-func (c *Controller) PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (string, int, *chai.JSONError) {
+// @Param        enumnumber  query     number  false  "int enums"       Enums(1.1, 1.2, 1.3)
+func PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (string, int, *chai.JSONError) {
 	return account.Name, http.StatusOK, nil
+}
+
+func LogYAML(v interface{}) {
+	bytes, err := yaml.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(bytes))
+
+	return
 }

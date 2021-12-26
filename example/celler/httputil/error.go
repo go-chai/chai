@@ -34,8 +34,12 @@ func NewError(w http.ResponseWriter, code int, err error) bool {
 
 // HTTPError example
 type HTTPError struct {
-	Code    int    `json:"code" example:"400"`
+	Code    int    `json:"code,omitempty" example:"400"`
 	Message string `json:"message" example:"status bad request"`
+}
+
+func (e HTTPError) Error() string {
+	return e.Message
 }
 
 func Respond(w http.ResponseWriter, r *http.Request, v interface{}) {

@@ -38,14 +38,14 @@ type HTer interface {
 	HT() reflect.Type
 }
 
-type APIError struct {
+type JSONError struct {
 	Message          string `json:"error"`
-	ErrorDebug       string `json:"error_debug"`
-	ErrorDescription string `json:"error_description"`
-	StatusCode       int    `json:"status_code"`
+	ErrorDebug       string `json:"error_debug,omitempty"`
+	ErrorDescription string `json:"error_description,omitempty"`
+	StatusCode       int    `json:"status_code,omitempty"`
 }
 
-func (e APIError) Error() string {
+func (e JSONError) Error() string {
 	return e.Message
 }
 

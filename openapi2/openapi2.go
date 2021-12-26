@@ -18,15 +18,13 @@ import (
 )
 
 func Docs(r chi.Router) (*specc.Swagger, error) {
-	t := &specc.Swagger{
-		Swagger: &spec.Swagger{},
-	}
+	t := specc.New()
 
 	gen := specgen.NewGenerator()
 	schemas := make(map[string]spec.Schema)
 
 	err := chi.Walk(r, func(method string, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		if _, ok := h.(chai.Reqer); !ok {
+		if _, ok := h.(chai.Reser); !ok {
 			return nil
 		}
 
@@ -69,6 +67,12 @@ func Docs(r chi.Router) (*specc.Swagger, error) {
 			schema, err := gen.NewSchemaRefForValue(reser.Res(), schemas)
 			if err != nil {
 				return err
+			}
+
+			responses := op.Responses
+			if responses == nil {
+				responses = &spec.Responses{}
+				op.Responses = responses
 			}
 			found := false
 			for code := range op.Responses.StatusCodeResponses {

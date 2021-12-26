@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/go-chai/chai/example/celler/httputil"
 	"github.com/go-chai/chai/example/celler/model"
 )
 
@@ -21,7 +22,6 @@ import (
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      404  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
-// @Router       /bottles/{id} [get]
 func (c *Controller) ShowBottle(w http.ResponseWriter, r *http.Request) (*model.Bottle, int, error) {
 	id := chi.URLParam(r, "id")
 	bid, err := strconv.Atoi(id)
@@ -41,15 +41,15 @@ func (c *Controller) ShowBottle(w http.ResponseWriter, r *http.Request) (*model.
 // @Tags         bottles
 // @Accept       json
 // @Produce      json
-// @Success      200  {array}   model.Bottle
-// @Failure      400  {object}  httputil.HTTPError
-// @Failure      404  {object}  httputil.HTTPError
-// @Failure      500  {object}  httputil.HTTPError
-// @Router       /bottles [get]
-func (c *Controller) ListBottles(w http.ResponseWriter, r *http.Request) (*[]model.Bottle, int, error) {
+// @Success      200,201,202
+// @Failure      400,404,500
+func (c *Controller) ListBottles(w http.ResponseWriter, r *http.Request) (*[]model.Bottle, int, *httputil.HTTPError) {
 	bottles, err := model.BottlesAll()
 	if err != nil {
-		return nil, http.StatusNotFound, err
+		return nil, http.StatusNotFound, &httputil.HTTPError{
+			Code:    http.StatusNotFound,
+			Message: err.Error(),
+		}
 	}
 	return &bottles, http.StatusOK, nil
 }

@@ -8,7 +8,6 @@ import (
 	"errors"
 
 	"github.com/ghodss/yaml"
-	"github.com/go-chi/docgen"
 )
 
 type resHandlerFunc[Res any, Err ErrType] func(http.ResponseWriter, *http.Request) (Res, int, Err)
@@ -18,7 +17,7 @@ func newResHandlerFunc[Res any, Err ErrType](h resHandlerFunc[Res, Err]) *resHan
 		f:       h,
 		res:     new(Res),
 		err:     new(Err),
-		comment: docgen.GetFuncInfo(h).Comment,
+		comment: GetFuncInfo(h).Comment,
 		astFile: GetFuncInfo(h).ASTFile,
 	}
 }
@@ -38,7 +37,7 @@ func (h *resHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request)
 			code = http.StatusInternalServerError
 		}
 
-		write(w, code, APIError{Message: err.Error()})
+		write(w, code, JSONError{Message: err.Error()})
 		return
 	}
 

@@ -11,6 +11,29 @@ type Swagger struct {
 	*spec.Swagger
 }
 
+func New() *Swagger {
+	return &Swagger{
+		&spec.Swagger{
+			SwaggerProps: spec.SwaggerProps{
+				Info: &spec.Info{
+					InfoProps: spec.InfoProps{
+						Contact: &spec.ContactInfo{},
+						License: nil,
+					},
+					VendorExtensible: spec.VendorExtensible{
+						Extensions: spec.Extensions{},
+					},
+				},
+				Paths: &spec.Paths{
+					Paths: make(map[string]spec.PathItem),
+				},
+				Definitions:         make(map[string]spec.Schema),
+				SecurityDefinitions: make(map[string]*spec.SecurityScheme),
+			},
+		},
+	}
+}
+
 func (doc *Swagger) AddOperation(path string, method string, operation *spec.Operation) {
 	// spew.Dump("operation")
 	// spew.Dump(operation)

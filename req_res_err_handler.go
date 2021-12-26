@@ -34,7 +34,7 @@ type FromErrorer interface {
 type defaultFromErrorer struct{}
 
 func (defaultFromErrorer) FromError(err error) any {
-	return &APIError{Message: err.Error()}
+	return &JSONError{Message: err.Error()}
 }
 
 var DefaultFromErrorer = &defaultFromErrorer{}
