@@ -65,6 +65,15 @@ func addCustomDocs(docs *specc.Swagger) {
 			Version: "1.0",
 		},
 	}
+	docs.SecurityDefinitions = map[string]*spec.SecurityScheme{
+		"ApiKeyAuth": {
+			SecuritySchemeProps: spec.SecuritySchemeProps{
+				Type: "apiKey",
+				In:   "header",
+				Name: "Authorization",
+			},
+		},
+	}
 }
 
 // CalcExampleee godoc
@@ -75,10 +84,8 @@ func addCustomDocs(docs *specc.Swagger) {
 // @Produce      json
 // @Param        val1  query      int     true  "used for calc"
 // @Param        val2  query      int     true  "used for calc"
-// @Success      200   {integer}  string  "answer"
-// @Failure      400   {string}   string  "ok"
-// @Failure      404   {string}   string  "ok"
-// @Failure      500   {string}   string  "ok"
+// @Success      200
+// @Failure      400,404,500
 func CalcExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
 	if err != nil {
@@ -97,10 +104,8 @@ func CalcExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 // @Description  do ping
 // @Tags         example
 // @Produce      json
-// @Success      200  {string}  string  "pong"
-// @Failure      400  {string}  string  "ok"
-// @Failure      404  {string}  string  "ok"
-// @Failure      500  {string}  string  "ok"
+// @Success      200
+// @Failure      400,404,500
 func Ping(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "pong", http.StatusOK, nil
 }
@@ -113,10 +118,8 @@ func Ping(w http.ResponseWriter, r *http.Request) (string, int, error) {
 // @Produce      json
 // @Param        group_id    path      int     true  "Group ID"
 // @Param        account_id  path      int     true  "Account ID"
-// @Success      200         {string}  string  "answer"
-// @Failure      400         {string}  string  "ok"
-// @Failure      404         {string}  string  "ok"
-// @Failure      500         {string}  string  "ok"
+// @Success      200
+// @Failure      400,404,500
 func PathParamsExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	groupID, err := strconv.Atoi(chi.URLParam(r, "group_id"))
 	if err != nil {
@@ -137,10 +140,8 @@ func PathParamsExample(w http.ResponseWriter, r *http.Request) (string, int, err
 // @Accept       json
 // @Produce      json
 // @Param        Authorization  header    string  true  "Authentication header"
-// @Success      200            {string}  string  "answer"
-// @Failure      400            {string}  string  "ok"
-// @Failure      404            {string}  string  "ok"
-// @Failure      500            {string}  string  "ok"
+// @Success      200
+// @Failure      400,404,500
 func HeaderExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return r.Header.Get("Authorization"), http.StatusOK, nil
 }
@@ -152,12 +153,9 @@ func HeaderExample(w http.ResponseWriter, r *http.Request) (string, int, error) 
 // @Accept       json
 // @Produce      json
 // @Param        Authorization  header    string  true  "Authentication header"
-// @Success      200            {string}  string  "answer"
-// @Failure      400            {string}  string  "ok"
-// @Failure      404            {string}  string  "ok"
-// @Failure      500            {string}  string  "ok"
+// @Success      200
+// @Failure      400,404,500
 // @Security     ApiKeyAuth
-// @Security     OAuth2Implicit[admin, write]
 func SecuritiesExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "ok", http.StatusOK, nil
 }
@@ -175,9 +173,7 @@ func SecuritiesExample(w http.ResponseWriter, r *http.Request) (string, int, err
 // @Param        int         query     int     false  "int valid"       minimum(1)    maximum(10)
 // @Param        default     query     string  false  "string default"  default(A)
 // @Success      200 "answer"
-// @Failure      400 "ok"
-// @Failure      404 "ok"
-// @Failure      500 "ok"
+// @Failure      400,404,500 "ok"
 func AttributeExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return fmt.Sprintf("enumstring=%s enumint=%s enumnumber=%s string=%s int=%s default=%s",
 		r.URL.Query().Get("enumstring"),
@@ -197,8 +193,8 @@ func AttributeExample(w http.ResponseWriter, r *http.Request) (string, int, erro
 // @Param        message  body      model.Account  true  "Account Info"
 // @Success      200      {string}  string         "success"
 // @Param        enumnumber  query     number  false  "int enums"       Enums(1.1, 1.2, 1.3)
-func PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (string, int, *chai.JSONError) {
-	return account.Name, http.StatusOK, nil
+func PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account, int, *chai.JSONError) {
+	return account, http.StatusOK, nil
 }
 
 func LogYAML(v interface{}) {

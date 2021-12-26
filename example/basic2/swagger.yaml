@@ -1,0 +1,319 @@
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /api/v1/examples/attribute:
+    get:
+      consumes:
+      - application/json
+      description: attribute
+      parameters:
+      - description: string enums
+        enum:
+        - A
+        - B
+        - C
+        in: query
+        name: enumstring
+        type: string
+      - description: int enums
+        enum:
+        - 1
+        - 2
+        - 3
+        in: query
+        name: enumint
+        type: integer
+      - description: int enums
+        enum:
+        - 1.1
+        - 1.2
+        - 1.3
+        in: query
+        name: enumnumber
+        type: number
+      - description: string valid
+        in: query
+        maxLength: 10
+        minLength: 5
+        name: string
+        type: string
+      - description: int valid
+        in: query
+        maximum: 10
+        minimum: 1
+        name: int
+        type: integer
+      - default: A
+        description: string default
+        in: query
+        name: default
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: answer
+          schema:
+            type: string
+        "400":
+          description: ok
+          schema: {}
+        "404":
+          description: ok
+          schema: {}
+        "500":
+          description: ok
+          schema: {}
+      summary: attribute example
+      tags:
+      - example
+  /api/v1/examples/calc:
+    get:
+      consumes:
+      - application/json
+      description: plus
+      parameters:
+      - description: used for calc
+        in: query
+        name: val1
+        required: true
+        type: integer
+      - description: used for calc
+        in: query
+        name: val2
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+          schema:
+            type: string
+        "400":
+          description: ""
+          schema: {}
+        "404":
+          description: ""
+          schema: {}
+        "500":
+          description: ""
+          schema: {}
+      summary: calc example
+      tags:
+      - example
+  /api/v1/examples/groups/{group_id}/accounts/{account_id}:
+    get:
+      consumes:
+      - application/json
+      description: path params
+      parameters:
+      - description: Group ID
+        in: path
+        name: group_id
+        required: true
+        type: integer
+      - description: Account ID
+        in: path
+        name: account_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+          schema:
+            type: string
+        "400":
+          description: ""
+          schema: {}
+        "404":
+          description: ""
+          schema: {}
+        "500":
+          description: ""
+          schema: {}
+      summary: path params example
+      tags:
+      - example
+  /api/v1/examples/header:
+    get:
+      consumes:
+      - application/json
+      description: custome header
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+          schema:
+            type: string
+        "400":
+          description: ""
+          schema: {}
+        "404":
+          description: ""
+          schema: {}
+        "500":
+          description: ""
+          schema: {}
+      summary: custome header example
+      tags:
+      - example
+  /api/v1/examples/ping:
+    get:
+      description: do ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+          schema:
+            type: string
+        "400":
+          description: ""
+          schema: {}
+        "404":
+          description: ""
+          schema: {}
+        "500":
+          description: ""
+          schema: {}
+      summary: ping example
+      tags:
+      - example
+  /api/v1/examples/post:
+    post:
+      consumes:
+      - application/json
+      description: post request example
+      parameters:
+      - description: Account Info
+        in: body
+        name: message
+        required: true
+        schema:
+          properties:
+            custom_type_4567:
+              items:
+                properties:
+                  zz:
+                    type: integer
+                  zzStr:
+                    type: string
+                type: object
+              type: array
+            custom_val_123:
+              type: string
+            id:
+              type: integer
+            name:
+              type: string
+            some_number:
+              type: integer
+            uuid: {}
+          type: object
+      - description: int enums
+        enum:
+        - 1.1
+        - 1.2
+        - 1.3
+        in: query
+        name: enumnumber
+        type: number
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: success
+          schema:
+            properties:
+              custom_type_4567:
+                items:
+                  properties:
+                    zz:
+                      type: integer
+                    zzStr:
+                      type: string
+                  type: object
+                type: array
+              custom_val_123:
+                type: string
+              id:
+                type: integer
+              name:
+                type: string
+              some_number:
+                type: integer
+              uuid: {}
+            type: object
+        default:
+          description: ""
+          schema:
+            properties:
+              error:
+                type: string
+              error_debug:
+                type: string
+              error_description:
+                type: string
+              status_code:
+                type: integer
+            type: object
+      summary: post request example
+  /api/v1/examples/securities:
+    get:
+      consumes:
+      - application/json
+      description: custome header
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+          schema:
+            type: string
+        "400":
+          description: ""
+          schema: {}
+        "404":
+          description: ""
+          schema: {}
+        "500":
+          description: ""
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: custome header example
+      tags:
+      - example
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
