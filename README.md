@@ -43,13 +43,13 @@ func main() {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/examples", func(r chi.Router) {
+			chai.Post(r, "/post", PostExample)
 			chai.Get(r, "/calc", CalcExample)
 			chai.Get(r, "/ping", Ping)
 			chai.Get(r, "/groups/{group_id}/accounts/{account_id}", PathParamsExample)
 			chai.Get(r, "/header", HeaderExample)
 			chai.Get(r, "/securities", SecuritiesExample)
 			chai.Get(r, "/attribute", AttributeExample)
-			chai.Post(r, "/post", PostExample)
 		})
 	})
 
@@ -98,6 +98,18 @@ func addCustomDocs(docs *specc.Swagger) {
 			},
 		},
 	}
+}
+
+// PostExample godoc
+// @Summary      post request example
+// @Description  post request example
+// @Accept       json
+// @Produce      plain
+// @Param        message  body      model.Account  true  "Account Info"
+// @Success      200      {string}  string         "success"
+// @Param        enumnumber  query     number  false  "int enums"       Enums(1.1, 1.2, 1.3)
+func PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account, int, *chai.JSONError) {
+	return account, http.StatusOK, nil
 }
 
 // CalcExampleee godoc
@@ -207,18 +219,6 @@ func AttributeExample(w http.ResponseWriter, r *http.Request) (string, int, erro
 		r.URL.Query().Get("int"),
 		r.URL.Query().Get("default"),
 	), http.StatusOK, nil
-}
-
-// PostExample godoc
-// @Summary      post request example
-// @Description  post request example
-// @Accept       json
-// @Produce      plain
-// @Param        message  body      model.Account  true  "Account Info"
-// @Success      200      {string}  string         "success"
-// @Param        enumnumber  query     number  false  "int enums"       Enums(1.1, 1.2, 1.3)
-func PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account, int, *chai.JSONError) {
-	return account, http.StatusOK, nil
 }
 
 func LogYAML(v interface{}) {
