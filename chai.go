@@ -61,64 +61,43 @@ func write(w http.ResponseWriter, code int, v any) {
 	json.NewEncoder(w).Encode(v)
 }
 
-type Request[Req any] struct {
-	Req Req
-}
-
-type Result[Res any, Err any] struct {
-	Code  int
-	Res   Res
-	Error Err
-}
-
-type Response[Res any] struct {
-	Code int
-	Res  Res
-}
-
-type E interface {
-	error
-}
-
-// type Error struct {
-// 	Code  int
-// 	Error error
-// }
-
 type ErrType = error
-
-// type ErrType = any
-
-type Error[Err ErrType] struct {
-	Code  int
-	Error Err
-}
 
 func PtrTo[T any](t T) *T {
 	return &t
 }
 
-func LogYAML(v any, label string) {
+func LogYAML(v any) {
 	bytes, err := yaml.Marshal(v)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("%s:\n", label)
 	fmt.Println(string(bytes))
 
 	return
 }
 
-func LogJSON(v any, label string) {
+func LogJSON(v any) {
 	bytes, err := json.MarshalIndent(v, "", "  ")
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("%s:\n", label)
 	fmt.Println(string(bytes))
 
 	return
 }
+
+type FromErrorer interface {
+	FromError(error) any
+}
+
+type defaultFromErrorer struct{}
+
+func (defaultFromErrorer) FromError(err error) any {
+	return &JSONError{Message: err.Error()}
+}
+
+var DefaultFromErrorer = &defaultFromErrorer{}

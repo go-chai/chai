@@ -531,8 +531,8 @@ func TestT(t *testing.T) {
 	// 	Ref: &ref2,
 	// }
 
-	chai.LogYAML(ref, "yaml")
-	chai.LogJSON(ref, "json")
+	chai.LogYAML(ref)
+	chai.LogJSON(ref)
 }
 
 func TestT2(t *testing.T) {
@@ -552,6 +552,6 @@ func TestT2(t *testing.T) {
 	ref2, err := gen2.NewSchemaRefForValue(&model.Account{}, schemas2)
 	require.NoError(t, err)
 
-	chai.LogYAML(ref2, "ref2")
-	chai.LogYAML(ref, "ref")
+	chai.LogYAML(ref2)
+	chai.LogYAML(ref)
 }

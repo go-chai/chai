@@ -1,13 +1,10 @@
 package chai
 
 import (
-	"fmt"
 	"go/ast"
 	"net/http"
 
 	"errors"
-
-	"github.com/ghodss/yaml"
 )
 
 type resHandlerFunc[Res any, Err ErrType] func(http.ResponseWriter, *http.Request) (Res, int, Err)
@@ -61,15 +58,4 @@ func (h *resHandler[Res, Err]) Comment() string {
 }
 func (h *resHandler[Res, Err]) ASTFile() *ast.File {
 	return h.astFile
-}
-
-func logg2(v interface{}) {
-	bytes, err := yaml.Marshal(v)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(bytes))
-
-	return
 }
