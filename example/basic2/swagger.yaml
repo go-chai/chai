@@ -1,3 +1,61 @@
+definitions:
+  model.Account:
+    properties:
+      custom_type_4567:
+        items:
+          $ref: '#/definitions/model.CustomType456'
+        type: array
+      custom_val_123:
+        example: custom val 123
+        type: string
+      id:
+        example: 1
+        format: int64
+        type: integer
+      name:
+        example: account name
+        type: string
+      some_number:
+        example: 1234
+        type: integer
+      uuid:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        format: uuid
+        type: string
+    type: object
+  model.Account2:
+    properties:
+      custom_type_4567:
+        items:
+          $ref: '#/definitions/model.CustomType456'
+        type: array
+      custom_val_123:
+        example: custom val 123
+        type: string
+      id:
+        example: 1
+        format: int64
+        type: integer
+      name:
+        example: account name
+        type: string
+      some_number:
+        example: 1234
+        type: integer
+      uuid:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        format: uuid
+        type: string
+    type: object
+  model.CustomType456:
+    properties:
+      zz:
+        example: 34
+        type: integer
+      zzStr:
+        example: zz string value
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -208,29 +266,10 @@ paths:
       parameters:
       - description: Account Info
         in: body
-        name: message
+        name: acc
         required: true
         schema:
-          properties:
-            custom_type_4567:
-              items:
-                properties:
-                  zz:
-                    type: integer
-                  zzStr:
-                    type: string
-                type: object
-              type: array
-            custom_val_123:
-              type: string
-            id:
-              type: integer
-            name:
-              type: string
-            some_number:
-              type: integer
-            uuid: {}
-          type: object
+          $ref: '#/definitions/model.Account'
       - description: int enums
         enum:
         - 1.1
@@ -245,26 +284,11 @@ paths:
         "200":
           description: success
           schema:
-            properties:
-              custom_type_4567:
-                items:
-                  properties:
-                    zz:
-                      type: integer
-                    zzStr:
-                      type: string
-                  type: object
-                type: array
-              custom_val_123:
-                type: string
-              id:
-                type: integer
-              name:
-                type: string
-              some_number:
-                type: integer
-              uuid: {}
-            type: object
+            type: string
+        "203":
+          description: Non-Authoritative Information
+          schema:
+            $ref: '#/definitions/model.Account2'
         default:
           description: ""
           schema:
