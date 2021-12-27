@@ -1,61 +1,3 @@
-definitions:
-  model.Account:
-    properties:
-      custom_type_4567:
-        items:
-          $ref: '#/definitions/model.CustomType456'
-        type: array
-      custom_val_123:
-        example: custom val 123
-        type: string
-      id:
-        example: 1
-        format: int64
-        type: integer
-      name:
-        example: account name
-        type: string
-      some_number:
-        example: 1234
-        type: integer
-      uuid:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        format: uuid
-        type: string
-    type: object
-  model.Account2:
-    properties:
-      custom_type_4567:
-        items:
-          $ref: '#/definitions/model.CustomType456'
-        type: array
-      custom_val_123:
-        example: custom val 123
-        type: string
-      id:
-        example: 1
-        format: int64
-        type: integer
-      name:
-        example: account name
-        type: string
-      some_number:
-        example: 1234
-        type: integer
-      uuid:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        format: uuid
-        type: string
-    type: object
-  model.CustomType456:
-    properties:
-      zz:
-        example: 34
-        type: integer
-      zzStr:
-        example: zz string value
-        type: string
-    type: object
 host: localhost:8080
 info:
   contact:
@@ -72,8 +14,6 @@ info:
 paths:
   /api/v1/examples/attribute:
     get:
-      consumes:
-      - application/json
       description: attribute
       parameters:
       - description: string enums
@@ -130,17 +70,11 @@ paths:
         "404":
           description: ok
           schema: {}
-        "500":
-          description: ok
-          schema: {}
       summary: attribute example
       tags:
       - example
   /api/v1/examples/calc:
     get:
-      consumes:
-      - application/json
-      description: plus
       parameters:
       - description: used for calc
         in: query
@@ -155,7 +89,7 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
+        "203":
           description: ""
           schema:
             type: string
@@ -165,16 +99,8 @@ paths:
         "404":
           description: ""
           schema: {}
-        "500":
-          description: ""
-          schema: {}
-      summary: calc example
-      tags:
-      - example
   /api/v1/examples/groups/{group_id}/accounts/{account_id}:
     get:
-      consumes:
-      - application/json
       description: path params
       parameters:
       - description: Group ID
@@ -200,16 +126,11 @@ paths:
         "404":
           description: ""
           schema: {}
-        "500":
-          description: ""
-          schema: {}
       summary: path params example
       tags:
       - example
   /api/v1/examples/header:
     get:
-      consumes:
-      - application/json
       description: custome header
       parameters:
       - description: Authentication header
@@ -228,9 +149,6 @@ paths:
           description: ""
           schema: {}
         "404":
-          description: ""
-          schema: {}
-        "500":
           description: ""
           schema: {}
       summary: custome header example
@@ -246,13 +164,7 @@ paths:
           description: ""
           schema:
             type: string
-        "400":
-          description: ""
-          schema: {}
-        "404":
-          description: ""
-          schema: {}
-        "500":
+        default:
           description: ""
           schema: {}
       summary: ping example
@@ -262,33 +174,56 @@ paths:
     post:
       consumes:
       - application/json
-      description: post request example
       parameters:
-      - description: Account Info
-        in: body
-        name: acc
-        required: true
+      - in: body
+        name: body
         schema:
-          $ref: '#/definitions/model.Account'
-      - description: int enums
-        enum:
-        - 1.1
-        - 1.2
-        - 1.3
-        in: query
-        name: enumnumber
-        type: number
+          properties:
+            custom_type_4567:
+              items:
+                properties:
+                  zz:
+                    type: integer
+                  zzStr:
+                    type: string
+                type: object
+              type: array
+            custom_val_123:
+              type: string
+            id:
+              type: integer
+            name:
+              type: string
+            some_number:
+              type: integer
+            uuid: {}
+          type: object
       produces:
-      - text/plain
+      - application/json
       responses:
         "200":
-          description: success
+          description: ""
           schema:
-            type: string
-        "203":
-          description: Non-Authoritative Information
-          schema:
-            $ref: '#/definitions/model.Account2'
+            properties:
+              custom_type_4567:
+                items:
+                  properties:
+                    zz:
+                      type: integer
+                    zzStr:
+                      type: string
+                  type: object
+                type: array
+              custom_val_123:
+                type: string
+              id:
+                type: integer
+              name:
+                type: string
+              some_number:
+                type: integer
+              uuid: {}
+            type: object
         default:
           description: ""
           schema:
@@ -302,11 +237,8 @@ paths:
               status_code:
                 type: integer
             type: object
-      summary: post request example
   /api/v1/examples/securities:
     get:
-      consumes:
-      - application/json
       description: custome header
       parameters:
       - description: Authentication header
@@ -325,9 +257,6 @@ paths:
           description: ""
           schema: {}
         "404":
-          description: ""
-          schema: {}
-        "500":
           description: ""
           schema: {}
       security:

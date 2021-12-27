@@ -56,6 +56,10 @@ func Docs(r chi.Router) (*specc.Swagger, error) {
 		}
 
 		if reqer, ok := h.(chai.Reqer); ok {
+			if len(op.Consumes) == 0 {
+				op.Consumes = append(op.Consumes, "application/json")
+			}
+
 			schema, err := gen.NewSchemaRefForValue(reqer.Req(), schemas)
 			if err != nil {
 				return err
@@ -77,6 +81,10 @@ func Docs(r chi.Router) (*specc.Swagger, error) {
 		}
 
 		if reser, ok := h.(chai.Reser); ok {
+			if len(op.Produces) == 0 {
+				op.Produces = append(op.Produces, "application/json")
+			}
+
 			schema, err := gen.NewSchemaRefForValue(reser.Res(), schemas)
 			if err != nil {
 				return err
