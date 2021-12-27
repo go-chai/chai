@@ -46,7 +46,7 @@ func main() {
 		r.Route("/examples", func(r chi.Router) {
 			chai.Get(r, "/ping", c.PingExample)
 			chai.Get(r, "/calc", c.CalcExample)
-			chai.Get(r, "/group{s/{gro}up_id}/accounts/{account_id}", c.PathParamsExample)
+			// chai.Get(r, "/group{s/{gro}up_id}/accounts/{account_id}", c.PathParamsExample)
 			chai.Get(r, "/groups/{group_id}/accounts/{account_id}", c.PathParamsExample)
 			chai.Get(r, "/header", c.HeaderExample)
 			chai.Get(r, "/securities", c.SecuritiesExample)

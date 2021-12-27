@@ -2,12 +2,11 @@ package openapi2
 
 import (
 	"constraints"
-	"encoding/json"
-	"fmt"
+	"go/ast"
+	"log"
 	"net/http"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"github.com/go-chai/chai"
 	"github.com/go-chai/chai/specc"
 	"github.com/go-chai/chai/specgen"
@@ -18,24 +17,36 @@ import (
 )
 
 func Docs(r chi.Router) (*specc.Swagger, error) {
+	var err error
+
 	t := specc.New()
 
 	gen := specgen.NewGenerator()
 	schemas := make(map[string]spec.Schema)
 
-	err := chi.Walk(r, func(method string, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+	parser := swag.New(swag.SetDebugger(log.Default()), func(p *swag.Parser) {
+		p.ParseDependency = true
+	})
+
+	err = chi.Walk(r, func(method string, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		if _, ok := h.(chai.Reser); !ok {
 			return nil
+		}
+
+		var astFile *ast.File
+
+		if astFiler, ok := h.(chai.ASTFiler); ok {
+			astFile = astFiler.ASTFile()
 		}
 
 		op := spec.NewOperation("")
 
 		if commenter, ok := h.(chai.Commenter); ok {
 			comment := commenter.Comment()
-			ops := swag.NewOperation(nil)
+			ops := swag.NewOperation(parser)
 
 			for _, line := range strings.Split(comment, "\n") {
-				err := ops.ParseCommentChai(line, nil)
+				err := ops.ParseComment(line, astFile)
 				if err != nil {
 					return errors.Wrap(err, "failed to parse comment")
 				}
@@ -58,7 +69,9 @@ func Docs(r chi.Router) (*specc.Swagger, error) {
 						continue
 					}
 
-					op.Parameters[i].Schema = schema
+					if op.Parameters[i].Schema == nil {
+						op.Parameters[i].Schema = schema
+					}
 				}
 			}
 		}
@@ -77,13 +90,17 @@ func Docs(r chi.Router) (*specc.Swagger, error) {
 			found := false
 			for code := range op.Responses.StatusCodeResponses {
 				if code < http.StatusBadRequest {
+					found = true
 					s := op.Responses.StatusCodeResponses[code]
+
+					if s.Schema != nil {
+						continue
+					}
 
 					s.Schema = schema
 
 					op.Responses.StatusCodeResponses[code] = s
 
-					found = true
 				}
 			}
 			if !found {
@@ -92,6 +109,12 @@ func Docs(r chi.Router) (*specc.Swagger, error) {
 		}
 
 		if errer, ok := h.(chai.Errer); ok {
+
+			responses := op.Responses
+			if responses == nil {
+				responses = &spec.Responses{}
+				op.Responses = responses
+			}
 			schema, err := gen.NewSchemaRefForValue(errer.Err(), schemas)
 			if err != nil {
 				return err
@@ -99,13 +122,17 @@ func Docs(r chi.Router) (*specc.Swagger, error) {
 			found := false
 			for code := range op.Responses.StatusCodeResponses {
 				if code >= http.StatusBadRequest {
+					found = true
 					s := op.Responses.StatusCodeResponses[code]
+
+					if s.Schema != nil {
+						continue
+					}
 
 					s.Schema = schema
 
 					op.Responses.StatusCodeResponses[code] = s
 
-					found = true
 				}
 			}
 			if !found {
@@ -117,6 +144,8 @@ func Docs(r chi.Router) (*specc.Swagger, error) {
 
 		return nil
 	})
+
+	t.Definitions = parser.GetSwagger().Definitions
 
 	return t, err
 }
@@ -137,26 +166,4 @@ func convNumPtr[U number, T number](t *T) *U {
 	u := U(*t)
 
 	return &u
-}
-
-func log(v interface{}) {
-	bytes, err := json.MarshalIndent(v, "", "\t")
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(bytes))
-
-	return
-}
-
-func logg2(v interface{}) {
-	bytes, err := yaml.Marshal(v)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(bytes))
-
-	return
 }

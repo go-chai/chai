@@ -14,7 +14,7 @@ import (
 // @Tags         accounts,admin
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  model.Admin
+// @Success      200
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      401  {object}  httputil.HTTPError
 // @Failure      404  {object}  httputil.HTTPError

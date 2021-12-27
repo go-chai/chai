@@ -31,7 +31,7 @@ func main() {
 
 	docs, err := openapi2.Docs(r)
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("%+v", err))
 	}
 
 	addCustomDocs(docs)
@@ -46,9 +46,10 @@ func main() {
 // @Description  post request example
 // @Accept       json
 // @Produce      plain
-// @Param        message  body      model.Account  true  "Account Info"
+// @Param        acc  body      model.Account  true  "Account Info"
 // @Success      200      {string}  string         "success"
 // @Param        enumnumber  query     number  false  "int enums"       Enums(1.1, 1.2, 1.3)
+// @Success      203  {object}   model.Account2
 func PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account, int, *chai.JSONError) {
 	return account, http.StatusOK, nil
 }
