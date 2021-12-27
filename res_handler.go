@@ -9,7 +9,7 @@ import (
 
 type ResHandlerFunc[Res any, Err ErrType] func(http.ResponseWriter, *http.Request) (Res, int, Err)
 
-func NewResHandlerFunc[Res any, Err ErrType](h ResHandlerFunc[Res, Err]) *ResHandler[Res, Err] {
+func NewResHandler[Res any, Err ErrType](h ResHandlerFunc[Res, Err]) *ResHandler[Res, Err] {
 	return &ResHandler[Res, Err]{
 		f:       h,
 		res:     new(Res),

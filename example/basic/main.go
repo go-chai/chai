@@ -25,8 +25,8 @@ import (
 func main() {
 	r := chi.NewRouter()
 
-	chai.Get(r, "/testapi/get-string-by-int/", api.GetStringByInt)
-	chai.Get(r, "//testapi/get-struct-array-by-string/", api.GetStructArrayByString)
+	chai.GetG(r, "/testapi/get-string-by-int/", api.GetStringByInt)
+	chai.GetG(r, "//testapi/get-struct-array-by-string/", api.GetStructArrayByString)
 	r.Post("/testapi/upload", api.Upload)
 
 	http.ListenAndServe(":8080", r)

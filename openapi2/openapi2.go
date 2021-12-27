@@ -29,7 +29,7 @@ func Docs(r chi.Router) (*specc.Swagger, error) {
 	})
 
 	err = chi.Walk(r, func(method string, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		if _, ok := h.(chai.Reser); !ok {
+		if _, ok := h.(chai.Commenter); !ok {
 			return nil
 		}
 

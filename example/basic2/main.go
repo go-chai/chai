@@ -19,13 +19,13 @@ func main() {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/examples", func(r chi.Router) {
-			chai.Post(r, "/post", PostExample)
-			chai.Get(r, "/calc", CalcExample)
-			chai.Get(r, "/ping", Ping)
-			chai.Get(r, "/groups/{group_id}/accounts/{account_id}", PathParamsExample)
-			chai.Get(r, "/header", HeaderExample)
-			chai.Get(r, "/securities", SecuritiesExample)
-			chai.Get(r, "/attribute", AttributeExample)
+			chai.PostG(r, "/post", PostExample)
+			chai.GetG(r, "/calc", CalcExample)
+			chai.GetG(r, "/ping", Ping)
+			chai.GetG(r, "/groups/{group_id}/accounts/{account_id}", PathParamsExample)
+			chai.GetG(r, "/header", HeaderExample)
+			chai.GetG(r, "/securities", SecuritiesExample)
+			chai.GetG(r, "/attribute", AttributeExample)
 		})
 	})
 

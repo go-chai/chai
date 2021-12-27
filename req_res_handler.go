@@ -10,7 +10,7 @@ import (
 
 type ReqResHandlerFunc[Req any, Res any, Err ErrType] func(Req, http.ResponseWriter, *http.Request) (Res, int, Err)
 
-func NewReqResHandlerFunc[Req any, Res any, Err ErrType](h ReqResHandlerFunc[Req, Res, Err]) *ReqResHandler[Req, Res, Err] {
+func NewReqResHandler[Req any, Res any, Err ErrType](h ReqResHandlerFunc[Req, Res, Err]) *ReqResHandler[Req, Res, Err] {
 	return &ReqResHandler[Req, Res, Err]{
 		f:       h,
 		req:     new(Req),
