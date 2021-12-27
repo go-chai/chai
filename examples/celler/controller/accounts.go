@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chai/chai/example/celler/httputil"
-	"github.com/go-chai/chai/example/celler/model"
+	"github.com/go-chai/chai/examples/celler/httputil"
+	"github.com/go-chai/chai/examples/celler/model"
 	"github.com/go-chi/chi/v5"
 )
 

@@ -7,7 +7,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/go-chai/chai"
-	"github.com/go-chai/chai/example/celler/model"
+	"github.com/go-chai/chai/examples/celler/model"
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chai/chai/specc"
 	"github.com/go-chi/chi/v5"
@@ -19,13 +19,13 @@ func main() {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/examples", func(r chi.Router) {
-			chai.PostG(r, "/post", PostExample)
-			chai.GetG(r, "/calc", CalcExample)
-			chai.GetG(r, "/ping", Ping)
-			chai.GetG(r, "/groups/{group_id}/accounts/{account_id}", PathParamsExample)
-			chai.GetG(r, "/header", HeaderExample)
-			chai.GetG(r, "/securities", SecuritiesExample)
-			chai.GetG(r, "/attribute", AttributeExample)
+			chai.PostG(r, "/post", PostHandler)
+			chai.GetG(r, "/calc", CalcHandler)
+			chai.GetG(r, "/ping", PingHandler)
+			chai.GetG(r, "/groups/{group_id}/accounts/{account_id}", PathParamsHandler)
+			chai.GetG(r, "/header", HeaderHandler)
+			chai.GetG(r, "/securities", SecuritiesHandler)
+			chai.GetG(r, "/attribute", AttributeHandler)
 		})
 	})
 
@@ -41,7 +41,7 @@ func main() {
 	http.ListenAndServe(":8080", r)
 }
 
-func PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account, int, *chai.JSONError) {
+func PostHandler(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account, int, *chai.JSONError) {
 	return account, http.StatusOK, nil
 }
 
@@ -49,7 +49,7 @@ func PostExample(account *model.Account, w http.ResponseWriter, r *http.Request)
 // @Param        val2  query      int     true  "used for calc"
 // @Success      203
 // @Failure      400,404
-func CalcExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func CalcHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
 	if err != nil {
 		return "", http.StatusBadRequest, err
@@ -66,18 +66,18 @@ func CalcExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
 // @Summary      ping example
 // @Description  do ping
 // @Tags         example
-func Ping(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func PingHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "pong", http.StatusOK, nil
 }
 
-// PathParamsExample godoc
+// PathParamsHandler godoc
 // @Summary      path params example
 // @Description  path params
 // @Tags         example
 // @Param        group_id    path      int     true  "Group ID"
 // @Param        account_id  path      int     true  "Account ID"
 // @Failure      400,404
-func PathParamsExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func PathParamsHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	groupID, err := strconv.Atoi(chi.URLParam(r, "group_id"))
 	if err != nil {
 		return "", http.StatusBadRequest, err
@@ -90,28 +90,28 @@ func PathParamsExample(w http.ResponseWriter, r *http.Request) (string, int, err
 	return fmt.Sprintf("group_id=%d account_id=%d", groupID, accountID), http.StatusOK, nil
 }
 
-// HeaderExample godoc
+// HeaderHandler godoc
 // @Summary      custome header example
 // @Description  custome header
 // @Tags         example
 // @Param        Authorization  header    string  true  "Authentication header"
 // @Failure      400,404
-func HeaderExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func HeaderHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return r.Header.Get("Authorization"), http.StatusOK, nil
 }
 
-// SecuritiesExample godoc
+// SecuritiesHandler godoc
 // @Summary      custome header example
 // @Description  custome header
 // @Tags         example
 // @Param        Authorization  header    string  true  "Authentication header"
 // @Failure      400,404
 // @Security     ApiKeyAuth
-func SecuritiesExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func SecuritiesHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "ok", http.StatusOK, nil
 }
 
-// AttributeExample godoc
+// AttributeHandler godoc
 // @Summary      attribute example
 // @Description  attribute
 // @Tags         example
@@ -123,7 +123,7 @@ func SecuritiesExample(w http.ResponseWriter, r *http.Request) (string, int, err
 // @Param        default     query     string  false  "string default"  default(A)
 // @Success      200 "answer"
 // @Failure      400,404 "ok"
-func AttributeExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func AttributeHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return fmt.Sprintf("enumstring=%s enumint=%s enumnumber=%s string=%s int=%s default=%s",
 		r.URL.Query().Get("enumstring"),
 		r.URL.Query().Get("enumint"),

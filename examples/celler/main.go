@@ -8,9 +8,9 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/go-chai/chai"
-	"github.com/go-chai/chai/example/celler/controller"
-	_ "github.com/go-chai/chai/example/celler/docs"
-	"github.com/go-chai/chai/example/celler/httputil"
+	"github.com/go-chai/chai/examples/celler/controller"
+	_ "github.com/go-chai/chai/examples/celler/docs"
+	"github.com/go-chai/chai/examples/celler/httputil"
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chai/chai/specc"
 	"github.com/go-chi/chi/v5"

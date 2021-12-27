@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chai/chai"
-	"github.com/go-chai/chai/example/basic/api"
+	"github.com/go-chai/chai/examples/basic/api"
 	"github.com/go-chi/chi/v5"
 )
 

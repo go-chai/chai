@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chai/chai"
-	"github.com/go-chai/chai/example/celler/model"
+	"github.com/go-chai/chai/examples/celler/model"
 	"github.com/go-chi/chi/v5"
 )
 

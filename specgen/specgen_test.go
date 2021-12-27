@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-chai/chai"
-	"github.com/go-chai/chai/example/celler/model"
+	"github.com/go-chai/chai/examples/celler/model"
 	"github.com/go-chai/chai/specgen"
 	"github.com/go-openapi/jsonreference"
 	"github.com/go-openapi/spec"
