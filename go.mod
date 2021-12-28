@@ -36,4 +36,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
 
-replace github.com/swaggo/swag v1.7.6 => ./third_party/swag
+// replace github.com/swaggo/swag v1.7.6 => ./third_party/swag
