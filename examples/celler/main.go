@@ -12,9 +12,9 @@ import (
 	_ "github.com/go-chai/chai/examples/celler/docs"
 	"github.com/go-chai/chai/examples/celler/httputil"
 	"github.com/go-chai/chai/openapi2"
-	"github.com/go-chai/chai/specc"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
@@ -55,7 +55,9 @@ func main() {
 		})
 	})
 
-	// r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+	))
 
 	docs, err := openapi2.Docs(r)
 	if err != nil {
@@ -70,8 +72,8 @@ func main() {
 	http.ListenAndServe(":8080", r)
 }
 
-func addCustomDocs(docs *specc.Swagger) {
-	docs.Swagger.Swagger = "2.0"
+func addCustomDocs(docs *spec.Swagger) {
+	docs.Swagger = "2.0"
 	docs.Host = "localhost:8080"
 	docs.Info = &spec.Info{
 		InfoProps: spec.InfoProps{

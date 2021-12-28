@@ -3,33 +3,25 @@ package chai
 import (
 	"encoding/json"
 	"errors"
-	"go/ast"
 	"net/http"
-	"reflect"
 )
 
 type ReqResHandlerFunc[Req any, Res any, Err ErrType] func(Req, http.ResponseWriter, *http.Request) (Res, int, Err)
 
 func NewReqResHandler[Req any, Res any, Err ErrType](h ReqResHandlerFunc[Req, Res, Err]) *ReqResHandler[Req, Res, Err] {
 	return &ReqResHandler[Req, Res, Err]{
-		f:       h,
-		req:     new(Req),
-		res:     new(Res),
-		err:     new(Err),
-		ht:      reflect.TypeOf(h),
-		comment: GetFuncInfo(h).Comment,
-		astFile: GetFuncInfo(h).ASTFile,
+		f:   h,
+		req: new(Req),
+		res: new(Res),
+		err: new(Err),
 	}
 }
 
 type ReqResHandler[Req any, Res any, Err ErrType] struct {
-	f       ReqResHandlerFunc[Req, Res, Err]
-	req     *Req
-	res     *Res
-	err     *Err
-	ht      reflect.Type
-	comment string
-	astFile *ast.File
+	f   ReqResHandlerFunc[Req, Res, Err]
+	req *Req
+	res *Res
+	err *Err
 }
 
 func (h *ReqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -70,14 +62,6 @@ func (h *ReqResHandler[Req, Res, Err]) Err() any {
 	return h.err
 }
 
-func (h *ReqResHandler[Req, Res, Err]) HT() reflect.Type {
-	return h.ht
-}
-
-func (h *ReqResHandler[Req, Res, Err]) Comment() string {
-	return h.comment
-}
-
-func (h *ReqResHandler[Req, Res, Err]) ASTFile() *ast.File {
-	return h.astFile
+func (h *ReqResHandler[Req, Res, Err]) Handler() any {
+	return h.f
 }

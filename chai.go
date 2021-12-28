@@ -2,12 +2,7 @@ package chai
 
 import (
 	"encoding/json"
-	"fmt"
-	"go/ast"
 	"net/http"
-	"reflect"
-
-	"github.com/ghodss/yaml"
 )
 
 type Methoder interface {
@@ -18,24 +13,13 @@ type Reqer interface {
 	Req() any
 }
 
-type Reser interface {
+type ResErrer interface {
 	Res() any
-}
-
-type Errer interface {
 	Err() any
 }
 
-type Commenter interface {
-	Comment() string
-}
-
-type ASTFiler interface {
-	ASTFile() *ast.File
-}
-
-type HTer interface {
-	HT() reflect.Type
+type Handlerer interface {
+	Handler() any
 }
 
 type JSONError struct {
@@ -49,45 +33,22 @@ func (e JSONError) Error() string {
 	return e.Message
 }
 
-func writeBytes(w http.ResponseWriter, code int, bytes []byte) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(bytes)
-}
-
 func write(w http.ResponseWriter, code int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(v)
 }
 
+func writeBytes(w http.ResponseWriter, code int, bytes []byte) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(bytes)
+}
+
 type ErrType = error
 
 func PtrTo[T any](t T) *T {
 	return &t
-}
-
-func LogYAML(v any) {
-	bytes, err := yaml.Marshal(v)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(bytes))
-
-	return
-}
-
-func LogJSON(v any) {
-	bytes, err := json.MarshalIndent(v, "", "  ")
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(bytes))
-
-	return
 }
 
 type FromErrorer interface {

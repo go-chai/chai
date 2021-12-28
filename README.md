@@ -31,11 +31,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/ghodss/yaml"
 	"github.com/go-chai/chai"
 	"github.com/go-chai/chai/examples/celler/model"
 	"github.com/go-chai/chai/openapi2"
-	"github.com/go-chai/chai/specc"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
 )
@@ -160,8 +158,8 @@ func AttributeHandler(w http.ResponseWriter, r *http.Request) (string, int, erro
 	), http.StatusOK, nil
 }
 
-func addCustomDocs(docs *specc.Swagger) {
-	docs.Swagger.Swagger = "2.0"
+func addCustomDocs(docs *spec.Swagger) {
+	docs.Swagger = "2.0"
 	docs.Host = "localhost:8080"
 	docs.Info = &spec.Info{
 		InfoProps: spec.InfoProps{
@@ -196,7 +194,7 @@ func addCustomDocs(docs *specc.Swagger) {
 }
 
 func LogYAML(v interface{}) {
-	bytes, err := yaml.Marshal(v)
+	bytes, err := chai.MarshalYAML(v)
 	if err != nil {
 		panic(err)
 	}

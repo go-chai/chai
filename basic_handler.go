@@ -7,9 +7,7 @@ import (
 
 func NewBasicHandler(h http.HandlerFunc) *BasicHandler {
 	return &BasicHandler{
-		f:       h,
-		comment: GetFuncInfo(h).Comment,
-		astFile: GetFuncInfo(h).ASTFile,
+		f: h,
 	}
 }
 
@@ -23,10 +21,6 @@ func (h *BasicHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.f.ServeHTTP(w, r)
 }
 
-func (h *BasicHandler) Comment() string {
-	return h.comment
-}
-
-func (h *BasicHandler) ASTFile() *ast.File {
-	return h.astFile
+func (h *BasicHandler) Handler() any {
+	return h.f
 }

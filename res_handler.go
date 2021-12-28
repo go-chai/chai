@@ -1,7 +1,6 @@
 package chai
 
 import (
-	"go/ast"
 	"net/http"
 
 	"errors"
@@ -11,20 +10,16 @@ type ResHandlerFunc[Res any, Err ErrType] func(http.ResponseWriter, *http.Reques
 
 func NewResHandler[Res any, Err ErrType](h ResHandlerFunc[Res, Err]) *ResHandler[Res, Err] {
 	return &ResHandler[Res, Err]{
-		f:       h,
-		res:     new(Res),
-		err:     new(Err),
-		comment: GetFuncInfo(h).Comment,
-		astFile: GetFuncInfo(h).ASTFile,
+		f:   h,
+		res: new(Res),
+		err: new(Err),
 	}
 }
 
 type ResHandler[Res any, Err ErrType] struct {
-	f       ResHandlerFunc[Res, Err]
-	res     *Res
-	err     *Err
-	comment string
-	astFile *ast.File
+	f   ResHandlerFunc[Res, Err]
+	res *Res
+	err *Err
 }
 
 func (h *ResHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -53,9 +48,6 @@ func (h *ResHandler[Res, Err]) Err() any {
 	return h.err
 }
 
-func (h *ResHandler[Res, Err]) Comment() string {
-	return h.comment
-}
-func (h *ResHandler[Res, Err]) ASTFile() *ast.File {
-	return h.astFile
+func (h *ResHandler[Res, Err]) Handler() any {
+	return h.f
 }

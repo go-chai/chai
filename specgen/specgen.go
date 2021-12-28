@@ -93,7 +93,7 @@ func (g *Generator) GenerateSchemaRef(t reflect.Type) (*spec.Schema, error) {
 }
 
 // NewSchemaRefForValue uses reflection on the given value to produce a SchemaRef, and updates a supplied map with any dependent component schemas if they lead to cycles
-func (g *Generator) NewSchemaRefForValue(value interface{}, schemas map[string]spec.Schema) (*spec.Schema, error) {
+func (g *Generator) NewSchemaRefForValue(value interface{}, schemas Schemas) (*spec.Schema, error) {
 	ref, err := g.GenerateSchemaRef(reflect.TypeOf(value))
 	if err != nil {
 		return nil, err

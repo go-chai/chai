@@ -179,3 +179,9 @@ func (c *Controller) UploadAccountImage(w http.ResponseWriter, r *http.Request) 
 type Message struct {
 	Message string `json:"message" example:"message"`
 }
+
+// Admin example
+type Admin struct {
+	ID   int    `json:"id" example:"1"`
+	Name string `json:"name" example:"admin name"`
+}

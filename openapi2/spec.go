@@ -1,4 +1,4 @@
-package specc
+package openapi2
 
 import (
 	"fmt"
@@ -7,34 +7,28 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-type Swagger struct {
-	*spec.Swagger
-}
-
-func New() *Swagger {
-	return &Swagger{
-		&spec.Swagger{
-			SwaggerProps: spec.SwaggerProps{
-				Info: &spec.Info{
-					InfoProps: spec.InfoProps{
-						Contact: &spec.ContactInfo{},
-						License: nil,
-					},
-					VendorExtensible: spec.VendorExtensible{
-						Extensions: spec.Extensions{},
-					},
+func newSpec() *spec.Swagger {
+	return &spec.Swagger{
+		SwaggerProps: spec.SwaggerProps{
+			Info: &spec.Info{
+				InfoProps: spec.InfoProps{
+					Contact: &spec.ContactInfo{},
+					License: nil,
 				},
-				Paths: &spec.Paths{
-					Paths: make(map[string]spec.PathItem),
+				VendorExtensible: spec.VendorExtensible{
+					Extensions: spec.Extensions{},
 				},
-				Definitions:         make(map[string]spec.Schema),
-				SecurityDefinitions: make(map[string]*spec.SecurityScheme),
 			},
+			Paths: &spec.Paths{
+				Paths: make(map[string]spec.PathItem),
+			},
+			Definitions:         make(map[string]spec.Schema),
+			SecurityDefinitions: make(map[string]*spec.SecurityScheme),
 		},
 	}
 }
 
-func (doc *Swagger) AddOperation(path string, method string, operation *spec.Operation) {
+func addOperation(doc *spec.Swagger, path string, method string, operation *spec.Operation) {
 	// spew.Dump("operation")
 	// spew.Dump(operation)
 
