@@ -148,8 +148,6 @@ func (c *Controller) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 	httputil.Respond(w, r, struct{}{})
 }
 
-// @Success      200   {object}  controller.Message
-
 // UploadAccountImage godoc
 // @Summary      Upload account image
 // @Description  Upload file
@@ -158,10 +156,10 @@ func (c *Controller) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Param        id    path      int   true  "Account ID"
 // @Param        file  formData  file  true  "account image"
+// @Success      200   {object}  Message
 // @Failure      400   {object}  httputil.HTTPError
 // @Failure      404   {object}  httputil.HTTPError
 // @Failure      500   {object}  httputil.HTTPError
-// @Router       /accounts/{id}/images [post]
 func (c *Controller) UploadAccountImage(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if httputil.NewError(w, http.StatusBadRequest, err) {
@@ -173,11 +171,6 @@ func (c *Controller) UploadAccountImage(w http.ResponseWriter, r *http.Request) 
 	}
 
 	httputil.Respond(w, r, Message{Message: fmt.Sprintf("upload complete userID=%d filename=%s", id, h.Filename)})
-}
-
-// Message example
-type Message struct {
-	Message string `json:"message" example:"message"`
 }
 
 // Admin example

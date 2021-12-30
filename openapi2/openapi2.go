@@ -1,9 +1,10 @@
 package openapi2
 
 import (
-	"go/ast"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-chai/chai"
@@ -32,9 +33,8 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 			// ignore non-chai handlers
 			return nil
 		}
-		fi := chai.GetFuncInfo(ch.Handler())
 
-		op, err := parseSwaggoAnnotations(fi.Comment, fi.ASTFile, parser)
+		op, err := parseSwaggoAnnotations(ch, parser)
 		if err != nil {
 			return err
 		}
@@ -59,18 +59,43 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 	return t, err
 }
 
-func parseSwaggoAnnotations(comment string, astFile *ast.File, parser *swag.Parser) (*spec.Operation, error) {
+func parseSwaggoAnnotations(ch chai.Handlerer, parser *swag.Parser) (*spec.Operation, error) {
 	var err error
+	fi := chai.GetFuncInfo(ch.Handler())
 	ops := swag.NewOperation(parser)
 
-	for _, line := range strings.Split(comment, "\n") {
-		err = ops.ParseComment(line, astFile)
+	pkg, err := getPkgPath(fi.File)
+	if err != nil {
+		return nil, err
+	}
+
+	err = parser.GetAllGoFileInfoAndParseTypes(pkg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse swagger spec")
+	}
+
+	for _, line := range strings.Split(fi.Comment, "\n") {
+		err := ops.ParseComment(line, fi.ASTFile)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to parse comment")
 		}
 	}
 
 	return &ops.Operation, nil
+}
+
+func getPkgPath(file string) (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", errors.Wrap(err, "failed to get working directory")
+	}
+
+	file, err = filepath.Rel(wd, file)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to get relative path")
+	}
+
+	return filepath.Dir(file), nil
 }
 
 func updateRequests(op *spec.Operation, gen *specgen.Generator, schemas specgen.Schemas, h http.Handler) error {
