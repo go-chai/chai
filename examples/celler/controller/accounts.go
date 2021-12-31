@@ -8,6 +8,7 @@ import (
 	"github.com/go-chai/chai/examples/celler/httputil"
 	"github.com/go-chai/chai/examples/celler/model"
 	"github.com/go-chi/chi/v5"
+	"github.com/gofrs/uuid"
 )
 
 // ShowAccount godoc
@@ -107,7 +108,7 @@ func (c *Controller) UpdateAccount(w http.ResponseWriter, r *http.Request) {
 	if httputil.NewError(w, http.StatusBadRequest, err) {
 		return
 	}
-	var updateAccount model.UpdateAccount
+	updateAccount := new(model.UpdateAccount)
 	err = httputil.Decode(r, updateAccount)
 	if httputil.NewError(w, http.StatusBadRequest, err) {
 		return
@@ -115,6 +116,7 @@ func (c *Controller) UpdateAccount(w http.ResponseWriter, r *http.Request) {
 	account := model.Account{
 		ID:   aid,
 		Name: updateAccount.Name,
+		UUID: uuid.Must(uuid.NewV4()),
 	}
 	err = account.Update()
 	if httputil.NewError(w, http.StatusNotFound, err) {

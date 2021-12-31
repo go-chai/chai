@@ -26,7 +26,7 @@ type Account struct {
 	ID         int       `json:"id" example:"1" format:"int64"`
 	Name       string    `json:"name" example:"account name"`
 	SomeNumber int       `json:"some_number" example:"1234"`
-	UUID       uuid.UUID `json:"uuid" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid"`
+	UUID       uuid.UUID `json:"uuid,omitempty" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid"`
 }
 
 //  example
@@ -121,7 +121,7 @@ func (a Account) Update() error {
 
 var accountMaxID = 3
 var accounts = []Account{
-	{ID: 1, Name: "account_1"},
-	{ID: 2, Name: "account_2"},
-	{ID: 3, Name: "account_3"},
+	{ID: 1, Name: "account_1", UUID: uuid.Must(uuid.NewV4())},
+	{ID: 2, Name: "account_2", UUID: uuid.Must(uuid.NewV4())},
+	{ID: 3, Name: "account_3", UUID: uuid.Must(uuid.NewV4())},
 }
