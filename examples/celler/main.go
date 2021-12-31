@@ -9,13 +9,13 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/go-chai/chai"
 	"github.com/go-chai/chai/examples/celler/controller"
+
 	_ "github.com/go-chai/chai/examples/celler/docs" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/celler/httputil"
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
 	httpSwagger "github.com/swaggo/http-swagger"
-	"github.com/swaggo/swag/gen"
 )
 
 func main() {
@@ -73,7 +73,7 @@ func main() {
 	LogYAML(docs, "")
 
 	// This must be used only during development to store the swagger spec
-	err = gen.New().Generate(docs, &gen.GenConfig{
+	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
 		OutputDir: "examples/celler/docs",
 	})
 	if err != nil {

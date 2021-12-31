@@ -16,13 +16,19 @@ import (
 	"github.com/swaggo/swag/gen"
 )
 
-func GenDocs(r chi.Router) error {
+type GenConfig = gen.GenConfig
+
+func GenDocs(r chi.Router, cfg *GenConfig) error {
 	docs, err := Docs(r)
 	if err != nil {
 		return err
 	}
 
-	return gen.New().Generate(docs, &gen.GenConfig{})
+	return WriteDocs(docs, cfg)
+}
+
+func WriteDocs(docs *spec.Swagger, cfg *GenConfig) error {
+	return gen.New().Generate(docs, cfg)
 }
 
 func Docs(r chi.Router) (*spec.Swagger, error) {

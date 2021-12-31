@@ -38,7 +38,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
 	httpSwagger "github.com/swaggo/http-swagger"
-	"github.com/swaggo/swag/gen"
 )
 
 func main() {
@@ -72,8 +71,8 @@ func main() {
 	LogYAML(docs)
 
 	// This must be used only during development to store the swagger spec
-	err = gen.New().Generate(docs, &gen.GenConfig{
-		OutputDir: "examples/basic2/docs",
+	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
+		OutputDir: "examples/celler/docs",
 	})
 	if err != nil {
 		panic(fmt.Sprintf("gen.New().Generate() failed: %+v", err))
