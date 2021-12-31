@@ -31,4 +31,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace github.com/swaggo/swag => github.com/go-chai/swag v1.7.6-fork3
+replace github.com/swaggo/swag => github.com/go-chai/swag v1.7.6-fork4

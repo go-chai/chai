@@ -202,7 +202,7 @@ func typeName(i any) string {
 		t = t.Elem()
 	}
 
-	s := t.String()
+	s := strings.ReplaceAll(t.String(), " ", "")
 
 	if s == "error" {
 		return "string"
