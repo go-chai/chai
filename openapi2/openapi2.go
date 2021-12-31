@@ -107,7 +107,6 @@ func updateRequests(fi FuncInfo, op *swag.Operation, h http.Handler) error {
 	}
 
 	schema, err := op.ParseAPIObjectSchema("object", typeName(reqer.Req()), fi.ASTFile)
-	// schema, err := gen.NewSchemaRefForValue(reqer.Req(), schemas)
 	if err != nil {
 		return err
 	}
@@ -140,13 +139,11 @@ func updateResponses(fi FuncInfo, parser *swag.Parser, op *swag.Operation, h htt
 		op.Produces = append(op.Produces, "application/json")
 	}
 
-	// resSchema, err := gen.NewSchemaRefForValue(resErrer.Res(), schemas)
 	resSchema, err := op.ParseAPIObjectSchema("object", typeName(resErrer.Res()), fi.ASTFile)
 	if err != nil {
 		return err
 	}
 
-	// errSchema, err := gen.NewSchemaRefForValue(resErrer.Err(), schemas)
 	errSchema, err := op.ParseAPIObjectSchema("object", typeName(resErrer.Err()), fi.ASTFile)
 	if err != nil {
 		return err
