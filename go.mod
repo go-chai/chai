@@ -11,7 +11,7 @@ require (
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/swaggo/http-swagger v1.1.2
-	github.com/swaggo/swag v1.7.8
+	github.com/swaggo/swag v1.7.6
 )
 
 require (
@@ -31,4 +31,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace github.com/swaggo/swag v1.7.8 => ./third_party/swag
+replace github.com/swaggo/swag v1.7.6 => github.com/go-chai/swag v1.7.6-fork
