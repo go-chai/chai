@@ -46,7 +46,7 @@ func main() {
 
 	// This must be used only during development to store the swagger spec
 	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
-		OutputDir: "examples/celler/docs",
+		OutputDir: "examples/basic2/docs",
 	})
 	if err != nil {
 		panic(fmt.Sprintf("gen.New().Generate() failed: %+v", err))
