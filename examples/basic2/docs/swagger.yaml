@@ -120,7 +120,7 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
+        "203":
           description: ""
           schema:
             type: string
@@ -263,4 +263,3 @@ securityDefinitions:
     name: Authorization
     type: apiKey
 swagger: "2.0"
-

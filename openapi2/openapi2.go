@@ -13,12 +13,22 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/pkg/errors"
 	"github.com/swaggo/swag"
+	"github.com/swaggo/swag/gen"
 )
+
+func GenDocs(r chi.Router) error {
+	docs, err := Docs(r)
+	if err != nil {
+		return err
+	}
+
+	return gen.New().Generate(docs, &gen.GenConfig{})
+}
 
 func Docs(r chi.Router) (*spec.Swagger, error) {
 	var err error
 
-	t := newSpec()
+	docs := newSpec()
 
 	parser := swag.New(swag.SetDebugger(log.Default()), func(p *swag.Parser) {
 		p.ParseDependency = true
@@ -48,14 +58,14 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 			return err
 		}
 
-		addOperation(t, route, method, op)
+		addOperation(docs, route, method, op)
 
 		return nil
 	})
 
-	t.Definitions = parser.GetSwagger().Definitions
+	docs.Definitions = parser.GetSwagger().Definitions
 
-	return t, err
+	return docs, err
 }
 
 func parseSwaggoAnnotations(fi FuncInfo, ch chai.Handlerer, parser *swag.Parser) (*swag.Operation, error) {
@@ -69,7 +79,7 @@ func parseSwaggoAnnotations(fi FuncInfo, ch chai.Handlerer, parser *swag.Parser)
 
 	err = parser.GetAllGoFileInfoAndParseTypes(pkg)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse swagger spec")
+		return nil, errors.Wrap(err, "failed to parse docs spec")
 	}
 
 	for _, line := range strings.Split(fi.Comment, "\n") {

@@ -29,11 +29,11 @@ func newSpec() *spec.Swagger {
 	}
 }
 
-func addOperation(doc *spec.Swagger, path string, method string, operation *swag.Operation) {
-	paths := doc.Paths
+func addOperation(swagger *spec.Swagger, path string, method string, operation *swag.Operation) {
+	paths := swagger.Paths
 	if paths == nil {
 		paths = &spec.Paths{}
-		doc.Paths = paths
+		swagger.Paths = paths
 	}
 
 	if paths.Paths == nil {

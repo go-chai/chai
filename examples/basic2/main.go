@@ -6,10 +6,13 @@ import (
 	"strconv"
 
 	"github.com/go-chai/chai"
+	_ "github.com/go-chai/chai/examples/basic2/docs" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/celler/model"
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
+	httpSwagger "github.com/swaggo/http-swagger"
+	"github.com/swaggo/swag/gen"
 )
 
 func main() {
@@ -27,6 +30,12 @@ func main() {
 		})
 	})
 
+	// This should be used in prod to serve the swagger spec
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+	))
+
+	// This must be used only during development to generate the swagger spec
 	docs, err := openapi2.Docs(r)
 	if err != nil {
 		panic(fmt.Sprintf("%+v", err))
@@ -35,6 +44,14 @@ func main() {
 	addCustomDocs(docs)
 
 	LogYAML(docs)
+
+	// This must be used only during development to store the swagger spec
+	err = gen.New().Generate(docs, &gen.GenConfig{
+		OutputDir: "examples/basic2/docs",
+	})
+	if err != nil {
+		panic(fmt.Sprintf("gen.New().Generate() failed: %+v", err))
+	}
 
 	http.ListenAndServe(":8080", r)
 }
