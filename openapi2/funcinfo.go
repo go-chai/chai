@@ -1,4 +1,4 @@
-package chai
+package openapi2
 
 import (
 	"go/ast"
@@ -102,7 +102,7 @@ func getFuncComment(file string, line int) (string, *ast.File) {
 	}
 
 	if len(astFile.Comments) == 0 {
-		return "", nil
+		return "", astFile
 	}
 
 	for _, cmt := range astFile.Comments {
@@ -111,5 +111,5 @@ func getFuncComment(file string, line int) (string, *ast.File) {
 		}
 	}
 
-	return "", nil
+	return "", astFile
 }

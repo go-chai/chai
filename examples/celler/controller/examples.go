@@ -136,10 +136,11 @@ func (c *Controller) AttributeExample(w http.ResponseWriter, r *http.Request) (s
 // PostExample godoc
 // @Summary      post request example
 // @Description  post request example
-// @Accept       json
-// @Produce      plain
-// @Param        message  body      model.Account  true  "Account Info"
-// @Success      200      {string}  string         "success"
-func (c *Controller) PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (string, int, *chai.JSONError) {
-	return account.Name, http.StatusOK, nil
+func (c *Controller) PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account2, int, *chai.Error) {
+	return &model.Account2{
+		ID:             account.ID,
+		Name:           account.Name,
+		SomeNumber:     account.SomeNumber,
+		UUID:           account.UUID,
+	}, http.StatusOK, nil
 }

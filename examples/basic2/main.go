@@ -39,7 +39,7 @@ func main() {
 	http.ListenAndServe(":8080", r)
 }
 
-func PostHandler(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account, int, *chai.JSONError) {
+func PostHandler(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account, int, *chai.Error) {
 	return account, http.StatusOK, nil
 }
 

@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/go-chai/chai"
-	"github.com/go-chai/chai/specgen"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
 	"github.com/pkg/errors"
@@ -19,9 +19,6 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 	var err error
 
 	t := newSpec()
-
-	gen := specgen.NewGenerator()
-	schemas := make(map[string]spec.Schema)
 
 	parser := swag.New(swag.SetDebugger(log.Default()), func(p *swag.Parser) {
 		p.ParseDependency = true
@@ -34,17 +31,19 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 			return nil
 		}
 
-		op, err := parseSwaggoAnnotations(ch, parser)
+		fi := GetFuncInfo(ch.Handler())
+
+		op, err := parseSwaggoAnnotations(fi, ch, parser)
 		if err != nil {
 			return err
 		}
 
-		err = updateRequests(op, gen, schemas, h)
+		err = updateRequests(fi, op, h)
 		if err != nil {
 			return err
 		}
 
-		err = updateResponses(op, gen, schemas, h)
+		err = updateResponses(fi, op, h)
 		if err != nil {
 			return err
 		}
@@ -59,9 +58,8 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 	return t, err
 }
 
-func parseSwaggoAnnotations(ch chai.Handlerer, parser *swag.Parser) (*spec.Operation, error) {
+func parseSwaggoAnnotations(fi FuncInfo, ch chai.Handlerer, parser *swag.Parser) (*swag.Operation, error) {
 	var err error
-	fi := chai.GetFuncInfo(ch.Handler())
 	ops := swag.NewOperation(parser)
 
 	pkg, err := getPkgPath(fi.File)
@@ -81,7 +79,7 @@ func parseSwaggoAnnotations(ch chai.Handlerer, parser *swag.Parser) (*spec.Opera
 		}
 	}
 
-	return &ops.Operation, nil
+	return ops, nil
 }
 
 func getPkgPath(file string) (string, error) {
@@ -98,7 +96,9 @@ func getPkgPath(file string) (string, error) {
 	return filepath.Dir(file), nil
 }
 
-func updateRequests(op *spec.Operation, gen *specgen.Generator, schemas specgen.Schemas, h http.Handler) error {
+func updateRequests(fi FuncInfo, op *swag.Operation, h http.Handler) error {
+	var err error
+
 	reqer, ok := h.(chai.Reqer)
 	if !ok {
 		return nil
@@ -108,7 +108,7 @@ func updateRequests(op *spec.Operation, gen *specgen.Generator, schemas specgen.
 		op.Consumes = append(op.Consumes, "application/json")
 	}
 
-	schema, err := gen.NewSchemaRefForValue(reqer.Req(), schemas)
+	schema, err := op.ParseAPIObjectSchema("object", typeName(reqer.Req()), fi.ASTFile)
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func updateRequests(op *spec.Operation, gen *specgen.Generator, schemas specgen.
 	return nil
 }
 
-func updateResponses(op *spec.Operation, gen *specgen.Generator, schemas specgen.Schemas, h http.Handler) error {
+func updateResponses(fi FuncInfo, op *swag.Operation, h http.Handler) error {
 	resErrer, ok := h.(chai.ResErrer)
 	if !ok {
 		return nil
@@ -141,12 +141,12 @@ func updateResponses(op *spec.Operation, gen *specgen.Generator, schemas specgen
 		op.Produces = append(op.Produces, "application/json")
 	}
 
-	resSchema, err := gen.NewSchemaRefForValue(resErrer.Res(), schemas)
+	resSchema, err := op.ParseAPIObjectSchema("object", typeName(resErrer.Res()), fi.ASTFile)
 	if err != nil {
 		return err
 	}
 
-	errSchema, err := gen.NewSchemaRefForValue(resErrer.Err(), schemas)
+	errSchema, err := op.ParseAPIObjectSchema("object", typeName(resErrer.Err()), fi.ASTFile)
 	if err != nil {
 		return err
 	}
@@ -161,12 +161,12 @@ func updateResponses(op *spec.Operation, gen *specgen.Generator, schemas specgen
 	for code := range op.Responses.StatusCodeResponses {
 		if code < http.StatusBadRequest {
 			noResponses = false
-			updateResponseSchema(op, responses, code, resSchema)
+			updateResponseSchema(&op.Operation, responses, code, resSchema)
 		}
 
 		if code >= http.StatusBadRequest {
 			noErrors = false
-			updateResponseSchema(op, responses, code, errSchema)
+			updateResponseSchema(&op.Operation, responses, code, errSchema)
 		}
 	}
 	if noResponses {
@@ -177,6 +177,22 @@ func updateResponses(op *spec.Operation, gen *specgen.Generator, schemas specgen
 	}
 
 	return nil
+}
+
+func typeName(i any) string {
+	t := reflect.TypeOf(i)
+
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+
+	s := t.String()
+
+	if s == "error" {
+		return "string"
+	}
+
+	return s
 }
 
 func updateResponseSchema(op *spec.Operation, responses *spec.Responses, code int, schema *spec.Schema) {

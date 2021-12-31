@@ -14,21 +14,19 @@ type CustomType456 struct {
 
 // Account example
 type Account2 struct {
-	ID             int             `json:"id" example:"1" format:"int64"`
+	ID             int             `json:"id" example:"113" maximum:"195" format:"int64"`
 	Name           string          `json:"name" example:"account name"`
 	SomeNumber     int             `json:"some_number" example:"1234"`
 	CustomVal123   string          `json:"custom_val_123" example:"custom val 123"`
-	CustomType4567 []CustomType456 `json:"custom_type_4567"`
+	CustomType4567 []CustomType456 `json:"custom_type_4567" description:"custom type 4567 description"` // zzz
 	UUID           uuid.UUID       `json:"uuid" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid"`
 }
 
 type Account struct {
-	ID             int             `json:"id" example:"1" format:"int64"`
-	Name           string          `json:"name" example:"account name"`
-	SomeNumber     int             `json:"some_number" example:"1234"`
-	CustomVal123   string          `json:"custom_val_123" example:"custom val 123"`
-	CustomType4567 []CustomType456 `json:"custom_type_4567"`
-	UUID           uuid.UUID       `json:"uuid" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid"`
+	ID         int       `json:"id" example:"1" format:"int64"`
+	Name       string    `json:"name" example:"account name"`
+	SomeNumber int       `json:"some_number" example:"1234"`
+	UUID       uuid.UUID `json:"uuid" example:"550e8400-e29b-41d4-a716-446655440000" format:"uuid"`
 }
 
 //  example

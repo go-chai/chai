@@ -43,7 +43,6 @@ func (zzz) ZZ() {
 }
 
 // func gen[T errzz](terr T) {
-// 	spew.Dump(terr)
 // 	fmt.Printf("terr: %+v\n", terr)
 // 	fmt.Printf("terr Is: %+v\n", errors.Is(terr, nil))
 
