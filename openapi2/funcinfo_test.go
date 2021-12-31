@@ -1,4 +1,4 @@
-package chai_test
+package openapi2_test
 
 import (
 	"fmt"
@@ -9,6 +9,10 @@ import (
 //Comment
 func Simple() string {
 	return "hello"
+}
+
+type ZZ struct {
+	A string `json:"a"`
 }
 
 func ExampleGetFuncInfo() {

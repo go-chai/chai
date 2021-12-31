@@ -61,7 +61,7 @@ func main() {
 
 	docs, err := openapi2.Docs(r)
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("openapi2.Docs() failed: %+v", err))
 	}
 
 	addCustomDocs(docs)
@@ -181,7 +181,6 @@ func LogYAML(v interface{}, label string) {
 		fmt.Printf("%s:\n", label)
 	}
 	fmt.Println(string(bytes))
-	// spew.Dump(v)
 
 	return
 }
@@ -197,7 +196,6 @@ func LogJSON(v interface{}, label string) {
 		fmt.Printf("%s:\n", label)
 	}
 	fmt.Println(string(bytes))
-	// spew.Dump(v)
 
 	return
 }

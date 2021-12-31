@@ -1,4 +1,4 @@
-package chai
+package openapi2
 
 import (
 	"go/ast"

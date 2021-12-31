@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/spec"
+	"github.com/pkg/errors"
 	"golang.org/x/tools/go/loader"
 )
 
@@ -883,7 +884,7 @@ func (operation *Operation) parseObjectSchema(refType string, astFile *ast.File)
 	switch {
 	case refType == NIL:
 		return nil, nil
-	case refType == "interface{}":
+	case refType == "interface{}" || refType == "interface {}":
 		return PrimitiveSchema(OBJECT), nil
 	case IsGolangPrimitiveType(refType):
 		refType = TransToValidSchemeType(refType)
@@ -902,10 +903,10 @@ func (operation *Operation) parseObjectSchema(refType string, astFile *ast.File)
 		// ignore key type
 		idx := strings.Index(refType, "]")
 		if idx < 0 {
-			return nil, fmt.Errorf("invalid type: %s", refType)
+			return nil, errors.Errorf("invalid type: %s", refType)
 		}
 		refType = refType[idx+1:]
-		if refType == "interface{}" {
+		if refType == "interface{}" || refType == "interface {}" {
 			return spec.MapProperty(nil), nil
 		}
 		schema, err := operation.parseObjectSchema(refType, astFile)
@@ -933,7 +934,7 @@ func (operation *Operation) parseObjectSchema(refType string, astFile *ast.File)
 func (operation *Operation) parseCombinedObjectSchema(refType string, astFile *ast.File) (*spec.Schema, error) {
 	matches := combinedPattern.FindStringSubmatch(refType)
 	if len(matches) != 3 {
-		return nil, fmt.Errorf("invalid type: %s", refType)
+		return nil, errors.Errorf("invalid type: %s", refType)
 	}
 	refType = matches[1]
 	schema, err := operation.parseObjectSchema(refType, astFile)
@@ -982,6 +983,10 @@ func (operation *Operation) parseCombinedObjectSchema(refType string, astFile *a
 			Properties: props,
 		},
 	}), nil
+}
+
+func (operation *Operation) ParseAPIObjectSchema(schemaType, refType string, astFile *ast.File) (*spec.Schema, error) {
+	return operation.parseObjectSchema(refType, astFile)
 }
 
 func (operation *Operation) parseAPIObjectSchema(schemaType, refType string, astFile *ast.File) (*spec.Schema, error) {

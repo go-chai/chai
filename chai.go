@@ -22,14 +22,14 @@ type Handlerer interface {
 	Handler() any
 }
 
-type JSONError struct {
+type Error struct {
 	Message          string `json:"error"`
 	ErrorDebug       string `json:"error_debug,omitempty"`
 	ErrorDescription string `json:"error_description,omitempty"`
 	StatusCode       int    `json:"status_code,omitempty"`
 }
 
-func (e JSONError) Error() string {
+func (e Error) Error() string {
 	return e.Message
 }
 
@@ -58,7 +58,7 @@ type FromErrorer interface {
 type defaultFromErrorer struct{}
 
 func (defaultFromErrorer) FromError(err error) any {
-	return &JSONError{Message: err.Error()}
+	return &Error{Message: err.Error(), StatusCode: http.StatusBadRequest}
 }
 
 var DefaultFromErrorer = &defaultFromErrorer{}

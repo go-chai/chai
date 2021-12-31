@@ -2,8 +2,7 @@ package swag
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
+	"fmt" 
 	"go/ast"
 	"go/build"
 	goparser "go/parser"
@@ -19,6 +18,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/KyleBanks/depth"
 	"github.com/go-openapi/spec"
@@ -1207,7 +1208,7 @@ func defineTypeOfExample(schemaType, arrayType, exampleValue string) (interface{
 		return result, nil
 	case OBJECT:
 		if arrayType == "" {
-			return nil, fmt.Errorf("%s is unsupported type in example value `%s`", schemaType, exampleValue)
+			return nil, errors.Errorf("%s is unsupported type in example value `%s`", schemaType, exampleValue)
 		}
 
 		values := strings.Split(exampleValue, ",")
