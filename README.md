@@ -2,11 +2,7 @@
 
 ## Description
 
-Chai is an extension for the [chi](https://github.com/go-chi/chi) router that can automatically generate a Swagger 2.0 spec from a router. 
-
-Go 1.18 introduces generics which are used by chai for inferring the types of requests and responses without losing type safety.
-
-[Swaggo](https://github.com/swaggo/swag) annotations are used as a fallback for the parts of the swagger spec that cannot be inferred automatically.
+Chai is an extension for the popular [chi](https://github.com/go-chi/chi) router that provides support for type safe http handlers via Go 1.18's generics. This allows it to also generate a swagger spec by automatically detecting the request/response types, http methods and route paths. Chai uses [swaggo/swag](https://github.com/swaggo/swag) annotations for the parts of the swagger spec that cannot be automatically inferred.
 
 ## Project status
 Chai is still a work in progress
@@ -15,7 +11,7 @@ Chai is still a work in progress
 
 - Compiler optimizations
 
-    The way the swaggo annotations are obtained from the source code currently relies on the caller frames and go's compiler optimizations sometimes change those which results in the annotations for "small" handlers to get ignored. As a workaround, the optimizations can be disabled for the binary that generates the docs by passing `-gcflags '-N'` to the compiler, e.g. `go run -gcflags='-N' ./examples/basic2/main.go`
+    The way the swaggo annotations are obtained from the source code currently relies on the caller frames and go's compiler optimizations sometimes change those which results in the annotations for "small" handlers to get ignored. As a workaround, the optimizations can be disabled for the binary that generates the docs by passing `-gcflags -N` to the compiler, e.g. `go run -gcflags -N ./examples/basic2/main.go`
 - Swaggo/swag fork
 
 	Currently chai uses a fork of https://github.com/swaggo/swag and in order to use it, the following replace directive needs to be added to the go.mod:
