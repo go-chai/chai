@@ -43,7 +43,7 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 			return err
 		}
 
-		err = updateResponses(fi, parser, op, h)
+		err = updateResponses(fi, op, h)
 		if err != nil {
 			return err
 		}
@@ -97,6 +97,8 @@ func getPkgPath(file string) (string, error) {
 }
 
 func updateRequests(fi FuncInfo, op *swag.Operation, h http.Handler) error {
+	var err error
+
 	reqer, ok := h.(chai.Reqer)
 	if !ok {
 		return nil
@@ -129,7 +131,7 @@ func updateRequests(fi FuncInfo, op *swag.Operation, h http.Handler) error {
 	return nil
 }
 
-func updateResponses(fi FuncInfo, parser *swag.Parser, op *swag.Operation, h http.Handler) error {
+func updateResponses(fi FuncInfo, op *swag.Operation, h http.Handler) error {
 	resErrer, ok := h.(chai.ResErrer)
 	if !ok {
 		return nil

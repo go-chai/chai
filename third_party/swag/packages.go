@@ -276,6 +276,7 @@ func (pkgs *PackagesDefinitions) FindTypeSpec(typeName string, file *ast.File, p
 	}
 
 	parts := strings.Split(typeName, ".")
+
 	if len(parts) > 1 {
 		isAliasPkgName := func(file *ast.File, pkgName string) bool {
 			if file != nil && file.Imports != nil {

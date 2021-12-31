@@ -1,3 +1,32 @@
+definitions:
+  chai.Error:
+    properties:
+      error:
+        type: string
+      error_debug:
+        type: string
+      error_description:
+        type: string
+      status_code:
+        type: integer
+    type: object
+  model.Account:
+    properties:
+      id:
+        example: 1
+        format: int64
+        type: integer
+      name:
+        example: account name
+        type: string
+      some_number:
+        example: 1234
+        type: integer
+      uuid:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        format: uuid
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -66,10 +95,12 @@ paths:
             type: string
         "400":
           description: ok
-          schema: {}
+          schema:
+            type: string
         "404":
           description: ok
-          schema: {}
+          schema:
+            type: string
       summary: attribute example
       tags:
       - example
@@ -89,16 +120,18 @@ paths:
       produces:
       - application/json
       responses:
-        "203":
+        "200":
           description: ""
           schema:
             type: string
         "400":
           description: ""
-          schema: {}
+          schema:
+            type: string
         "404":
           description: ""
-          schema: {}
+          schema:
+            type: string
   /api/v1/examples/groups/{group_id}/accounts/{account_id}:
     get:
       description: path params
@@ -122,10 +155,12 @@ paths:
             type: string
         "400":
           description: ""
-          schema: {}
+          schema:
+            type: string
         "404":
           description: ""
-          schema: {}
+          schema:
+            type: string
       summary: path params example
       tags:
       - example
@@ -147,10 +182,12 @@ paths:
             type: string
         "400":
           description: ""
-          schema: {}
+          schema:
+            type: string
         "404":
           description: ""
-          schema: {}
+          schema:
+            type: string
       summary: custome header example
       tags:
       - example
@@ -166,7 +203,8 @@ paths:
             type: string
         default:
           description: ""
-          schema: {}
+          schema:
+            type: string
       summary: ping example
       tags:
       - example
@@ -178,65 +216,18 @@ paths:
       - in: body
         name: body
         schema:
-          properties:
-            custom_type_4567:
-              items:
-                properties:
-                  zz:
-                    type: integer
-                  zzStr:
-                    type: string
-                type: object
-              type: array
-            custom_val_123:
-              type: string
-            id:
-              type: integer
-            name:
-              type: string
-            some_number:
-              type: integer
-            uuid: {}
-          type: object
+          $ref: '#/definitions/model.Account'
       produces:
       - application/json
       responses:
         "200":
           description: ""
           schema:
-            properties:
-              custom_type_4567:
-                items:
-                  properties:
-                    zz:
-                      type: integer
-                    zzStr:
-                      type: string
-                  type: object
-                type: array
-              custom_val_123:
-                type: string
-              id:
-                type: integer
-              name:
-                type: string
-              some_number:
-                type: integer
-              uuid: {}
-            type: object
+            $ref: '#/definitions/model.Account'
         default:
           description: ""
           schema:
-            properties:
-              error:
-                type: string
-              error_debug:
-                type: string
-              error_description:
-                type: string
-              status_code:
-                type: integer
-            type: object
+            $ref: '#/definitions/chai.Error'
   /api/v1/examples/securities:
     get:
       description: custome header
@@ -255,10 +246,12 @@ paths:
             type: string
         "400":
           description: ""
-          schema: {}
+          schema:
+            type: string
         "404":
           description: ""
-          schema: {}
+          schema:
+            type: string
       security:
       - ApiKeyAuth: []
       summary: custome header example
@@ -270,3 +263,4 @@ securityDefinitions:
     name: Authorization
     type: apiKey
 swagger: "2.0"
+

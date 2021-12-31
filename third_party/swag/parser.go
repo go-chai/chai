@@ -2,7 +2,7 @@ package swag
 
 import (
 	"encoding/json"
-	"fmt" 
+	"fmt"
 	"go/ast"
 	"go/build"
 	goparser "go/parser"
@@ -776,7 +776,7 @@ func (parser *Parser) getTypeSchema(typeName string, file *ast.File, ref bool) (
 
 	typeSpecDef := parser.Packages.FindTypeSpec(typeName, file, parser.ParseDependency)
 	if typeSpecDef == nil {
-		return nil, fmt.Errorf("cannot find type definition: %s", typeName)
+		return nil, errors.Errorf("cannot find type definition: %s", typeName)
 	}
 
 	schema, ok := parser.parsedSchemas[typeSpecDef]
