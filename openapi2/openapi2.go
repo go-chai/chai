@@ -182,15 +182,17 @@ func updateResponses(fi FuncInfo, op *swag.Operation, h http.Handler) error {
 func typeName(i any) string {
 	t := reflect.TypeOf(i)
 
-	for strings.HasPrefix(t.String(), "*") {
+	for t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
 
-	if t.String() == "error" {
+	s := t.String()
+
+	if s == "error" {
 		return "string"
 	}
 
-	return t.String()
+	return s
 }
 
 func updateResponseSchema(op *spec.Operation, responses *spec.Responses, code int, schema *spec.Schema) {
