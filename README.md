@@ -24,6 +24,10 @@ Chai is still a work in progress
 		replace github.com/swaggo/swag => github.com/go-chai/swag v1.7.8-fork
 	```
 
+- YAML marshalling
+
+	Currently only github.com/ghodss/yaml is supported as a yaml marshaller, which is also provided via chai.MarshalYAML() as an alias
+
 ## Example repo
 
 A standalone example repo can be found here: https://github.com/go-chai/examples
