@@ -13,7 +13,7 @@ Chai is still a work in progress
 
 - Compiler optimizations
 
-    The way the swaggo annotations are obtained from the source code currently relies on the caller frames and go's compiler optimizations sometimes change those which results in the annotations for "small" handlers to get ignored. As a workaround, the optimizations can be disabled for the binary that generates the docs by passing `-gcflags -N` to the compiler, e.g. `go run -gcflags -N ./examples/basic2/main.go`
+    The way the swaggo annotations are obtained from the source code currently relies on the caller frames and go's compiler optimizations sometimes change those which results in the annotations for "small" handlers to get ignored. As a workaround, the optimizations must be disabled for the binary that generates the docs by passing `-gcflags -N` to the compiler, e.g. `go run -gcflags -N ./examples/basic2/main.go`
 - Swaggo/swag fork
 
 	Currently chai uses a fork of https://github.com/swaggo/swag and in order to use it, the following replace directive needs to be added to the go.mod:
