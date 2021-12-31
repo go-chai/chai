@@ -26,7 +26,7 @@ Chai is still a work in progress
 
 - YAML marshalling
 
-	Currently only github.com/ghodss/yaml is supported as a yaml marshaller, which is also provided via chai.MarshalYAML() as an alias
+	Currently only https://github.com/ghodss/yaml is supported as a yaml marshaller, which is also provided via chai.MarshalYAML() as an alias
 
 ## Example repo
 
