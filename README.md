@@ -90,6 +90,8 @@ func main() {
 		panic(fmt.Sprintf("gen.New().Generate() failed: %+v", err))
 	}
 
+	fmt.Println("Find the swagger spec at http://localhost:8080/swagger/")
+
 	http.ListenAndServe(":8080", r)
 }
 
