@@ -1,17 +1,9 @@
-# Celler example
+# Celler example for github.com/go-chai/chai
 
-Gen doc
-
-```console
-$ go get -u github.com/swaggo/swag/cmd/swag
-$ swag init
-```
-
-Run app
+Run the app
 
 ```console
-$ go run main.go
+$ go run -gcflags -N ./examples/celler/main.go
 ```
 
 [open swagger](http://localhost:8080/swagger/index.html)
-
