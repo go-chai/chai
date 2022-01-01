@@ -29,7 +29,7 @@ func (h *ResHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request)
 			code = http.StatusInternalServerError
 		}
 
-		write(w, code, err)
+		writeErr(w, code, err)
 		return
 	}
 

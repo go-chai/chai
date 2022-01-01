@@ -39,6 +39,10 @@ func write(w http.ResponseWriter, code int, v any) {
 	json.NewEncoder(w).Encode(v)
 }
 
+func writeErr(w http.ResponseWriter, code int, e ErrType) {
+	DefaultErrorWriter.WriteError(w, code, e)
+}
+
 func writeBytes(w http.ResponseWriter, code int, bytes []byte) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
@@ -47,18 +51,26 @@ func writeBytes(w http.ResponseWriter, code int, bytes []byte) {
 
 type ErrType = error
 
-func PtrTo[T any](t T) *T {
-	return &t
+type ErrorWriter interface {
+	WriteError(w http.ResponseWriter, code int, e ErrType)
 }
 
-type FromErrorer interface {
-	FromError(error) any
+type defaultErrorWriter struct{}
+
+func (defaultErrorWriter) WriteError(w http.ResponseWriter, code int, e ErrType) {
+	b, err := json.Marshal(e)
+	if err != nil {
+		panic(err)
+	}
+
+	if string(b) == "{}" {
+		b, err = json.Marshal(&Error{Message: e.Error(), StatusCode: code})
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	writeBytes(w, code, b)
 }
 
-type defaultFromErrorer struct{}
-
-func (defaultFromErrorer) FromError(err error) any {
-	return &Error{Message: err.Error(), StatusCode: http.StatusBadRequest}
-}
-
-var DefaultFromErrorer = &defaultFromErrorer{}
+var DefaultErrorWriter = &defaultErrorWriter{}

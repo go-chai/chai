@@ -390,8 +390,7 @@ var doc = `{
                         "name": "body",
                         "in": "body",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "type": "object"
                         }
                     }
                 ],

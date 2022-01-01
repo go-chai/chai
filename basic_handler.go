@@ -1,7 +1,6 @@
 package chai
 
 import (
-	"go/ast"
 	"net/http"
 )
 
@@ -12,9 +11,7 @@ func NewBasicHandler(h http.HandlerFunc) *BasicHandler {
 }
 
 type BasicHandler struct {
-	f       http.HandlerFunc
-	comment string
-	astFile *ast.File
+	f http.HandlerFunc
 }
 
 func (h *BasicHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

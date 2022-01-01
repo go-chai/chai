@@ -3,6 +3,7 @@ module github.com/go-chai/chai
 go 1.18
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/docgen v1.2.0

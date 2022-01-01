@@ -28,7 +28,7 @@ func (h *ReqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.
 	var req *Req
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		write(w, http.StatusBadRequest, DefaultFromErrorer.FromError(err))
+		writeErr(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -39,7 +39,7 @@ func (h *ReqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.
 			code = http.StatusInternalServerError
 		}
 
-		write(w, code, err)
+		writeErr(w, code, err)
 		return
 	}
 

@@ -353,7 +353,6 @@ paths:
       - in: body
         name: body
         schema:
-          additionalProperties: true
           type: object
       produces:
       - application/json
