@@ -52,6 +52,8 @@ func main() {
 		panic(fmt.Sprintf("gen.New().Generate() failed: %+v", err))
 	}
 
+	fmt.Println("Find the swagger spec at http://localhost:8080/swagger/")
+
 	http.ListenAndServe(":8080", r)
 }
 
@@ -72,7 +74,7 @@ func CalcHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	if err != nil {
 		return "", http.StatusBadRequest, err
 	}
-	return fmt.Sprintf("%d", val1 * val2), http.StatusOK, nil
+	return fmt.Sprintf("%d", val1*val2), http.StatusOK, nil
 }
 
 // PingExample godoc
