@@ -72,8 +72,7 @@ func CalcHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	if err != nil {
 		return "", http.StatusBadRequest, err
 	}
-	ans := val1 + val2
-	return fmt.Sprintf("%d", ans), http.StatusOK, nil
+	return fmt.Sprintf("%d", val1 * val2), http.StatusOK, nil
 }
 
 // PingExample godoc
