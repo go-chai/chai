@@ -19,9 +19,9 @@ import (
 // @Produce      json
 // @Param        id   path      int  true  "Bottle ID"
 // @Success      200  {object}  model.Bottle
-// @Failure      400  {object}  httputil.HTTPError
-// @Failure      404  {object}  httputil.HTTPError
-// @Failure      500  {object}  httputil.HTTPError
+// @Failure      400  {object}  httputil.Error
+// @Failure      404  {object}  httputil.Error
+// @Failure      500  {object}  httputil.Error
 func (c *Controller) ShowBottle(w http.ResponseWriter, r *http.Request) (*model.Bottle, int, error) {
 	id := chi.URLParam(r, "id")
 	bid, err := strconv.Atoi(id)
@@ -43,12 +43,12 @@ func (c *Controller) ShowBottle(w http.ResponseWriter, r *http.Request) (*model.
 // @Produce      json
 // @Success      200,201,202
 // @Failure      400,404,500
-func (c *Controller) ListBottles(w http.ResponseWriter, r *http.Request) (*[]model.Bottle, int, *httputil.HTTPError) {
+func (c *Controller) ListBottles(w http.ResponseWriter, r *http.Request) (*[]model.Bottle, int, *httputil.Error) {
 	bottles, err := model.BottlesAll()
 	if err != nil {
-		return nil, http.StatusNotFound, &httputil.HTTPError{
-			Code:    http.StatusNotFound,
-			Message: err.Error(),
+		return nil, http.StatusNotFound, &httputil.Error{
+			StatusCode: http.StatusNotFound,
+			Message:    err.Error(),
 		}
 	}
 	return &bottles, http.StatusOK, nil

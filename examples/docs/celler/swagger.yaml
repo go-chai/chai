@@ -1,5 +1,11 @@
 definitions:
-  controller.Error:
+  controller.Message:
+    properties:
+      message:
+        example: message
+        type: string
+    type: object
+  httputil.Error:
     properties:
       error:
         type: string
@@ -9,20 +15,6 @@ definitions:
         type: string
       status_code:
         type: integer
-    type: object
-  controller.Message:
-    properties:
-      message:
-        example: message
-        type: string
-    type: object
-  httputil.HTTPError:
-    properties:
-      code:
-        type: integer
-      message:
-        example: error message
-        type: string
     type: object
   model.Account:
     properties:
@@ -157,15 +149,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
       summary: List accounts
       tags:
       - accounts
@@ -190,15 +182,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
       summary: Add an account
       tags:
       - accounts
@@ -224,15 +216,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
       summary: Delete an account
       tags:
       - accounts
@@ -256,15 +248,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
       summary: Show an account
       tags:
       - accounts
@@ -294,15 +286,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
       summary: Update an account
       tags:
       - accounts
@@ -332,15 +324,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
       summary: Upload account image
       tags:
       - accounts
@@ -364,19 +356,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
       security:
       - ApiKeyAuth: []
       summary: Auth admin
@@ -412,15 +404,15 @@ paths:
         "400":
           description: ""
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "404":
           description: ""
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "500":
           description: ""
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
       summary: List bottles
       tags:
       - bottles
@@ -446,15 +438,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/httputil.HTTPError'
+            $ref: '#/definitions/httputil.Error'
       summary: Show a bottle
       tags:
       - bottles
@@ -546,7 +538,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/controller.Error'
+            $ref: '#/definitions/httputil.Error'
       summary: post request example
   /api/v1/examples/calc:
     get:

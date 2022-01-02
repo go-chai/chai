@@ -19,9 +19,9 @@ import (
 // @Produce      json
 // @Param        id   path      int  true  "Account ID"
 // @Success      200  {object}  model.Account
-// @Failure      400  {object}  httputil.HTTPError
-// @Failure      404  {object}  httputil.HTTPError
-// @Failure      500  {object}  httputil.HTTPError
+// @Failure      400  {object}  httputil.Error
+// @Failure      404  {object}  httputil.Error
+// @Failure      500  {object}  httputil.Error
 // @Router       /accounts/{id} [get]
 func (c *Controller) ShowAccount(w http.ResponseWriter, r *http.Request) (*model.Account, int, error) {
 	id := chi.URLParam(r, "id")
@@ -47,9 +47,9 @@ func (c *Controller) ShowAccount(w http.ResponseWriter, r *http.Request) (*model
 // @Success      201  {array}   model.Account
 // @Success      202  {array}   model.Account
 // @Success      203  {array}   model.Account
-// @Failure      400  {object}  httputil.HTTPError
-// @Failure      404  {object}  httputil.HTTPError
-// @Failure      500  {object}  httputil.HTTPError
+// @Failure      400  {object}  httputil.Error
+// @Failure      404  {object}  httputil.Error
+// @Failure      500  {object}  httputil.Error
 // @Router       /accounts [get]
 func (c *Controller) ListAccounts(w http.ResponseWriter, r *http.Request) (*[]model.Account, int, error) {
 	q := r.URL.Query().Get("q")
@@ -69,9 +69,9 @@ func (c *Controller) ListAccounts(w http.ResponseWriter, r *http.Request) (*[]mo
 // @Produce      json
 // @Param        account  body      model.AddAccount  true  "Add account"
 // @Success      200      {object}  model.Account
-// @Failure      400      {object}  httputil.HTTPError
-// @Failure      404      {object}  httputil.HTTPError
-// @Failure      500      {object}  httputil.HTTPError
+// @Failure      400      {object}  httputil.Error
+// @Failure      404      {object}  httputil.Error
+// @Failure      500      {object}  httputil.Error
 // @Router       /accounts [post]
 func (c *Controller) AddAccount(addAccount *model.AddAccount, w http.ResponseWriter, r *http.Request) (*model.Account, int, error) {
 	if err := addAccount.Validation(); err != nil {
@@ -98,9 +98,9 @@ func (c *Controller) AddAccount(addAccount *model.AddAccount, w http.ResponseWri
 // @Param        id       path      int                  true  "Account ID"
 // @Param        account  body      model.UpdateAccount  true  "Update account"
 // @Success      200      {object}  model.Account
-// @Failure      400      {object}  httputil.HTTPError
-// @Failure      404      {object}  httputil.HTTPError
-// @Failure      500      {object}  httputil.HTTPError
+// @Failure      400      {object}  httputil.Error
+// @Failure      404      {object}  httputil.Error
+// @Failure      500      {object}  httputil.Error
 // @Router       /accounts/{id} [patch]
 func (c *Controller) UpdateAccount(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
@@ -133,9 +133,9 @@ func (c *Controller) UpdateAccount(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Param        id   path      int  true  "Account ID"  Format(int64)
 // @Success      204  {object}  model.Account
-// @Failure      400  {object}  httputil.HTTPError
-// @Failure      404  {object}  httputil.HTTPError
-// @Failure      500  {object}  httputil.HTTPError
+// @Failure      400  {object}  httputil.Error
+// @Failure      404  {object}  httputil.Error
+// @Failure      500  {object}  httputil.Error
 // @Router       /accounts/{id} [delete]
 func (c *Controller) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
@@ -159,9 +159,9 @@ func (c *Controller) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 // @Param        id    path      int   true  "Account ID"
 // @Param        file  formData  file  true  "account image"
 // @Success      200   {object}  Message
-// @Failure      400   {object}  httputil.HTTPError
-// @Failure      404   {object}  httputil.HTTPError
-// @Failure      500   {object}  httputil.HTTPError
+// @Failure      400   {object}  httputil.Error
+// @Failure      404   {object}  httputil.Error
+// @Failure      500   {object}  httputil.Error
 func (c *Controller) UploadAccountImage(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if httputil.NewError(w, http.StatusBadRequest, err) {

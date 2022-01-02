@@ -5,20 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chai/chai/examples/shared/model"
 	"github.com/go-chi/chi/v5"
 )
-
-type Error struct {
-	Message          string `json:"error"`
-	ErrorDebug       string `json:"error_debug,omitempty"`
-	ErrorDescription string `json:"error_description,omitempty"`
-	StatusCode       int    `json:"status_code,omitempty"`
-}
-
-func (e *Error) Error() string {
-	return e.Message
-}
 
 // PingExample godoc
 // @Summary      ping example
@@ -146,7 +136,7 @@ func (c *Controller) AttributeExample(w http.ResponseWriter, r *http.Request) (s
 // PostExample godoc
 // @Summary      post request example
 // @Description  post request example
-func (c *Controller) PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account2, int, *Error) {
+func (c *Controller) PostExample(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account2, int, *httputil.Error) {
 	return &model.Account2{
 		ID:         account.ID,
 		Name:       account.Name,
