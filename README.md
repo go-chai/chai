@@ -79,7 +79,7 @@ func main() {
 	// This must be used only during development to generate the swagger spec
 	docs, err := chai.OpenAPI2(r)
 	if err != nil {
-		panic(fmt.Sprintf("%+v", err))
+		panic(fmt.Sprintf("failed to generate the swagger spec: %+v", err))
 	}
 
 	// This should be used in prod to serve the swagger spec
@@ -96,10 +96,10 @@ func main() {
 		OutputDir: "examples/docs/basic",
 	})
 	if err != nil {
-		panic(fmt.Sprintf("gen.New().Generate() failed: %+v", err))
+		panic(fmt.Sprintf("failed to write the swagger spec: %+v", err))
 	}
 
-	fmt.Println("Find the swagger spec at http://localhost:8080/swagger/")
+	fmt.Println("The swagger spec is available at http://localhost:8080/swagger/")
 
 	http.ListenAndServe(":8080", r)
 }
