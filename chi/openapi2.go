@@ -11,7 +11,7 @@ import (
 func OpenAPI2(r chi.Routes) (*spec.Swagger, error) {
 	routes := make([]*openapi2.Route, 0)
 
-	chi.Walk(r, func(method, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+	err := chi.Walk(r, func(method, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		routes = append(routes, &openapi2.Route{
 			Method:  method,
 			Path:    route,
@@ -20,6 +20,10 @@ func OpenAPI2(r chi.Routes) (*spec.Swagger, error) {
 
 		return nil
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	return openapi2.Docs(routes)
 }

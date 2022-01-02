@@ -11,7 +11,7 @@ import (
 func OpenAPI2(r *mux.Router) (*spec.Swagger, error) {
 	routes := make([]*openapi2.Route, 0)
 
-	r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	err := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		path, err := route.GetPathTemplate()
 		if err != nil {
 			return err
@@ -31,6 +31,10 @@ func OpenAPI2(r *mux.Router) (*spec.Swagger, error) {
 
 		return nil
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	return openapi2.Docs(routes)
 }
