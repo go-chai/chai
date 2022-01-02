@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-chai/chai/examples/celler/model"
+	"github.com/go-chai/chai/examples/shared/model"
 )
 
 // Auth godoc
@@ -15,10 +15,10 @@ import (
 // @Accept       json
 // @Produce      json
 // @Success      200
-// @Failure      400  {object}  httputil.HTTPError
-// @Failure      401  {object}  httputil.HTTPError
-// @Failure      404  {object}  httputil.HTTPError
-// @Failure      500  {object}  httputil.HTTPError
+// @Failure      400  {object}  httputil.Error
+// @Failure      401  {object}  httputil.Error
+// @Failure      404  {object}  httputil.Error
+// @Failure      500  {object}  httputil.Error
 // @Security     ApiKeyAuth
 // @Router       /admin/auth [post]
 func (c *Controller) Auth(m any, w http.ResponseWriter, r *http.Request) (*model.Admin, int, error) {

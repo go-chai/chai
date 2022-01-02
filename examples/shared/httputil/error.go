@@ -23,7 +23,7 @@ func NewError(w http.ResponseWriter, code int, err error) bool {
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(true)
 
-	err = enc.Encode(HTTPError{Code: code, Message: err.Error()})
+	err = enc.Encode(Error{StatusCode: code, Message: err.Error()})
 
 	if err != nil {
 		panic(err) // If this happens, it's a programmer mistake so we panic
@@ -32,13 +32,15 @@ func NewError(w http.ResponseWriter, code int, err error) bool {
 	return true
 }
 
-// HTTPError example
-type HTTPError struct {
-	Code    int    `json:"code,omitempty"`
-	Message string `json:"message" example:"error message"`
+// Error example
+type Error struct {
+	Message          string `json:"error"`
+	ErrorDebug       string `json:"error_debug,omitempty"`
+	ErrorDescription string `json:"error_description,omitempty"`
+	StatusCode       int    `json:"status_code,omitempty"`
 }
 
-func (e HTTPError) Error() string {
+func (e *Error) Error() string {
 	return e.Message
 }
 

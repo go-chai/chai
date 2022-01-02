@@ -8,8 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/go-chai/chai"
-	"github.com/go-chi/chi/v5"
+	"github.com/go-chai/chai/chai"
 	"github.com/go-openapi/spec"
 	"github.com/pkg/errors"
 	"github.com/swaggo/swag"
@@ -18,20 +17,11 @@ import (
 
 type GenConfig = gen.GenConfig
 
-func GenDocs(r chi.Router, cfg *GenConfig) error {
-	docs, err := Docs(r)
-	if err != nil {
-		return err
-	}
-
-	return WriteDocs(docs, cfg)
-}
-
 func WriteDocs(docs *spec.Swagger, cfg *GenConfig) error {
 	return gen.New().Generate(docs, cfg)
 }
 
-func Docs(r chi.Router) (*spec.Swagger, error) {
+func Docs(parseOps func(OperationParserFunc) error) (*spec.Swagger, error) {
 	var err error
 
 	docs := newSpec()
@@ -40,7 +30,17 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 		p.ParseDependency = true
 	})
 
-	err = chi.Walk(r, func(method string, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+	err = parseOps(NewOperationParser(docs, parser))
+
+	docs.Definitions = parser.GetSwagger().Definitions
+
+	return docs, err
+}
+
+type OperationParserFunc func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error
+
+func NewOperationParser(docs *spec.Swagger, parser *swag.Parser) OperationParserFunc {
+	return func(method, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		var hh any = h
 
 		ch, ok := h.(chai.Handlerer)
@@ -68,11 +68,7 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 		addOperation(docs, route, method, op)
 
 		return nil
-	})
-
-	docs.Definitions = parser.GetSwagger().Definitions
-
-	return docs, err
+	}
 }
 
 func parseSwaggoAnnotations(fi FuncInfo, parser *swag.Parser) (*swag.Operation, error) {
