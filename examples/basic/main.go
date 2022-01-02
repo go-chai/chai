@@ -19,26 +19,26 @@ func main() {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/examples", func(r chi.Router) {
-			chai.PostG(r, "/post", PostHandler)
-			chai.GetG(r, "/calc", CalcHandler)
-			chai.GetG(r, "/ping", PingHandler)
-			chai.GetG(r, "/groups/{group_id}/accounts/{account_id}", PathParamsHandler)
-			chai.GetG(r, "/header", HeaderHandler)
-			chai.GetG(r, "/securities", SecuritiesHandler)
-			chai.GetG(r, "/attribute", AttributeHandler)
+			chai.Post(r, "/post", PostHandler)
+			chai.Get(r, "/calc", CalcHandler)
+			chai.Get(r, "/ping", PingHandler)
+			chai.Get(r, "/groups/{group_id}/accounts/{account_id}", PathParamsHandler)
+			chai.Get(r, "/header", HeaderHandler)
+			chai.Get(r, "/securities", SecuritiesHandler)
+			chai.Get(r, "/attribute", AttributeHandler)
 		})
 	})
-
-	// This should be used in prod to serve the swagger spec
-	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
-	))
 
 	// This must be used only during development to generate the swagger spec
 	docs, err := openapi2.Docs(r)
 	if err != nil {
 		panic(fmt.Sprintf("%+v", err))
 	}
+
+	// This should be used in prod to serve the swagger spec
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+	))
 
 	addCustomDocs(docs)
 

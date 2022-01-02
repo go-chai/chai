@@ -41,15 +41,16 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 	})
 
 	err = chi.Walk(r, func(method string, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		var hh any = h
+
 		ch, ok := h.(chai.Handlerer)
-		if !ok {
-			// ignore non-chai handlers
-			return nil
+		if ok {
+			hh = ch.Handler()
 		}
 
-		fi := GetFuncInfo(ch.Handler())
+		fi := GetFuncInfo(hh)
 
-		op, err := parseSwaggoAnnotations(fi, ch, parser)
+		op, err := parseSwaggoAnnotations(fi, parser)
 		if err != nil {
 			return err
 		}
@@ -74,7 +75,7 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 	return docs, err
 }
 
-func parseSwaggoAnnotations(fi FuncInfo, ch chai.Handlerer, parser *swag.Parser) (*swag.Operation, error) {
+func parseSwaggoAnnotations(fi FuncInfo, parser *swag.Parser) (*swag.Operation, error) {
 	var err error
 	ops := swag.NewOperation(parser)
 
