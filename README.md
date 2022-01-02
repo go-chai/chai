@@ -34,8 +34,8 @@
 
 ## Examples
 
-- chi - ./examples/chi
-- gorilla/mux - ./examples/gorilla
+- chi - [./examples/chi](./examples/chi)
+- gorilla/mux - [./examples/gorilla](./examples/gorilla)
 - standalone repo - https://github.com/go-chai/examples
 
 ## Usage
