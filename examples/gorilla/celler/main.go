@@ -6,63 +6,54 @@ import (
 	"net/http"
 
 	"github.com/ghodss/yaml"
+	"github.com/gorilla/mux"
 
-	chai "github.com/go-chai/chai/chi"
-	"github.com/go-chai/chai/examples/celler/controller"
-	_ "github.com/go-chai/chai/examples/celler/docs" // This is required to be able to serve the stored swagger spec in prod
-	"github.com/go-chai/chai/examples/celler/httputil"
+	_ "github.com/go-chai/chai/examples/docs/celler" // This is required to be able to serve the stored swagger spec in prod
+	"github.com/go-chai/chai/examples/shared/controller"
+	"github.com/go-chai/chai/examples/shared/httputil"
+	chai "github.com/go-chai/chai/gorilla"
 	"github.com/go-chai/chai/openapi2"
-	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
-	r := chi.NewRouter()
+	r := mux.NewRouter()
 
 	c := controller.NewController()
 
-	r.Route("/api/v1", func(r chi.Router) {
-		r.Route("/accounts", func(r chi.Router) {
-			chai.Get(r, "/{id}", c.ShowAccount)
-			chai.Get(r, "/", c.ListAccounts)
-			chai.Post(r, "/", c.AddAccount)
-			r.Delete("/{id}", c.DeleteAccount)
-			r.Patch("/{id}", c.UpdateAccount)
-			r.Post("/{id}/images", c.UploadAccountImage)
-		})
+	chai.Get(r, "/api/v1/accounts/{id}", c.ShowAccount)
+	chai.Get(r, "/api/v1/accounts/", c.ListAccounts)
+	chai.Post(r, "/api/v1/accounts/", c.AddAccount)
+	r.HandleFunc("/api/v1/accounts/{id}", c.DeleteAccount).Methods(http.MethodDelete)
+	r.HandleFunc("/api/v1/accounts/{id}", c.UpdateAccount).Methods(http.MethodPatch)
+	r.HandleFunc("/api/v1/accounts/{id}/images", c.UploadAccountImage).Methods(http.MethodPost)
+	chai.Get(r, "/api/v1/bottles/{id}", c.ShowBottle)
+	chai.Get(r, "/api/v1/bottles/", c.ListBottles)
+	chai.Get(r, "/api/v1/bottles/", c.ListBottles)
 
-		r.Route("/bottles", func(r chi.Router) {
-			chai.Get(r, "/{id}", c.ShowBottle)
-			chai.Get(r, "/", c.ListBottles)
-		})
+	authMux := r.Path("/").Subrouter()
+	authMux.Use(auth)
 
-		r.Route("/admin", func(r chi.Router) {
-			r.Use(auth)
+	chai.Post(authMux, "/api/v1/admin/auth", c.Auth)
 
-			chai.Post(r, "/auth", c.Auth)
-		})
-
-		r.Route("/examples", func(r chi.Router) {
-			chai.Get(r, "/ping", c.PingExample)
-			chai.Get(r, "/calc", c.CalcExample)
-			// chai.Get(r, "/group{s/{gro}up_id}/accounts/{account_id}", c.PathParamsExample)
-			chai.Get(r, "/groups/{group_id}/accounts/{account_id}", c.PathParamsExample)
-			chai.Get(r, "/header", c.HeaderExample)
-			chai.Get(r, "/securities", c.SecuritiesExample)
-			chai.Get(r, "/attribute", c.AttributeExample)
-			chai.Post(r, "/attribute", c.PostExample)
-		})
-	})
+	chai.Get(r, "/api/v1/examples/ping", c.PingExample)
+	chai.Get(r, "/api/v1/examples/calc", c.CalcExample)
+	// chai.Get(r, "/api/v1/examples/group{s/{gro}up_id}/accounts/{account_id}", c.CalcExample)
+	chai.Get(r, "/api/v1/examples/groups/{group_id}/accounts/{account_id}", c.PathParamsExample)
+	chai.Get(r, "/api/v1/examples/header", c.HeaderExample)
+	chai.Get(r, "/api/v1/examples/securities", c.SecuritiesExample)
+	chai.Get(r, "/api/v1/examples/attribute", c.AttributeExample)
+	chai.Post(r, "/api/v1/examples/attribute", c.PostExample)
 
 	// This must be used only during development to generate the swagger spec
 	docs, err := chai.OpenAPI2(r)
 	if err != nil {
-		panic(fmt.Sprintf("openapi2.Docs() failed: %+v", err))
+		panic(fmt.Sprintf("chai.OpenAPI2() failed: %+v", err))
 	}
 
 	// This should be used in prod to serve the swagger spec
-	r.Get("/swagger/*", httpSwagger.Handler(
+	r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
 	))
 
@@ -72,7 +63,7 @@ func main() {
 
 	// This must be used only during development to store the swagger spec
 	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
-		OutputDir: "examples/celler/docs",
+		OutputDir: "examples/docs/celler",
 	})
 	if err != nil {
 		panic(fmt.Sprintf("gen.New().Generate() failed: %+v", err))

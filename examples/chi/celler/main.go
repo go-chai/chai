@@ -7,10 +7,11 @@ import (
 
 	"github.com/ghodss/yaml"
 
-	"github.com/go-chai/chai"
-	"github.com/go-chai/chai/examples/celler/controller"
-	_ "github.com/go-chai/chai/examples/celler/docs" // This is required to be able to serve the stored swagger spec in prod
-	"github.com/go-chai/chai/examples/celler/httputil"
+	chai "github.com/go-chai/chai/chi"
+	"github.com/go-chai/chai/examples/shared/controller"
+
+	_ "github.com/go-chai/chai/examples/docs/celler" // This is required to be able to serve the stored swagger spec in prod
+	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
@@ -56,7 +57,7 @@ func main() {
 	})
 
 	// This must be used only during development to generate the swagger spec
-	docs, err := openapi2.ChiDocs(r)
+	docs, err := chai.OpenAPI2(r)
 	if err != nil {
 		panic(fmt.Sprintf("openapi2.Docs() failed: %+v", err))
 	}
@@ -72,7 +73,7 @@ func main() {
 
 	// This must be used only during development to store the swagger spec
 	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
-		OutputDir: "examples/celler/docs",
+		OutputDir: "examples/docs/celler",
 	})
 	if err != nil {
 		panic(fmt.Sprintf("gen.New().Generate() failed: %+v", err))

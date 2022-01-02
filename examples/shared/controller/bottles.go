@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/go-chai/chai/examples/celler/httputil"
-	"github.com/go-chai/chai/examples/celler/model"
+	"github.com/go-chai/chai/examples/shared/httputil"
+	"github.com/go-chai/chai/examples/shared/model"
 )
 
 // ShowBottle godoc

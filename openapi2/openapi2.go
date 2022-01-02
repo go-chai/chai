@@ -21,39 +21,7 @@ func WriteDocs(docs *spec.Swagger, cfg *GenConfig) error {
 	return gen.New().Generate(docs, cfg)
 }
 
-func ParseOperation(docs *spec.Swagger, parser *swag.Parser, method string, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-	var hh any = h
-
-	ch, ok := h.(chai.Handlerer)
-	if ok {
-		hh = ch.Handler()
-	}
-
-	fi := GetFuncInfo(hh)
-
-	op, err := parseSwaggoAnnotations(fi, parser)
-	if err != nil {
-		return err
-	}
-
-	err = updateRequests(fi, op, h)
-	if err != nil {
-		return err
-	}
-
-	err = updateResponses(fi, op, h)
-	if err != nil {
-		return err
-	}
-
-	addOperation(docs, route, method, op)
-
-	return nil
-}
-
-type OperationParserFunc func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error
-
-func Docs(walkRoutes func(OperationParserFunc) error) (*spec.Swagger, error) {
+func Docs(parseOps func(OperationParserFunc) error) (*spec.Swagger, error) {
 	var err error
 
 	docs := newSpec()
@@ -62,15 +30,45 @@ func Docs(walkRoutes func(OperationParserFunc) error) (*spec.Swagger, error) {
 		p.ParseDependency = true
 	})
 
-	operationParser := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		return ParseOperation(docs, parser, method, route, handler, middlewares...)
-	}
-
-	err = walkRoutes(operationParser)
+	err = parseOps(NewOperationParser(docs, parser))
 
 	docs.Definitions = parser.GetSwagger().Definitions
 
 	return docs, err
+}
+
+type OperationParserFunc func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error
+
+func NewOperationParser(docs *spec.Swagger, parser *swag.Parser) OperationParserFunc {
+	return func(method, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		var hh any = h
+
+		ch, ok := h.(chai.Handlerer)
+		if ok {
+			hh = ch.Handler()
+		}
+
+		fi := GetFuncInfo(hh)
+
+		op, err := parseSwaggoAnnotations(fi, parser)
+		if err != nil {
+			return err
+		}
+
+		err = updateRequests(fi, op, h)
+		if err != nil {
+			return err
+		}
+
+		err = updateResponses(fi, op, h)
+		if err != nil {
+			return err
+		}
+
+		addOperation(docs, route, method, op)
+
+		return nil
+	}
 }
 
 func parseSwaggoAnnotations(fi FuncInfo, parser *swag.Parser) (*swag.Operation, error) {

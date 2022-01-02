@@ -1,6 +1,8 @@
 package chai
 
 import (
+	"strings"
+
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-openapi/spec"
 	"github.com/gorilla/mux"
@@ -9,13 +11,12 @@ import (
 func OpenAPI2(r *mux.Router) (*spec.Swagger, error) {
 	return openapi2.Docs(func(parseOperationFn openapi2.OperationParserFunc) error {
 		return r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-			methods, err := route.GetMethods()
+			path, err := route.GetPathTemplate()
 			if err != nil {
 				return err
 			}
-
-			path, err := route.GetPathTemplate()
-			if err != nil {
+			methods, err := route.GetMethods()
+			if err != nil && !strings.Contains(err.Error(), "route doesn't have methods") {
 				return err
 			}
 

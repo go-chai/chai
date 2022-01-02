@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	chai "github.com/go-chai/chai/chi"
-	_ "github.com/go-chai/chai/examples/basic/docs" // This is required to be able to serve the stored swagger spec in prod
-	"github.com/go-chai/chai/examples/celler/model"
+	_ "github.com/go-chai/chai/examples/docs/basic" // This is required to be able to serve the stored swagger spec in prod
+	"github.com/go-chai/chai/examples/shared/model"
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
@@ -46,7 +46,7 @@ func main() {
 
 	// This must be used only during development to store the swagger spec
 	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
-		OutputDir: "examples/basic/docs",
+		OutputDir: "examples/docs/basic",
 	})
 	if err != nil {
 		panic(fmt.Sprintf("gen.New().Generate() failed: %+v", err))
