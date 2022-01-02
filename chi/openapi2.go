@@ -1,13 +1,25 @@
 package chai
 
 import (
+	"net/http"
+
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
 )
 
 func OpenAPI2(r chi.Routes) (*spec.Swagger, error) {
-	return openapi2.Docs(func(parseOperationFn openapi2.OperationParserFunc) error {
-		return chi.Walk(r, chi.WalkFunc(parseOperationFn))
+	routes := make([]*openapi2.Route, 0)
+
+	chi.Walk(r, func(method, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		routes = append(routes, &openapi2.Route{
+			Method:  method,
+			Path:    route,
+			Handler: handler,
+		})
+
+		return nil
 	})
+
+	return openapi2.Docs(routes)
 }

@@ -9,25 +9,28 @@ import (
 )
 
 func OpenAPI2(r *mux.Router) (*spec.Swagger, error) {
-	return openapi2.Docs(func(parseOperationFn openapi2.OperationParserFunc) error {
-		return r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-			path, err := route.GetPathTemplate()
-			if err != nil {
-				return err
-			}
-			methods, err := route.GetMethods()
-			if err != nil && !strings.Contains(err.Error(), "route doesn't have methods") {
-				return err
-			}
+	routes := make([]*openapi2.Route, 0)
 
-			for _, method := range methods {
-				err := parseOperationFn(method, path, route.GetHandler())
-				if err != nil {
-					return err
-				}
-			}
+	r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		path, err := route.GetPathTemplate()
+		if err != nil {
+			return err
+		}
+		methods, err := route.GetMethods()
+		if err != nil && !strings.Contains(err.Error(), "route doesn't have methods") {
+			return err
+		}
 
-			return nil
-		})
+		for _, method := range methods {
+			routes = append(routes, &openapi2.Route{
+				Method:  method,
+				Path:    path,
+				Handler: route.GetHandler(),
+			})
+		}
+
+		return nil
 	})
+
+	return openapi2.Docs(routes)
 }

@@ -21,54 +21,59 @@ func WriteDocs(docs *spec.Swagger, cfg *GenConfig) error {
 	return gen.New().Generate(docs, cfg)
 }
 
-func Docs(parseOps func(OperationParserFunc) error) (*spec.Swagger, error) {
-	var err error
+type Route struct {
+	Method      string
+	Path        string
+	Handler     http.Handler
+	Middlewares []func(http.Handler) http.Handler
+}
 
-	docs := newSpec()
+func Docs(routes []*Route) (*spec.Swagger, error) {
+	var err error
 
 	parser := swag.New(swag.SetDebugger(log.Default()), func(p *swag.Parser) {
 		p.ParseDependency = true
 	})
 
-	err = parseOps(NewOperationParser(docs, parser))
+	for _, route := range routes {
+		err = RegisterRoute(parser, route)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-	docs.Definitions = parser.GetSwagger().Definitions
-
-	return docs, err
+	return parser.GetSwagger(), nil
 }
 
-type OperationParserFunc func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error
+func RegisterRoute(parser *swag.Parser, route *Route) error {
+	var h = route.Handler
+	var hh any = h
 
-func NewOperationParser(docs *spec.Swagger, parser *swag.Parser) OperationParserFunc {
-	return func(method, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		var hh any = h
-
-		ch, ok := h.(chai.Handlerer)
-		if ok {
-			hh = ch.Handler()
-		}
-
-		fi := GetFuncInfo(hh)
-
-		op, err := parseSwaggoAnnotations(fi, parser)
-		if err != nil {
-			return err
-		}
-
-		err = updateRequests(fi, op, h)
-		if err != nil {
-			return err
-		}
-
-		err = updateResponses(fi, op, h)
-		if err != nil {
-			return err
-		}
-
-		addOperation(docs, route, method, op)
-
-		return nil
+	ch, ok := h.(chai.Handlerer)
+	if ok {
+		hh = ch.Handler()
 	}
+
+	fi := GetFuncInfo(hh)
+
+	op, err := parseSwaggoAnnotations(fi, parser)
+	if err != nil {
+		return err
+	}
+
+	err = updateRequests(fi, op, h)
+	if err != nil {
+		return err
+	}
+
+	err = updateResponses(fi, op, h)
+	if err != nil {
+		return err
+	}
+
+	addOperation(parser.GetSwagger(), route.Path, route.Method, op)
+
+	return nil
 }
 
 func parseSwaggoAnnotations(fi FuncInfo, parser *swag.Parser) (*swag.Operation, error) {
