@@ -667,7 +667,7 @@ var doc = `{
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/controller.Error"
+                            "$ref": "#/definitions/chai.Error"
                         }
                     }
                 }
@@ -941,7 +941,7 @@ var doc = `{
         }
     },
     "definitions": {
-        "controller.Error": {
+        "chai.Error": {
             "type": "object",
             "properties": {
                 "error": {

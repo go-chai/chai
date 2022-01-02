@@ -292,7 +292,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/chai.Error"
+                            "$ref": "#/definitions/main.Error"
                         }
                     }
                 }
@@ -346,7 +346,7 @@
         }
     },
     "definitions": {
-        "chai.Error": {
+        "main.Error": {
             "type": "object",
             "properties": {
                 "error": {

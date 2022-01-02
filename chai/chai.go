@@ -22,14 +22,14 @@ type Handlerer interface {
 	Handler() any
 }
 
-type Error struct {
+type chaiErr struct {
 	Message          string `json:"error"`
 	ErrorDebug       string `json:"error_debug,omitempty"`
 	ErrorDescription string `json:"error_description,omitempty"`
 	StatusCode       int    `json:"status_code,omitempty"`
 }
 
-func (e Error) Error() string {
+func (e chaiErr) Error() string {
 	return e.Message
 }
 
@@ -64,7 +64,7 @@ func (defaultErrorWriter) WriteError(w http.ResponseWriter, code int, e ErrType)
 	}
 
 	if string(b) == "{}" {
-		b, err = json.Marshal(&Error{Message: e.Error(), StatusCode: code})
+		b, err = json.Marshal(&chaiErr{Message: e.Error(), StatusCode: code})
 		if err != nil {
 			panic(err)
 		}

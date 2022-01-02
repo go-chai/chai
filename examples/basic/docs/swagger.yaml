@@ -1,5 +1,5 @@
 definitions:
-  chai.Error:
+  main.Error:
     properties:
       error:
         type: string
@@ -227,7 +227,7 @@ paths:
         default:
           description: ""
           schema:
-            $ref: '#/definitions/chai.Error'
+            $ref: '#/definitions/main.Error'
   /api/v1/examples/securities:
     get:
       description: custome header

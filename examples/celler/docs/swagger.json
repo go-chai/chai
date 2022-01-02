@@ -652,7 +652,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/chai.Error"
+                            "$ref": "#/definitions/controller.Error"
                         }
                     }
                 }
@@ -926,7 +926,7 @@
         }
     },
     "definitions": {
-        "chai.Error": {
+        "controller.Error": {
             "type": "object",
             "properties": {
                 "error": {

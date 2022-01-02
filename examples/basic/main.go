@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chai/chai"
+	chai "github.com/go-chai/chai/chi"
 	_ "github.com/go-chai/chai/examples/basic/docs" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/celler/model"
 	"github.com/go-chai/chai/openapi2"
@@ -30,7 +30,7 @@ func main() {
 	})
 
 	// This must be used only during development to generate the swagger spec
-	docs, err := openapi2.Docs(r)
+	docs, err := chai.OpenAPI2(r)
 	if err != nil {
 		panic(fmt.Sprintf("%+v", err))
 	}
@@ -42,7 +42,7 @@ func main() {
 
 	addCustomDocs(docs)
 
-	LogYAML(docs)
+	openapi2.LogYAML(docs)
 
 	// This must be used only during development to store the swagger spec
 	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
@@ -57,7 +57,18 @@ func main() {
 	http.ListenAndServe(":8080", r)
 }
 
-func PostHandler(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account, int, *chai.Error) {
+type Error struct {
+	Message          string `json:"error"`
+	ErrorDebug       string `json:"error_debug,omitempty"`
+	ErrorDescription string `json:"error_description,omitempty"`
+	StatusCode       int    `json:"status_code,omitempty"`
+}
+
+func (e *Error) Error() string {
+	return e.Message
+}
+
+func PostHandler(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account, int, *Error) {
 	return account, http.StatusOK, nil
 }
 
@@ -182,15 +193,4 @@ func addCustomDocs(docs *spec.Swagger) {
 			},
 		},
 	}
-}
-
-func LogYAML(v interface{}) {
-	bytes, err := chai.MarshalYAML(v)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(bytes))
-
-	return
 }

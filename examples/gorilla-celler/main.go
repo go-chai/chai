@@ -7,7 +7,7 @@ import (
 
 	"github.com/ghodss/yaml"
 
-	chai "github.com/go-chai/chai/chi"
+	"github.com/go-chai/chai"
 	"github.com/go-chai/chai/examples/celler/controller"
 	_ "github.com/go-chai/chai/examples/celler/docs" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/celler/httputil"
@@ -56,7 +56,7 @@ func main() {
 	})
 
 	// This must be used only during development to generate the swagger spec
-	docs, err := chai.OpenAPI2(r)
+	docs, err := openapi2.ChiDocs(r)
 	if err != nil {
 		panic(fmt.Sprintf("openapi2.Docs() failed: %+v", err))
 	}

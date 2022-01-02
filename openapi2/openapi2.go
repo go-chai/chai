@@ -8,8 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/go-chai/chai"
-	"github.com/go-chi/chi/v5"
+	"github.com/go-chai/chai/chai"
 	"github.com/go-openapi/spec"
 	"github.com/pkg/errors"
 	"github.com/swaggo/swag"
@@ -18,20 +17,43 @@ import (
 
 type GenConfig = gen.GenConfig
 
-func GenDocs(r chi.Router, cfg *GenConfig) error {
-	docs, err := Docs(r)
-	if err != nil {
-		return err
-	}
-
-	return WriteDocs(docs, cfg)
-}
-
 func WriteDocs(docs *spec.Swagger, cfg *GenConfig) error {
 	return gen.New().Generate(docs, cfg)
 }
 
-func Docs(r chi.Router) (*spec.Swagger, error) {
+func ParseOperation(docs *spec.Swagger, parser *swag.Parser, method string, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+	var hh any = h
+
+	ch, ok := h.(chai.Handlerer)
+	if ok {
+		hh = ch.Handler()
+	}
+
+	fi := GetFuncInfo(hh)
+
+	op, err := parseSwaggoAnnotations(fi, parser)
+	if err != nil {
+		return err
+	}
+
+	err = updateRequests(fi, op, h)
+	if err != nil {
+		return err
+	}
+
+	err = updateResponses(fi, op, h)
+	if err != nil {
+		return err
+	}
+
+	addOperation(docs, route, method, op)
+
+	return nil
+}
+
+type OperationParserFunc func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error
+
+func Docs(walkRoutes func(OperationParserFunc) error) (*spec.Swagger, error) {
 	var err error
 
 	docs := newSpec()
@@ -40,35 +62,11 @@ func Docs(r chi.Router) (*spec.Swagger, error) {
 		p.ParseDependency = true
 	})
 
-	err = chi.Walk(r, func(method string, route string, h http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		var hh any = h
+	operationParser := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		return ParseOperation(docs, parser, method, route, handler, middlewares...)
+	}
 
-		ch, ok := h.(chai.Handlerer)
-		if ok {
-			hh = ch.Handler()
-		}
-
-		fi := GetFuncInfo(hh)
-
-		op, err := parseSwaggoAnnotations(fi, parser)
-		if err != nil {
-			return err
-		}
-
-		err = updateRequests(fi, op, h)
-		if err != nil {
-			return err
-		}
-
-		err = updateResponses(fi, op, h)
-		if err != nil {
-			return err
-		}
-
-		addOperation(docs, route, method, op)
-
-		return nil
-	})
+	err = walkRoutes(operationParser)
 
 	docs.Definitions = parser.GetSwagger().Definitions
 
