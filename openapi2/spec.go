@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/spec"
-	"github.com/swaggo/swag"
+	"github.com/go-chai/swag"
 )
 
 func newSpec() *spec.Swagger {

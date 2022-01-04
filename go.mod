@@ -3,8 +3,8 @@ module github.com/go-chai/chai
 go 1.18
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/ghodss/yaml v1.0.0
+	github.com/go-chai/swag v1.7.8-fork2
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/docgen v1.2.0
 	github.com/go-chi/render v1.0.1
@@ -13,7 +13,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/pkg/errors v0.9.1
 	github.com/swaggo/http-swagger v1.1.2
-	github.com/swaggo/swag v1.7.6
+	github.com/swaggo/swag v1.7.8
 )
 
 require (
@@ -32,5 +32,3 @@ require (
 	golang.org/x/tools v0.1.7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
-
-replace github.com/swaggo/swag => github.com/go-chai/swag v1.7.8-fork

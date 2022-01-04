@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	"github.com/go-chai/chai/chai"
+	"github.com/go-chai/swag"
+	"github.com/go-chai/swag/gen"
 	"github.com/go-openapi/spec"
 	"github.com/pkg/errors"
-	"github.com/swaggo/swag"
-	"github.com/swaggo/swag/gen"
 )
 
 type GenConfig = gen.GenConfig
