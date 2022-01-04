@@ -217,7 +217,7 @@ var doc = `{
                 "parameters": [
                     {
                         "pattern": "^[0-9]+$",
-                        "type": "string",
+                        "type": "integer",
                         "name": "id",
                         "in": "path",
                         "required": true

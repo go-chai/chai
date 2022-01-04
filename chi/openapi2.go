@@ -2,23 +2,30 @@ package chai
 
 import (
 	"net/http"
-	"os"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
 )
 
+var integerSchema = spec.SimpleSchema{Type: "integer"}
+var numberSchema = spec.SimpleSchema{Type: "number"}
+
+var RegexPatternSchemas = map[string]spec.SimpleSchema{
+	"/^(0|-*[1-9]+[0-9]*)$/":  integerSchema,
+	"^[0-9]+$":                integerSchema,
+	"[+-]?([0-9]*[.])?[0-9]+": numberSchema,
+}
+
 func OpenAPI2(r chi.Routes) (*spec.Swagger, error) {
 	routes := make([]*openapi2.Route, 0)
 
-	err := chi.Walk(r, func(method, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		params, newPath := getParams(route)
+	err := chi.Walk(r, func(method, path string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		params, regexlessPath := ParsePathParams(path)
 		routes = append(routes, &openapi2.Route{
 			Method:  method,
-			Path:    newPath,
+			Path:    regexlessPath,
 			Params:  params,
 			Handler: handler,
 		})
@@ -33,42 +40,38 @@ func OpenAPI2(r chi.Routes) (*spec.Swagger, error) {
 	return openapi2.Docs(routes)
 }
 
-func getParams(path string) ([]spec.Parameter, string) {
+func ParsePathParams(path string) ([]spec.Parameter, string) {
 	res := make([]spec.Parameter, 0)
-	newPath := ""
+	regexlessPath := ""
 
 	for {
-		param, before, rest := nextParam(path)
-		newPath += before
+		param, before, after := nextParam(path)
+		regexlessPath += before
 
 		if param == nil {
 			break
 		}
 
-		newPath += "{" + param.Name + "}"
+		regexlessPath += "{" + param.Name + "}"
 
 		res = append(res, *param)
-		path = rest
+		path = after
 	}
 
-	if len(res) != 0 {
-		// openapi2.LogYAML(res)
-	}
-
-	return res, newPath
+	return res, regexlessPath
 }
 
-func nextParam(pattern string) (param *spec.Parameter, path string, rest string) {
-	path, rest, found := strings.Cut(pattern, "{")
+func nextParam(pattern string) (param *spec.Parameter, before string, after string) {
+	before, after, found := strings.Cut(pattern, "{")
 	if !found {
-		return nil, path, rest
+		return nil, before, after
 	}
 
 	// Read to closing } taking into account opens and closes in curl count (cc)
 	cc := 1
 	pe := 0
 
-	for i, c := range rest {
+	for i, c := range after {
 		if c == '{' {
 			cc++
 		} else if c == '}' {
@@ -80,11 +83,9 @@ func nextParam(pattern string) (param *spec.Parameter, path string, rest string)
 			}
 		}
 	}
-	spew.Fdump(os.Stderr, rest[:pe])
 
-	key := rest[:pe]
-	pe++
-	rest = rest[pe:]
+	key := after[:pe]
+	after = after[pe+1:]
 
 	key, rexpat, _ := strings.Cut(key, ":")
 
@@ -97,6 +98,13 @@ func nextParam(pattern string) (param *spec.Parameter, path string, rest string)
 		}
 	}
 
+	schema, ok := RegexPatternSchemas[rexpat]
+	if !ok {
+		schema = spec.SimpleSchema{
+			Type: "string",
+		}
+	}
+
 	return &spec.Parameter{
 		CommonValidations: spec.CommonValidations{
 			Pattern: rexpat,
@@ -106,27 +114,6 @@ func nextParam(pattern string) (param *spec.Parameter, path string, rest string)
 			In:       "path",
 			Required: true,
 		},
-		SimpleSchema: spec.SimpleSchema{
-			Type: "string",
-		},
-	}, path, rest
-}
-
-func getParams2(route string) []spec.Parameter {
-	res := make([]spec.Parameter, 0)
-
-	for _, sect := range strings.Split(route, "/") {
-		if strings.Contains(sect, "{") {
-			param := spec.Parameter{}
-			param.Name = strings.Trim(sect, "{}")
-			param.In = "path"
-			param.Required = true
-			param.Type = "string"
-			param.Pattern = "^[a-zA-Z0-9]+$"
-
-			res = append(res, param)
-		}
-	}
-
-	return res
+		SimpleSchema: schema,
+	}, before, after
 }

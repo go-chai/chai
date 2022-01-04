@@ -204,7 +204,7 @@ paths:
         name: id
         pattern: ^[0-9]+$
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:

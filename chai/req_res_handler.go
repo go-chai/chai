@@ -10,10 +10,7 @@ type ReqResHandlerFunc[Req any, Res any, Err ErrType] func(Req, http.ResponseWri
 
 func NewReqResHandler[Req any, Res any, Err ErrType](h ReqResHandlerFunc[Req, Res, Err]) *ReqResHandler[Req, Res, Err] {
 	return &ReqResHandler[Req, Res, Err]{
-		f:   h,
-		req: new(Req),
-		res: new(Res),
-		err: new(Err),
+		f: h,
 	}
 }
 
