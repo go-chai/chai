@@ -201,9 +201,8 @@
                 "summary": "Delete an account",
                 "parameters": [
                     {
+                        "pattern": "^[0-9]+$",
                         "type": "integer",
-                        "format": "int64",
-                        "description": "Account ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -250,13 +249,6 @@
                 "summary": "Update an account",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Account ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
                         "description": "Update account",
                         "name": "account",
                         "in": "body",
@@ -264,6 +256,13 @@
                         "schema": {
                             "$ref": "#/definitions/model.UpdateAccount"
                         }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -309,17 +308,17 @@
                 "summary": "Upload account image",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Account ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
                         "type": "file",
                         "description": "account image",
                         "name": "file",
                         "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -541,14 +540,10 @@
                 "summary": "attribute example",
                 "parameters": [
                     {
-                        "enum": [
-                            "A",
-                            "B",
-                            "C"
-                        ],
                         "type": "string",
-                        "description": "string enums",
-                        "name": "enumstring",
+                        "default": "A",
+                        "description": "string default",
+                        "name": "default",
                         "in": "query"
                     },
                     {
@@ -574,11 +569,14 @@
                         "in": "query"
                     },
                     {
-                        "maxLength": 10,
-                        "minLength": 5,
+                        "enum": [
+                            "A",
+                            "B",
+                            "C"
+                        ],
                         "type": "string",
-                        "description": "string valid",
-                        "name": "string",
+                        "description": "string enums",
+                        "name": "enumstring",
                         "in": "query"
                     },
                     {
@@ -590,10 +588,11 @@
                         "in": "query"
                     },
                     {
+                        "maxLength": 10,
+                        "minLength": 5,
                         "type": "string",
-                        "default": "A",
-                        "description": "string default",
-                        "name": "default",
+                        "description": "string valid",
+                        "name": "string",
                         "in": "query"
                     }
                 ],
@@ -731,15 +730,15 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Group ID",
-                        "name": "group_id",
+                        "description": "Account ID",
+                        "name": "account_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "Account ID",
-                        "name": "account_id",
+                        "description": "Group ID",
+                        "name": "group_id",
                         "in": "path",
                         "required": true
                     }

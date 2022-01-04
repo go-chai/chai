@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/go-chai/chai/chai"
@@ -24,6 +25,7 @@ func WriteDocs(docs *spec.Swagger, cfg *GenConfig) error {
 type Route struct {
 	Method      string
 	Path        string
+	Params      []spec.Parameter
 	Handler     http.Handler
 	Middlewares []func(http.Handler) http.Handler
 }
@@ -61,7 +63,7 @@ func RegisterRoute(parser *swag.Parser, route *Route) error {
 		return err
 	}
 
-	err = updateRequests(fi, op, h)
+	err = updateRequests(fi, op, h, route.Params)
 	if err != nil {
 		return err
 	}
@@ -114,11 +116,13 @@ func getPkgPath(file string) (string, error) {
 	return filepath.Dir(file), nil
 }
 
-func updateRequests(fi FuncInfo, op *swag.Operation, h http.Handler) error {
+func updateRequests(fi FuncInfo, op *swag.Operation, h http.Handler, params []spec.Parameter) error {
 	var err error
 
 	reqer, ok := h.(chai.Reqer)
 	if !ok {
+		op.Parameters = mergeParameters(params, op.Parameters)
+
 		return nil
 	}
 
@@ -131,22 +135,96 @@ func updateRequests(fi FuncInfo, op *swag.Operation, h http.Handler) error {
 		return err
 	}
 
-	if len(op.Parameters) == 0 {
-		op.AddParam(spec.BodyParam("body", schema))
-		return nil
-	}
-
+	noBody := true
 	for i := range op.Parameters {
-		if op.Parameters[i].In != "body" {
-			continue
-		}
-
-		if op.Parameters[i].Schema == nil {
-			op.Parameters[i].Schema = schema
+		if op.Parameters[i].In == "body" {
+			noBody = false
+			if op.Parameters[i].Schema == nil {
+				op.Parameters[i].Schema = schema
+			}
 		}
 	}
+	if noBody {
+		op.AddParam(spec.BodyParam("body", schema))
+	}
+
+	op.Parameters = mergeParameters(params, op.Parameters)
 
 	return nil
+}
+
+type pk struct {
+	In   string
+	Name string
+}
+
+func less(pk, pk2 pk) bool {
+	if pk.In == pk2.In {
+		return pk.Name < pk2.Name
+	}
+
+	return pk.In < pk2.In
+}
+
+func mergeParameters(paramsList ...[]spec.Parameter) []spec.Parameter {
+	m := make(map[pk]spec.Parameter)
+
+	for _, params := range paramsList {
+		m = mergeMaps(m, assoc(params, func(p spec.Parameter) pk {
+			return pk{p.In, p.Name}
+		}))
+	}
+
+	return sortedValues(m, less)
+}
+
+func mergeMaps[K comparable, V any](maps ...map[K]V) map[K]V {
+	res := make(map[K]V)
+
+	for _, m := range maps {
+		for k, v := range m {
+			res[k] = v
+		}
+	}
+
+	return res
+}
+
+func assoc[K comparable, V any](slice []V, keyFn func(V) K) map[K]V {
+	m := make(map[K]V)
+
+	for _, t := range slice {
+		m[keyFn(t)] = t
+	}
+
+	return m
+}
+
+func sortedValues[K comparable, V any](m map[K]V, less func(K, K) bool) []V {
+	res := make([]V, len(m))
+
+	for i, k := range sortedKeys(m, less) {
+		res[i] = m[k]
+	}
+
+	return res
+}
+
+func sortedKeys[K comparable, V any](m map[K]V, less func(K, K) bool) []K {
+	keys := make([]K, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+
+	if less == nil {
+		return keys
+	}
+
+	sort.Slice(keys, func(i, j int) bool { return less(keys[i], keys[j]) })
+
+	return keys
 }
 
 func updateResponses(fi FuncInfo, op *swag.Operation, h http.Handler) error {

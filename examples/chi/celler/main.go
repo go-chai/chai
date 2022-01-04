@@ -28,7 +28,7 @@ func main() {
 			chai.Get(r, "/{id}", c.ShowAccount)
 			chai.Get(r, "/", c.ListAccounts)
 			chai.Post(r, "/", c.AddAccount)
-			r.Delete("/{id}", c.DeleteAccount)
+			r.Delete("/{id:[0-9]+}", c.DeleteAccount)
 			r.Patch("/{id}", c.UpdateAccount)
 			r.Post("/{id}/images", c.UploadAccountImage)
 		})

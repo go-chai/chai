@@ -3,7 +3,7 @@ package openapi2_test
 import (
 	"fmt"
 
-	"github.com/go-chi/docgen"
+	"github.com/go-chai/chai/openapi2"
 )
 
 //Comment
@@ -16,7 +16,7 @@ type ZZ struct {
 }
 
 func ExampleGetFuncInfo() {
-	fmt.Println(docgen.GetFuncInfo(Simple).Comment)
+	fmt.Println(openapi2.GetFuncInfo(Simple).Comment)
 	// Output:
 	// Comment
 }

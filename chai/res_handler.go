@@ -11,8 +11,6 @@ type ResHandlerFunc[Res any, Err ErrType] func(http.ResponseWriter, *http.Reques
 func NewResHandler[Res any, Err ErrType](h ResHandlerFunc[Res, Err]) *ResHandler[Res, Err] {
 	return &ResHandler[Res, Err]{
 		f:   h,
-		res: new(Res),
-		err: new(Err),
 	}
 }
 

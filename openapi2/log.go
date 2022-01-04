@@ -3,6 +3,7 @@ package openapi2
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 )
 
 func LogYAML(v any) {
@@ -11,7 +12,7 @@ func LogYAML(v any) {
 		panic(err)
 	}
 
-	fmt.Println(string(bytes))
+	fmt.Fprintln(os.Stderr, string(bytes))
 
 	return
 }

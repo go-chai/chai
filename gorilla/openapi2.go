@@ -3,6 +3,7 @@ package chai
 import (
 	"strings"
 
+	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-openapi/spec"
 	"github.com/gorilla/mux"
@@ -22,9 +23,12 @@ func OpenAPI2(r *mux.Router) (*spec.Swagger, error) {
 		}
 
 		for _, method := range methods {
+			params, regexlessPath := chai.ParsePathParams(path)
+
 			routes = append(routes, &openapi2.Route{
 				Method:  method,
-				Path:    path,
+				Path:    regexlessPath,
+				Params:  params,
 				Handler: route.GetHandler(),
 			})
 		}
