@@ -200,12 +200,11 @@ paths:
       - application/json
       description: Delete by account ID
       parameters:
-      - description: Account ID
-        format: int64
-        in: path
+      - in: path
         name: id
+        pattern: ^[0-9]+$
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -265,17 +264,17 @@ paths:
       - application/json
       description: Update by json account
       parameters:
-      - description: Account ID
-        in: path
-        name: id
-        required: true
-        type: integer
       - description: Update account
         in: body
         name: account
         required: true
         schema:
           $ref: '#/definitions/model.UpdateAccount'
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -304,16 +303,16 @@ paths:
       - multipart/form-data
       description: Upload file
       parameters:
-      - description: Account ID
-        in: path
-        name: id
-        required: true
-        type: integer
       - description: account image
         in: formData
         name: file
         required: true
         type: file
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -456,13 +455,10 @@ paths:
       - application/json
       description: attribute
       parameters:
-      - description: string enums
-        enum:
-        - A
-        - B
-        - C
+      - default: A
+        description: string default
         in: query
-        name: enumstring
+        name: default
         type: string
       - description: int enums
         enum:
@@ -480,11 +476,13 @@ paths:
         in: query
         name: enumnumber
         type: number
-      - description: string valid
+      - description: string enums
+        enum:
+        - A
+        - B
+        - C
         in: query
-        maxLength: 10
-        minLength: 5
-        name: string
+        name: enumstring
         type: string
       - description: int valid
         in: query
@@ -492,10 +490,11 @@ paths:
         minimum: 1
         name: int
         type: integer
-      - default: A
-        description: string default
+      - description: string valid
         in: query
-        name: default
+        maxLength: 10
+        minLength: 5
+        name: string
         type: string
       produces:
       - application/json
@@ -584,14 +583,14 @@ paths:
       - application/json
       description: path params
       parameters:
-      - description: Group ID
-        in: path
-        name: group_id
-        required: true
-        type: integer
       - description: Account ID
         in: path
         name: account_id
+        required: true
+        type: integer
+      - description: Group ID
+        in: path
+        name: group_id
         required: true
         type: integer
       produces:

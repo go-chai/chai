@@ -22,7 +22,6 @@ import (
 // @Failure      400  {object}  httputil.Error
 // @Failure      404  {object}  httputil.Error
 // @Failure      500  {object}  httputil.Error
-// @Router       /accounts/{id} [get]
 func (c *Controller) ShowAccount(w http.ResponseWriter, r *http.Request) (*model.Account, int, error) {
 	id := chi.URLParam(r, "id")
 	aid, err := strconv.Atoi(id)
@@ -131,12 +130,10 @@ func (c *Controller) UpdateAccount(w http.ResponseWriter, r *http.Request) {
 // @Tags         accounts
 // @Accept       json
 // @Produce      json
-// @Param        id   path      int  true  "Account ID"  Format(int64)
 // @Success      204  {object}  model.Account
 // @Failure      400  {object}  httputil.Error
 // @Failure      404  {object}  httputil.Error
 // @Failure      500  {object}  httputil.Error
-// @Router       /accounts/{id} [delete]
 func (c *Controller) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	aid, err := strconv.Atoi(id)
