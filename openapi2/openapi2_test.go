@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
 )
@@ -114,7 +113,7 @@ func js(v any) string {
 	return string(b)
 }
 
-func TestToMap(t *testing.T) {
+func TestAssoc(t *testing.T) {
 	type args struct {
 		ts []spec.Parameter
 		fn func(spec.Parameter) pk
@@ -136,13 +135,16 @@ func TestToMap(t *testing.T) {
 					return pk{p.In, p.Name}
 				},
 			},
-			want: map[pk]spec.Parameter{},
+			want: map[pk]spec.Parameter{
+				{In: "path", Name: "p1"}: {ParamProps: spec.ParamProps{Name: "p1", In: "path", Description: "d1", Required: true}},
+				{In: "path", Name: "p2"}: {ParamProps: spec.ParamProps{Name: "p2", In: "path", Description: "d2", Required: true}},
+				{In: "body", Name: "p1"}: {ParamProps: spec.ParamProps{Name: "p1", In: "body", Description: "d11", Required: true}},
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := assoc(tt.args.ts, tt.args.fn)
-			spew.Dump(got)
 
 			assert.Equal(t, tt.want, got)
 		})
@@ -160,7 +162,7 @@ func TestSortedKeys(t *testing.T) {
 		want []pk
 	}{
 		{
-			name: "",
+			name: "t1",
 			args: args{
 				m: map[pk]string{
 					{"path", "p1"}: "1",
@@ -181,27 +183,8 @@ func TestSortedKeys(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := sortedKeys(tt.args.m, tt.args.less)
-			spew.Dump(got)
 
 			assert.Equal(t, tt.want, got)
 		})
 	}
-}
-
-func TestZZ(t *testing.T) {
-
-	// keys := []pk{
-	// 	{"path", "p1"},
-	// 	{"path", "p2"},
-	// 	{"body", "p3"},
-	// 	{"body", "p2"},
-	// }
-	// spew.Dump(keys)
-
-	// sort.Slice(keys, func(i, j int) bool { return less(keys[i], keys[j]) })
-
-	// spew.Dump(keys)
-
-	spew.Dump(less(pk{"path", "p1"}, pk{"path", "p2"}))
-
 }
