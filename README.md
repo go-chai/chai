@@ -2,7 +2,7 @@
 
 ## Description
 
-`chai` is an extension for a few popular http routers that adds support for type safe http handlers via Go 1.18's generics. This allows it to also generate a swagger spec by automatically detecting the request/response types, http methods and route paths. 
+`chai` is an extension for a few popular http routers that adds support for type safe http handlers via Go 1.18's generics. This allows it to also generate a swagger spec by automatically detecting the request/response types, http methods, route paths and path params.
 
 `chai` uses [swaggo/swag](https://github.com/swaggo/swag) annotations for the parts of the swagger spec that cannot be automatically inferred.
 
