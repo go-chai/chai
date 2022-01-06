@@ -11,6 +11,5 @@ func OpenAPI3(r *mux.Router) (*kinopenapi3.T, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return openapi3.Docs(routes)
 }
