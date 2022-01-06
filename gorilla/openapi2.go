@@ -10,6 +10,16 @@ import (
 )
 
 func OpenAPI2(r *mux.Router) (*spec.Swagger, error) {
+	routes, err := getGorillaRoutes(r)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return openapi2.Docs(routes)
+}
+
+func getGorillaRoutes(r *mux.Router) ([]*openapi2.Route, error) {
 	routes := make([]*openapi2.Route, 0)
 
 	err := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
@@ -40,5 +50,5 @@ func OpenAPI2(r *mux.Router) (*spec.Swagger, error) {
 		return nil, err
 	}
 
-	return openapi2.Docs(routes)
+	return routes, nil
 }
