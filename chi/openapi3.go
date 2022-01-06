@@ -11,6 +11,5 @@ func OpenAPI3(r chi.Routes) (*kinopenapi3.T, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return openapi3.Docs(routes)
 }
