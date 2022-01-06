@@ -1,4 +1,3 @@
-
 module github.com/go-chai/chai
 
 go 1.18
