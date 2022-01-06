@@ -19,6 +19,16 @@ var RegexPatternSchemas = map[string]spec.SimpleSchema{
 }
 
 func OpenAPI2(r chi.Routes) (*spec.Swagger, error) {
+	routes, err := getChiRoutes(r)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return openapi2.Docs(routes)
+}
+
+func getChiRoutes(r chi.Routes) ([]*openapi2.Route, error) {
 	routes := make([]*openapi2.Route, 0)
 
 	err := chi.Walk(r, func(method, path string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
@@ -37,7 +47,7 @@ func OpenAPI2(r chi.Routes) (*spec.Swagger, error) {
 		return nil, err
 	}
 
-	return openapi2.Docs(routes)
+	return routes, nil
 }
 
 func ParsePathParams(path string) ([]spec.Parameter, string) {
