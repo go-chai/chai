@@ -1,9 +1,6 @@
 package openapi3
 
 import (
-	"fmt"
-
-	"github.com/davecgh/go-spew/spew"
 	kinopenapi2 "github.com/getkin/kin-openapi/openapi2"
 	"github.com/getkin/kin-openapi/openapi2conv"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -25,26 +22,14 @@ func Docs(routes []*Route) (*openapi3.T, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	docsJSON, err := openapi2.MarshalYAML(docs)
 	if err != nil {
 		return nil, err
 	}
-
 	kinOpenAPI2 := new(kinopenapi2.T)
-
 	err = yaml.Unmarshal(docsJSON, kinOpenAPI2)
 	if err != nil {
 		return nil, err
 	}
-
-	spew.Dump(docs.Security)
-	spew.Dump(docs.SecurityDefinitions)
-	spew.Dump(kinOpenAPI2.Security)
-	spew.Dump(kinOpenAPI2.SecurityDefinitions)
-
-	LogYAML(kinOpenAPI2)
-	fmt.Println("-------------------------------------")
-
 	return openapi2conv.ToV3(kinOpenAPI2)
 }
