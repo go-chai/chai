@@ -4,11 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/ghodss/yaml"
 
 	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/examples/shared/controller"
+	"github.com/go-chai/chai/examples/shared/model"
 
 	_ "github.com/go-chai/chai/examples/docs/celler" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/shared/httputil"
@@ -34,7 +36,30 @@ func main() {
 		})
 
 		r.Route("/bottles", func(r chi.Router) {
-			chai.Get(r, "/{id}", c.ShowBottle)
+			// ShowBottle godoc
+			// @Summary      Show a bottle
+			// @Description  get string by ID
+			// @ID           get-string-by-int
+			// @Tags         bottles
+			// @Accept       json
+			// @Produce      json
+			// @Param        id   path      int  true  "Bottle ID"
+			// @Success      200  {object}  model.Bottle
+			// @Failure      400  {object}  httputil.Error
+			// @Failure      404  {object}  httputil.Error
+			// @Failure      500  {object}  httputil.Error
+			chai.Get(r, "/{id}", func(w http.ResponseWriter, r *http.Request) (*model.Bottle, int, error) {
+				id := chi.URLParam(r, "id")
+				bid, err := strconv.Atoi(id)
+				if err != nil {
+					return nil, http.StatusBadRequest, err
+				}
+				bottle, err := model.BottleOne(bid)
+				if err != nil {
+					return nil, http.StatusNotFound, err
+				}
+				return bottle, http.StatusOK, nil
+			})
 			chai.Get(r, "/", c.ListBottles)
 		})
 
@@ -69,7 +94,7 @@ func main() {
 
 	addCustomDocs(docs)
 
-	LogYAML(docs)
+	// LogYAML(docs)
 
 	// This must be used only during development to store the swagger spec
 	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
@@ -81,7 +106,7 @@ func main() {
 
 	fmt.Println("The swagger spec is available at http://localhost:8080/swagger/")
 
-	http.ListenAndServe(":8080", r)
+	// http.ListenAndServe(":8080", r)
 }
 
 func addCustomDocs(docs *spec.Swagger) {

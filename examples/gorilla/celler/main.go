@@ -59,7 +59,7 @@ func main() {
 
 	addCustomDocs(docs)
 
-	LogYAML(docs)
+	// LogYAML(docs)
 
 	// This must be used only during development to store the swagger spec
 	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{

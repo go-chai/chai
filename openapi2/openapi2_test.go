@@ -2,12 +2,82 @@ package openapi2
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"testing"
 
+	"github.com/go-chai/chai/openapi2/internal/tests"
+	"github.com/go-chai/swag"
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestParseAPIObjectSchema(t *testing.T) {
+	type args struct {
+		val any
+	}
+	type want struct {
+		typeName        string
+		ref             string
+		definitionsJSON string
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "string",
+			args: args{
+				val: "12345asdf",
+			},
+			want: want{typeName: "string"},
+		},
+		{
+			name: "int",
+			args: args{
+				val: 123,
+			},
+			want: want{typeName: "integer"},
+		},
+		{
+			name: "obj",
+			args: args{
+				val: &tests.TestStruct{},
+			},
+			want: want{ref: "#/definitions/tests.TestStruct", definitionsJSON: `{"tests.TestStruct": {"type": "object","properties": {"bar": {"type": "integer"},"foo": {"type": "string"}}}}`},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			parser := swag.New(swag.SetDebugger(log.Default()), func(p *swag.Parser) {
+				p.ParseDependency = true
+			})
+			fi := getFuncInfo(RegisterRoute)
+			op := swag.NewOperation(parser)
+
+			err := parser.GetAllGoFileInfoAndParseTypes("./")
+			require.NoError(t, err)
+
+			schema, err := op.ParseAPIObjectSchema("object", typeName(tt.args.val), fi.ASTFile)
+			require.NoError(t, err)
+
+			LogYAML(parser.GetSwagger().Definitions)
+
+			if tt.want.typeName != "" {
+				require.Equal(t, tt.want.typeName, schema.Type[0])
+			}
+
+			if tt.want.ref != "" {
+				require.Equal(t, tt.want.ref, schema.Ref.String())
+			}
+
+			if tt.want.ref != "" {
+				require.JSONEq(t, tt.want.definitionsJSON, js(parser.GetSwagger().Definitions))
+			}
+		})
+	}
+}
 
 func TestMergeParameters(t *testing.T) {
 	type args struct {
@@ -92,18 +162,18 @@ func TestMergeParameters(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			LogYAML(tt.want)
+			// LogYAML(tt.want)
 
 			wantJSON := js(tt.want)
 
 			got := mergeParameters(tt.args.params...)
-			LogYAML(got)
+			// LogYAML(got)
 
 			gotJSON := js(got)
 
 			assert.Equal(t, string(wantJSON), string(gotJSON))
 
-			fmt.Println("-----------------")
+			// fmt.Println("-----------------")
 		})
 	}
 }
@@ -113,7 +183,7 @@ func js(v any) string {
 	return string(b)
 }
 
-func TestAssoc(t *testing.T) {
+func TestAssociateBy(t *testing.T) {
 	type args struct {
 		ts []spec.Parameter
 		fn func(spec.Parameter) pk
@@ -144,7 +214,7 @@ func TestAssoc(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := assoc(tt.args.ts, tt.args.fn)
+			got := associateBy(tt.args.ts, tt.args.fn)
 
 			assert.Equal(t, tt.want, got)
 		})

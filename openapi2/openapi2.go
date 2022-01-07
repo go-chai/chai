@@ -56,7 +56,11 @@ func RegisterRoute(parser *swag.Parser, route *Route) error {
 		hh = ch.Handler()
 	}
 
-	fi := GetFuncInfo(hh)
+	fi := getFuncInfo(hh)
+
+	if fi.Unresolvable {
+		return errors.New("failed to resolve func info")
+	}
 
 	op, err := parseSwaggoAnnotations(fi, parser)
 	if err != nil {
@@ -78,9 +82,9 @@ func RegisterRoute(parser *swag.Parser, route *Route) error {
 	return nil
 }
 
-func parseSwaggoAnnotations(fi FuncInfo, parser *swag.Parser) (*swag.Operation, error) {
+func parseSwaggoAnnotations(fi funcInfo, parser *swag.Parser) (*swag.Operation, error) {
 	var err error
-	ops := swag.NewOperation(parser)
+	op := swag.NewOperation(parser)
 
 	pkg, err := getPkgPath(fi.File)
 	if err != nil {
@@ -93,13 +97,13 @@ func parseSwaggoAnnotations(fi FuncInfo, parser *swag.Parser) (*swag.Operation, 
 	}
 
 	for _, line := range strings.Split(fi.Comment, "\n") {
-		err := ops.ParseComment(line, fi.ASTFile)
+		err := op.ParseComment(line, fi.ASTFile)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to parse comment")
 		}
 	}
 
-	return ops, nil
+	return op, nil
 }
 
 func getPkgPath(file string) (string, error) {
@@ -116,7 +120,7 @@ func getPkgPath(file string) (string, error) {
 	return filepath.Dir(file), nil
 }
 
-func updateRequests(fi FuncInfo, op *swag.Operation, h http.Handler, params []spec.Parameter) error {
+func updateRequests(fi funcInfo, op *swag.Operation, h http.Handler, params []spec.Parameter) error {
 	var err error
 
 	reqer, ok := h.(chai.Reqer)
@@ -170,7 +174,7 @@ func mergeParameters(paramsList ...[]spec.Parameter) []spec.Parameter {
 	m := make(map[pk]spec.Parameter)
 
 	for _, params := range paramsList {
-		m = mergeMaps(m, assoc(params, func(p spec.Parameter) pk {
+		m = mergeMaps(m, associateBy(params, func(p spec.Parameter) pk {
 			return pk{p.In, p.Name}
 		}))
 	}
@@ -190,7 +194,7 @@ func mergeMaps[K comparable, V any](maps ...map[K]V) map[K]V {
 	return res
 }
 
-func assoc[K comparable, V any](slice []V, keyFn func(V) K) map[K]V {
+func associateBy[K comparable, V any](slice []V, keyFn func(V) K) map[K]V {
 	m := make(map[K]V)
 
 	for _, t := range slice {
@@ -227,7 +231,7 @@ func sortedKeys[K comparable, V any](m map[K]V, less func(K, K) bool) []K {
 	return keys
 }
 
-func updateResponses(fi FuncInfo, op *swag.Operation, h http.Handler) error {
+func updateResponses(fi funcInfo, op *swag.Operation, h http.Handler) error {
 	resErrer, ok := h.(chai.ResErrer)
 	if !ok {
 		return nil

@@ -45,13 +45,10 @@ paths:
     get:
       description: attribute
       parameters:
-      - description: string enums
-        enum:
-        - A
-        - B
-        - C
+      - default: A
+        description: string default
         in: query
-        name: enumstring
+        name: default
         type: string
       - description: int enums
         enum:
@@ -69,11 +66,13 @@ paths:
         in: query
         name: enumnumber
         type: number
-      - description: string valid
+      - description: string enums
+        enum:
+        - A
+        - B
+        - C
         in: query
-        maxLength: 10
-        minLength: 5
-        name: string
+        name: enumstring
         type: string
       - description: int valid
         in: query
@@ -81,10 +80,11 @@ paths:
         minimum: 1
         name: int
         type: integer
-      - default: A
-        description: string default
+      - description: string valid
         in: query
-        name: default
+        maxLength: 10
+        minLength: 5
+        name: string
         type: string
       produces:
       - application/json
@@ -136,14 +136,14 @@ paths:
     get:
       description: path params
       parameters:
-      - description: Group ID
-        in: path
-        name: group_id
-        required: true
-        type: integer
       - description: Account ID
         in: path
         name: account_id
+        required: true
+        type: integer
+      - description: Group ID
+        in: path
+        name: group_id
         required: true
         type: integer
       produces:
