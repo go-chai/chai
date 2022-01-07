@@ -3,37 +3,13 @@
 package openapi2
 
 import (
-	"fmt"
 	"go/parser"
 	"go/token"
-	"net/http"
 	"testing"
 
-	// "github.com/go-chai/chai/chai"
-
 	"github.com/go-chai/chai/openapi2/internal/tests"
-	"github.com/go-chi/docgen"
 	"github.com/stretchr/testify/require"
 )
-
-func TT() float32 {
-	fifio := func(mm int) (string, int, string) {
-		println(mm)
-
-		if true {
-			return "", http.StatusAccepted, "123"
-		}
-		return "45m", http.StatusForbidden, "4435"
-	}
-
-	fifio(123)
-
-	return 1.23
-}
-
-type ZZ struct {
-	A string `json:"a"`
-}
 
 func TestFixFuncLine(t *testing.T) {
 	type args struct {
@@ -158,16 +134,12 @@ func TestGetFuncInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			require.Equal(t, tt.want.comment, getFuncInfo(tt.args.fn).Comment)
-			fmt.Println("docgen.GetFuncInfo(tt.args.fn).Line")
-			fmt.Println(docgen.GetFuncInfo(tt.args.fn).Line)
-			// require.Equal(t, tt.want.comment, docgen.GetFuncInfo(tt.args.fn).Comment)
 		})
 	}
 }
 
 // wrong comment 2
 func TestGetFuncInfoLocal(t *testing.T) {
-	// t.Skip()
 
 	// wrong comment 3
 	var fn3 func() (int, int)
@@ -239,6 +211,5 @@ func TestGetFuncInfoLocal(t *testing.T) {
 
 // wrong comment 2
 func TestGetFuncInfo3(t *testing.T) {
-	// t.Skip()
 	tt(t)
 }

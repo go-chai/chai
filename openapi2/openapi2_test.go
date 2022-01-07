@@ -72,7 +72,7 @@ func TestParseAPIObjectSchema(t *testing.T) {
 				require.Equal(t, tt.want.ref, schema.Ref.String())
 			}
 
-			if tt.want.ref != "" {
+			if tt.want.definitionsJSON != "" {
 				require.JSONEq(t, tt.want.definitionsJSON, js(parser.GetSwagger().Definitions))
 			}
 		})
@@ -162,18 +162,11 @@ func TestMergeParameters(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// LogYAML(tt.want)
-
 			wantJSON := js(tt.want)
-
 			got := mergeParameters(tt.args.params...)
-			// LogYAML(got)
-
 			gotJSON := js(got)
 
-			assert.Equal(t, string(wantJSON), string(gotJSON))
-
-			// fmt.Println("-----------------")
+			assert.JSONEq(t, string(wantJSON), string(gotJSON))
 		})
 	}
 }

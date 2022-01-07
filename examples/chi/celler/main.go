@@ -94,7 +94,7 @@ func main() {
 
 	addCustomDocs(docs)
 
-	// LogYAML(docs)
+	LogYAML(docs)
 
 	// This must be used only during development to store the swagger spec
 	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
@@ -106,7 +106,7 @@ func main() {
 
 	fmt.Println("The swagger spec is available at http://localhost:8080/swagger/")
 
-	// http.ListenAndServe(":8080", r)
+	http.ListenAndServe(":8080", r)
 }
 
 func addCustomDocs(docs *spec.Swagger) {
