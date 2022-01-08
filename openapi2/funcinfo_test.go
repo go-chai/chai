@@ -7,7 +7,7 @@ import (
 	"go/token"
 	"testing"
 
-	"github.com/go-chai/chai/openapi2/internal/tests"
+	"github.com/go-chai/chai/internal/tests"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,7 +27,7 @@ func TestFixFuncLine(t *testing.T) {
 		{
 			name: "simple",
 			args: args{
-				filePath: "internal/tests/testfile.go",
+				filePath: "../internal/tests/testfile.go",
 				line:     24,
 			},
 			want: want{fixedLine: 12},
@@ -35,7 +35,7 @@ func TestFixFuncLine(t *testing.T) {
 		{
 			name: "simple2",
 			args: args{
-				filePath: "internal/tests/testfile.go",
+				filePath: "../internal/tests/testfile.go",
 				line:     44,
 			},
 			want: want{fixedLine: 32},
@@ -43,7 +43,7 @@ func TestFixFuncLine(t *testing.T) {
 		{
 			name: "not simple",
 			args: args{
-				filePath: "internal/tests/testfile.go",
+				filePath: "../internal/tests/testfile.go",
 				line:     52,
 			},
 			want: want{fixedLine: 52},
@@ -51,7 +51,7 @@ func TestFixFuncLine(t *testing.T) {
 		{
 			name: "not simple 2",
 			args: args{
-				filePath: "internal/tests/testfile.go",
+				filePath: "../internal/tests/testfile.go",
 				line:     74,
 			},
 			want: want{fixedLine: 74},

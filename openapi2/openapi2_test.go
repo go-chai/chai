@@ -2,10 +2,13 @@ package openapi2
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"testing"
 
-	"github.com/go-chai/chai/openapi2/internal/tests"
+	"github.com/go-chai/chai/chai"
+	"github.com/go-chai/chai/internal/tests"
 	"github.com/go-chai/swag"
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
@@ -56,7 +59,7 @@ func TestParseAPIObjectSchema(t *testing.T) {
 			fi := getFuncInfo(RegisterRoute)
 			op := swag.NewOperation(parser)
 
-			err := parser.GetAllGoFileInfoAndParseTypes("./")
+			err := parser.GetAllGoFileInfoAndParseTypes("../internal")
 			require.NoError(t, err)
 
 			schema, err := op.ParseAPIObjectSchema("object", typeName(tt.args.val), fi.ASTFile)
@@ -250,4 +253,66 @@ func TestSortedKeys(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestDocs(t *testing.T) {
+	type args struct {
+		routes []*Route
+	}
+	tests := []struct {
+		name     string
+		args     args
+		filePath string
+		wantErr  bool
+	}{
+		{
+			name: "t1",
+			args: args{
+				routes: []*Route{
+					{
+						Method: "GET",
+						Path:   "/test1/{p1}/{p2}",
+						Params: []spec.Parameter{
+							{ParamProps: spec.ParamProps{Name: "p1", In: "path", Description: "d1", Required: true}},
+							{ParamProps: spec.ParamProps{Name: "p2", In: "path", Description: "d2", Required: true}},
+						},
+
+						// ShowBottle godoc
+						// @Summary      Test Handler
+						// @Description  get string by ID
+						// @ID           get-string-by-int
+						// @Tags         bottles
+						// @Accept       json
+						// @Produce      json
+						// @Success      200
+						// @Failure      400,404,500
+						Handler: chai.NewReqResHandler(func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
+							return nil, 0, nil
+						}),
+					},
+				},
+			},
+			filePath: "testdata/t1.json",
+			wantErr:  false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := Docs(tt.args.routes)
+
+			LogJSON(got)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Docs() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			require.JSONEq(t, load(t, tt.filePath), js(got))
+		})
+	}
+}
+
+func load(t *testing.T, path string) string {
+	b, err := ioutil.ReadFile(path)
+	require.NoError(t, err)
+	return string(b)
 }

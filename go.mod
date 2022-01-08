@@ -3,12 +3,10 @@ module github.com/go-chai/chai
 go 1.18
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/getkin/kin-openapi v0.88.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-chai/swag v1.7.8-fork2
 	github.com/go-chi/chi/v5 v5.0.7
-	github.com/go-chi/docgen v1.2.0
 	github.com/go-chi/render v1.0.1
 	github.com/go-openapi/spec v0.20.4
 	github.com/gofrs/uuid v4.2.0+incompatible
@@ -23,6 +21,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
