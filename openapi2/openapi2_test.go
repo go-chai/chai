@@ -2,12 +2,85 @@ package openapi2
 
 import (
 	"encoding/json"
-	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"testing"
 
+	"github.com/go-chai/chai/chai"
+	"github.com/go-chai/chai/internal/tests"
+	"github.com/go-chai/swag"
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestParseAPIObjectSchema(t *testing.T) {
+	type args struct {
+		val any
+	}
+	type want struct {
+		typeName        string
+		ref             string
+		definitionsJSON string
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "string",
+			args: args{
+				val: "12345asdf",
+			},
+			want: want{typeName: "string"},
+		},
+		{
+			name: "int",
+			args: args{
+				val: 123,
+			},
+			want: want{typeName: "integer"},
+		},
+		{
+			name: "obj",
+			args: args{
+				val: &tests.TestStruct{},
+			},
+			want: want{ref: "#/definitions/tests.TestStruct", definitionsJSON: `{"tests.TestStruct": {"type": "object","properties": {"bar": {"type": "integer"},"foo": {"type": "string"}}}}`},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			parser := swag.New(swag.SetDebugger(log.Default()), func(p *swag.Parser) {
+				p.ParseDependency = true
+			})
+			fi := getFuncInfo(RegisterRoute)
+			op := swag.NewOperation(parser)
+
+			err := parser.GetAllGoFileInfoAndParseTypes("../internal")
+			require.NoError(t, err)
+
+			schema, err := op.ParseAPIObjectSchema("object", typeName(tt.args.val), fi.ASTFile)
+			require.NoError(t, err)
+
+			LogYAML(parser.GetSwagger().Definitions)
+
+			if tt.want.typeName != "" {
+				require.Equal(t, tt.want.typeName, schema.Type[0])
+			}
+
+			if tt.want.ref != "" {
+				require.Equal(t, tt.want.ref, schema.Ref.String())
+			}
+
+			if tt.want.definitionsJSON != "" {
+				require.JSONEq(t, tt.want.definitionsJSON, js(parser.GetSwagger().Definitions))
+			}
+		})
+	}
+}
 
 func TestMergeParameters(t *testing.T) {
 	type args struct {
@@ -92,18 +165,11 @@ func TestMergeParameters(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			LogYAML(tt.want)
-
 			wantJSON := js(tt.want)
-
 			got := mergeParameters(tt.args.params...)
-			LogYAML(got)
-
 			gotJSON := js(got)
 
-			assert.Equal(t, string(wantJSON), string(gotJSON))
-
-			fmt.Println("-----------------")
+			assert.JSONEq(t, string(wantJSON), string(gotJSON))
 		})
 	}
 }
@@ -113,7 +179,7 @@ func js(v any) string {
 	return string(b)
 }
 
-func TestAssoc(t *testing.T) {
+func TestAssociateBy(t *testing.T) {
 	type args struct {
 		ts []spec.Parameter
 		fn func(spec.Parameter) pk
@@ -144,7 +210,7 @@ func TestAssoc(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := assoc(tt.args.ts, tt.args.fn)
+			got := associateBy(tt.args.ts, tt.args.fn)
 
 			assert.Equal(t, tt.want, got)
 		})
@@ -187,4 +253,66 @@ func TestSortedKeys(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestDocs(t *testing.T) {
+	type args struct {
+		routes []*Route
+	}
+	tests := []struct {
+		name     string
+		args     args
+		filePath string
+		wantErr  bool
+	}{
+		{
+			name: "t1",
+			args: args{
+				routes: []*Route{
+					{
+						Method: "GET",
+						Path:   "/test1/{p1}/{p2}",
+						Params: []spec.Parameter{
+							{ParamProps: spec.ParamProps{Name: "p1", In: "path", Description: "d1", Required: true}},
+							{ParamProps: spec.ParamProps{Name: "p2", In: "path", Description: "d2", Required: true}},
+						},
+
+						// ShowBottle godoc
+						// @Summary      Test Handler
+						// @Description  get string by ID
+						// @ID           get-string-by-int
+						// @Tags         bottles
+						// @Accept       json
+						// @Produce      json
+						// @Success      200
+						// @Failure      400,404,500
+						Handler: chai.NewReqResHandler(func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
+							return nil, 0, nil
+						}),
+					},
+				},
+			},
+			filePath: "testdata/t1.json",
+			wantErr:  false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := Docs(tt.args.routes)
+
+			LogJSON(got)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Docs() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			require.JSONEq(t, load(t, tt.filePath), js(got))
+		})
+	}
+}
+
+func load(t *testing.T, path string) string {
+	b, err := ioutil.ReadFile(path)
+	require.NoError(t, err)
+	return string(b)
 }

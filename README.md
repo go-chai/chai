@@ -17,10 +17,6 @@
 
 ## Gotchas
 
-- Compiler optimizations
-
-    The way the swaggo annotations are obtained from the source code currently relies on the caller frames and go's compiler optimizations sometimes change those which results in the annotations for "small" handlers to get ignored. As a workaround, the optimizations must be disabled for the binary that generates the docs by passing `-gcflags -N` to the compiler, e.g. `go run -gcflags -N ./examples/chi/basic/main.go`
-
 - YAML marshalling
 
 	Currently only https://github.com/ghodss/yaml is supported as a yaml marshaller for the generated swagger spec, which is also provided via `openapi2.MarshalYAML()` as an alias
