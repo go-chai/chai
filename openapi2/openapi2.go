@@ -287,6 +287,7 @@ func typeName(i any) string {
 	}
 
 	s := strings.ReplaceAll(t.String(), " ", "")
+	s = strings.ReplaceAll(s, "*", "")
 
 	if s == "error" {
 		return "string"

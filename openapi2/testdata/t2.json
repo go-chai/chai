@@ -1,0 +1,117 @@
+{
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/test1/{p1}/{p2}": {
+            "get": {
+                "description": "get string by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bottles"
+                ],
+                "summary": "Test Handler",
+                "operationId": "get-string-by-int",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/tests.TestRequest"
+                            }
+                        }
+                    },
+                    {
+                        "description": "d1",
+                        "name": "p1",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "d2",
+                        "name": "p2",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/tests.TestResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "tests.TestInnerResponse": {
+            "type": "object",
+            "properties": {
+                "bar_bar": {
+                    "type": "integer"
+                },
+                "foo_foo": {
+                    "type": "integer"
+                }
+            }
+        },
+        "tests.TestRequest": {
+            "type": "object",
+            "properties": {
+                "barb": {
+                    "type": "string"
+                },
+                "foob": {
+                    "type": "string"
+                },
+                "test_inner_responseb": {
+                    "$ref": "#/definitions/tests.TestInnerResponse"
+                }
+            }
+        },
+        "tests.TestResponse": {
+            "type": "object",
+            "properties": {
+                "bar": {
+                    "type": "string"
+                },
+                "foo": {
+                    "type": "string"
+                },
+                "test_inner_response": {
+                    "$ref": "#/definitions/tests.TestInnerResponse"
+                }
+            }
+        }
+    }
+}

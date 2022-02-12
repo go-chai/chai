@@ -295,6 +295,34 @@ func TestDocs(t *testing.T) {
 			filePath: "testdata/t1.json",
 			wantErr:  false,
 		},
+		{
+			name: "t2",
+			args: args{
+				routes: []*Route{
+					{
+						Method: "GET",
+						Path:   "/test1/{p1}/{p2}",
+						Params: []spec.Parameter{
+							{ParamProps: spec.ParamProps{Name: "p1", In: "path", Description: "d1", Required: true}},
+							{ParamProps: spec.ParamProps{Name: "p2", In: "path", Description: "d2", Required: true}},
+						},
+
+						// ShowBottles godoc
+						// @Summary      Test Handler
+						// @Description  get string by ID
+						// @ID           get-string-by-int
+						// @Tags         bottles
+						// @Success      200
+						// @Failure      400,404,500
+						Handler: chai.NewReqResHandler(func(req []*tests.TestRequest, w http.ResponseWriter, r *http.Request) ([]*tests.TestResponse, int, error) {
+							return nil, 0, nil
+						}),
+					},
+				},
+			},
+			filePath: "testdata/t2.json",
+			wantErr:  false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
