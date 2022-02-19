@@ -1,9 +1,10 @@
 package tests
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"testing"
+
+	"encoding/json"
 
 	"github.com/stretchr/testify/require"
 )

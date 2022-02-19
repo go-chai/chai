@@ -1,8 +1,9 @@
 package chai
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"encoding/json"
 )
 
 type Methoder interface {
@@ -20,17 +21,6 @@ type ResErrer interface {
 
 type Handlerer interface {
 	Handler() any
-}
-
-type chaiErr struct {
-	Message          string `json:"error"`
-	ErrorDebug       string `json:"error_debug,omitempty"`
-	ErrorDescription string `json:"error_description,omitempty"`
-	StatusCode       int    `json:"status_code,omitempty"`
-}
-
-func (e chaiErr) Error() string {
-	return e.Message
 }
 
 func write(w http.ResponseWriter, code int, v any) {
@@ -51,6 +41,34 @@ func writeBytes(w http.ResponseWriter, code int, bytes []byte) {
 
 type ErrType = error
 
+type Err error
+
+type ErrWrap struct {
+	Err        error
+	StatusCode int
+	Error      string
+}
+
+// TODO figure out how to do this without multiple json.Marshal/Unmarshal calls
+func (ew *ErrWrap) MarshalJSON() ([]byte, error) {
+	m := map[string]interface{}{
+		"error":       ew.Error,
+		"status_code": ew.StatusCode,
+	}
+
+	b, err := json.Marshal(ew.Err)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(b, &m)
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(m)
+}
+
 type ErrorWriter interface {
 	WriteError(w http.ResponseWriter, code int, e ErrType)
 }
@@ -58,16 +76,15 @@ type ErrorWriter interface {
 type defaultErrorWriter struct{}
 
 func (defaultErrorWriter) WriteError(w http.ResponseWriter, code int, e ErrType) {
-	b, err := json.Marshal(e)
-	if err != nil {
-		panic(err)
+	ew := &ErrWrap{
+		Err:        e,
+		StatusCode: code,
+		Error:      e.Error(),
 	}
 
-	if string(b) == "{}" {
-		b, err = json.Marshal(&chaiErr{Message: e.Error(), StatusCode: code})
-		if err != nil {
-			panic(err)
-		}
+	b, err := json.Marshal(ew)
+	if err != nil {
+		panic(err)
 	}
 
 	writeBytes(w, code, b)
