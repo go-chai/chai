@@ -2,15 +2,13 @@ package chai
 
 import (
 	"net/http"
-
-	"errors"
 )
 
 type ResHandlerFunc[Res any, Err ErrType] func(http.ResponseWriter, *http.Request) (Res, int, Err)
 
 func NewResHandler[Res any, Err ErrType](h ResHandlerFunc[Res, Err]) *ResHandler[Res, Err] {
 	return &ResHandler[Res, Err]{
-		f:   h,
+		f: h,
 	}
 }
 
@@ -22,7 +20,7 @@ type ResHandler[Res any, Err ErrType] struct {
 
 func (h *ResHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	res, code, err := h.f(w, r)
-	if !errors.Is(err, nil) {
+	if isErr(err) {
 		if code == 0 {
 			code = http.StatusInternalServerError
 		}

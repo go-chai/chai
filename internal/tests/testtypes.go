@@ -22,3 +22,31 @@ type TestRequest struct {
 
 	TestInnerResponse TestInnerResponse `json:"test_inner_responseb"`
 }
+
+type TestError struct {
+	Message string `json:"message"`
+}
+
+func (e TestError) Error() string {
+	return e.Message
+}
+
+type TestErrorPtr struct {
+	Message string `json:"message"`
+}
+
+func (e *TestErrorPtr) Error() string {
+	return e.Message
+}
+
+type TestErrorMap map[string]string
+
+func (e TestErrorMap) Error() string {
+	return "test error map"
+}
+
+type TestErrorMapPtr map[string]string
+
+func (e *TestErrorMapPtr) Error() string {
+	return "test error map ptr"
+}

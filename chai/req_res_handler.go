@@ -2,8 +2,8 @@ package chai
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
+	"reflect"
 )
 
 type ReqResHandlerFunc[Req any, Res any, Err ErrType] func(Req, http.ResponseWriter, *http.Request) (Res, int, Err)
@@ -21,6 +21,10 @@ type ReqResHandler[Req any, Res any, Err ErrType] struct {
 	err *Err
 }
 
+func isErr[Err ErrType](err Err) bool {
+	return !reflect.ValueOf(&err).Elem().IsZero()
+}
+
 func (h *ReqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var req *Req
 
@@ -30,8 +34,7 @@ func (h *ReqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.
 	}
 
 	res, code, err := h.f(*req, w, r)
-
-	if !errors.Is(err, nil) {
+	if isErr(err) {
 		if code == 0 {
 			code = http.StatusInternalServerError
 		}
