@@ -123,7 +123,11 @@ func fixFuncLine(line int, fset *token.FileSet, astFile *ast.File) int {
 
 	var stack []ast.Node
 	ast.Inspect(astFile, func(n ast.Node) bool {
-		stack = updateNodeStack(stack, n)
+		if n != nil {
+			stack = append(stack, n)
+		} else {
+			stack = stack[:len(stack)-1]
+		}
 
 		// Check if the current node is on the specified line.
 		if n == nil || fset.Position(n.Pos()).Line != line {
@@ -149,18 +153,4 @@ func fixFuncLine(line int, fset *token.FileSet, astFile *ast.File) int {
 	})
 
 	return fixedFuncLine
-}
-
-func updateNodeStack[T comparable](stack []T, n T) []T {
-	var nilT T
-
-	if n == nilT {
-		// pop on nil
-		stack = stack[:len(stack)-1]
-	} else {
-		// push
-		stack = append(stack, n)
-	}
-
-	return stack
 }
