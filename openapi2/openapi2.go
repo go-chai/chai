@@ -1,19 +1,23 @@
 package openapi2
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"sort"
 	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3gen"
 	"github.com/go-chai/chai/chai"
+	"github.com/go-chai/chai/internal/log"
 	"github.com/go-chai/swag"
 	"github.com/go-chai/swag/gen"
 	"github.com/go-openapi/spec"
 	"github.com/pkg/errors"
+	"github.com/zhamlin/chi-openapi/pkg/openapi"
 )
 
 type GenConfig = gen.GenConfig
@@ -33,7 +37,7 @@ type Route struct {
 func Docs(routes []*Route) (*spec.Swagger, error) {
 	var err error
 
-	parser := swag.New(swag.SetDebugger(log.Default()), func(p *swag.Parser) {
+	parser := swag.New(swag.SetDebugger(log.DefaultLogger), func(p *swag.Parser) {
 		p.ParseDependency = true
 	})
 
@@ -47,32 +51,119 @@ func Docs(routes []*Route) (*spec.Swagger, error) {
 	return parser.GetSwagger(), nil
 }
 
-func RegisterRoute(parser *swag.Parser, route *Route) error {
-	var h = route.Handler
-	var hh any = h
+type HandlerInfo struct {
+	Req            any
+	Res            any
+	Err            any
+	Docs           string
+	HandlerFunc    any
+	HandlerWrapper http.Handler
+}
 
-	ch, ok := h.(chai.Handlerer)
+func GetHandlerInfo(fn http.Handler) *HandlerInfo {
+	hi := new(HandlerInfo)
+	hi.HandlerWrapper = fn
+
+	ch, ok := fn.(chai.Handlerer)
 	if ok {
-		hh = ch.Handler()
+		hi.HandlerFunc = ch.Handler()
 	}
 
-	fi := getFuncInfo(hh)
+	reqer, ok := fn.(chai.Reqer)
+	if ok {
+		hi.Req = reqer.Req()
+	}
+
+	resErrer, ok := fn.(chai.ResErrer)
+	if ok {
+		hi.Res = resErrer.Res()
+		hi.Err = resErrer.Err()
+	}
+
+	docer, ok := fn.(chai.Docer)
+	if ok {
+		hi.Docs = docer.Docs()
+	}
+
+	return hi
+}
+
+func SpecGen(value any) (*spec.Schema, error) {
+	schemas := openapi3.Schemas{}
+
+	g := openapi3gen.NewGenerator()
+
+	// schemaRef, err := openapi3gen.NewSchemaRefForValue(value, schemas)
+	ref, err := g.NewSchemaRefForValue(value, schemas)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create schema ref")
+	}
+
+	LogYAML(ref)
+	LogYAML(schemas)
+
+	return nil, nil
+}
+
+func SpecGen2(value any) (*spec.Schema, error) {
+	schemas := openapi.Schemas{}
+	schemaRef := openapi.SchemaFromObj(value, schemas, nil)
+
+	LogYAML(schemaRef)
+	LogYAML(schemas)
+
+	return nil, nil
+}
+
+func RegisterRoute(parser *swag.Parser, route *Route) error {
+
+	hi := GetHandlerInfo(route.Handler)
+
+	log.Dump(hi)
+	log.Dump(hi.HandlerFunc)
+	log.Dump(hi.HandlerWrapper)
+	log.Dump(reflect.ValueOf(hi.HandlerFunc))
+	log.Dump(reflect.ValueOf(hi.HandlerWrapper))
+	log.Dump(reflect.TypeOf(hi.HandlerFunc))
+	log.Dump(reflect.TypeOf(hi.HandlerWrapper))
+	log.Dump(reflect.TypeOf(hi.HandlerFunc).PkgPath())
+	log.Dump(reflect.TypeOf(hi.HandlerWrapper).PkgPath())
+	log.Dump(reflect.TypeOf(hi.HandlerFunc).Name())
+	log.Dump(reflect.TypeOf(hi.HandlerWrapper).Name())
+	log.Dump(reflect.TypeOf(hi.HandlerFunc).String())
+	log.Dump(reflect.TypeOf(hi.HandlerWrapper).String())
+	log.Dump(reflect.TypeOf(hi.HandlerWrapper).Name())
+	// log.Dump(reflect.TypeOf(hi.Req).Name())
+	log.Dump(reflect.TypeOf(hi.Res).Name())
+	log.Dump(reflect.TypeOf(hi.Res).PkgPath())
+	log.Dump(reflect.TypeOf(hi.Res).String())
+	log.Dump(reflect.TypeOf(hi.Err).Name())
+	log.Dump(reflect.TypeOf(hi.Err).PkgPath())
+	log.Dump(reflect.TypeOf(hi.Err).String())
+
+	hhptr := reflect.ValueOf(hi.HandlerFunc).Pointer()
+
+	log.Dump("inner")
+	log.Dump(runtime.FuncForPC(hhptr).FileLine(hhptr))
+	log.Dump(runtime.FuncForPC(hhptr).Name())
+
+	fi := getFuncInfo(hi.HandlerFunc)
 
 	if fi.Unresolvable {
 		return errors.New("failed to resolve func info")
 	}
 
-	op, err := parseSwaggoAnnotations(fi, parser)
+	op, err := parseSwaggoAnnotations(route, fi, parser)
 	if err != nil {
 		return err
 	}
 
-	err = updateRequests(fi, op, h, route.Params)
+	err = updateRequests(fi, op, hi.HandlerWrapper, route.Params)
 	if err != nil {
 		return err
 	}
 
-	err = updateResponses(fi, op, h)
+	err = updateResponses(fi, op, hi.HandlerWrapper)
 	if err != nil {
 		return err
 	}
@@ -82,7 +173,7 @@ func RegisterRoute(parser *swag.Parser, route *Route) error {
 	return nil
 }
 
-func parseSwaggoAnnotations(fi funcInfo, parser *swag.Parser) (*swag.Operation, error) {
+func parseSwaggoAnnotations(route *Route, fi funcInfo, parser *swag.Parser) (*swag.Operation, error) {
 	var err error
 	op := swag.NewOperation(parser)
 
@@ -91,10 +182,14 @@ func parseSwaggoAnnotations(fi funcInfo, parser *swag.Parser) (*swag.Operation, 
 		return nil, err
 	}
 
+	log.Printf("pkg: %s\n", pkg)
+	fi.Dump()
+
 	err = parser.GetAllGoFileInfoAndParseTypes(pkg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse docs spec")
 	}
+	return op, nil
 
 	for _, line := range strings.Split(fi.Comment, "\n") {
 		err := op.ParseComment(line, fi.ASTFile)
@@ -136,7 +231,7 @@ func updateRequests(fi funcInfo, op *swag.Operation, h http.Handler, params []sp
 
 	schema, err := op.ParseAPIObjectSchema("object", typeName(reqer.Req()), fi.ASTFile)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to parse schema")
 	}
 
 	noBody := true
@@ -241,14 +336,15 @@ func updateResponses(fi funcInfo, op *swag.Operation, h http.Handler) error {
 		op.Produces = append(op.Produces, "application/json")
 	}
 
+	fi.Dump()
 	resSchema, err := op.ParseAPIObjectSchema("object", typeName(resErrer.Res()), fi.ASTFile)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to parse schema")
 	}
 
 	errSchema, err := op.ParseAPIObjectSchema("object", typeName(resErrer.Err()), fi.ASTFile)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to parse schema")
 	}
 
 	responses := op.Responses

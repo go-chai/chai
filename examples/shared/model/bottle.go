@@ -1,10 +1,28 @@
 package model
 
+import "github.com/go-chai/chai/examples/shared/httputil"
+
 // Bottle example
 type Bottle struct {
 	ID      int     `json:"id" example:"1"`
 	Name    string  `json:"name" example:"bottle_name"`
 	Account Account `json:"account"`
+}
+
+func (b *Bottle) ValidateRequest1() *httputil.Error {
+	if b.ID == 0 {
+		return &httputil.Error{Message: "ID can't be 0"}
+	}
+
+	return nil
+}
+
+func (b *Bottle) ValidateRequest2() *httputil.Error {
+	if b.ID == 0 {
+		return &httputil.Error{Message: "ID can't be 0"}
+	}
+
+	return nil
 }
 
 // BottlesAll example

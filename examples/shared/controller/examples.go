@@ -2,13 +2,19 @@ package controller
 
 import (
 	"fmt"
+	"math/big"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chai/chai/examples/shared/model"
 	"github.com/go-chi/chi/v5"
+	"github.com/gofrs/uuid"
 )
+
+type Int struct {
+	*big.Int
+}
 
 // PingExample godoc
 // @Summary      ping example
@@ -143,4 +149,51 @@ func (c *Controller) PostExample(account *model.Account, w http.ResponseWriter, 
 		SomeNumber: account.SomeNumber,
 		UUID:       account.UUID,
 	}, http.StatusOK, nil
+}
+
+type S struct {
+}
+
+func (*S) CalcHandler(w http.ResponseWriter, r *http.Request) (*Int, int, error) {
+	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+	val2, err := strconv.Atoi(r.URL.Query().Get("val2"))
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+	return &Int{big.NewInt(int64(val1 + val2))}, http.StatusOK, nil
+}
+
+func (*S) CalcHandler2(w http.ResponseWriter, r *http.Request) (string, int, error) {
+	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+	val2, err := strconv.Atoi(r.URL.Query().Get("val2"))
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+	return fmt.Sprintf("%d", val1*val2), http.StatusOK, nil
+}
+
+func CalcHandler(w http.ResponseWriter, r *http.Request) (*big.Int, int, error) {
+	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+	val2, err := strconv.Atoi(r.URL.Query().Get("val2"))
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+	return big.NewInt(int64(val1 + val2)), http.StatusOK, nil
+}
+
+func UUIDHandler(w http.ResponseWriter, r *http.Request) (uuid.UUID, int, error) {
+	return uuid.Must(uuid.NewV4()), http.StatusOK, nil
+}
+
+func (*S) UUIDHandler(w http.ResponseWriter, r *http.Request) (uuid.UUID, int, error) {
+	return uuid.Must(uuid.NewV4()), http.StatusOK, nil
 }

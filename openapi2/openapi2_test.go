@@ -328,7 +328,7 @@ func TestDocs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := Docs(tt.args.routes)
 
-			LogJSON(got)
+			// LogJSON(got)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Docs() error = %v, wantErr %v", err, tt.wantErr)

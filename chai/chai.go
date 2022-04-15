@@ -1,10 +1,82 @@
 package chai
 
 import (
-	"net/http"
-
 	"encoding/json"
+	"net/http"
+	"net/url"
+	"reflect"
+
+	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/schema"
 )
+
+func init() {
+	schemaDecoder = schema.NewDecoder()
+	schemaDecoder.SetAliasTag("query")
+
+	Validate = validator.New()
+}
+
+var schemaDecoder *schema.Decoder
+var Validate *validator.Validate
+
+var DefaultDecoder = func(req any, r *http.Request) ErrType {
+	queryParams, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		return err
+	}
+	if err := schemaDecoder.Decode(req, queryParams); err != nil {
+		return err
+	}
+	err = render.Decode(r, req)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type ValidationError struct {
+	Message string                                 `json:"error"`
+	Fields  validator.ValidationErrorsTranslations `json:"fields"`
+}
+
+func (e *ValidationError) Error() string {
+	return e.Message
+}
+
+var DefaultValidator = func(req any) ErrType {
+	err := Validate.Struct(req)
+	if err != nil {
+		err := err.(validator.ValidationErrors)
+		return &ValidationError{
+			Message: "validation error",
+			Fields:  err.Translate(nil),
+		}
+	}
+	return nil
+}
+
+var DefaultResponder = func(w http.ResponseWriter, r *http.Request, code int, res any) {
+	if code == 0 {
+		code = http.StatusOK
+	}
+	render.Status(r, code)
+	render.Respond(w, r, res)
+}
+
+var DefaultErrorResponder = func(w http.ResponseWriter, r *http.Request, code int, e ErrType) {
+	if code == 0 {
+		code = http.StatusInternalServerError
+	}
+	ew := &ErrWrap{
+		Err:        e,
+		StatusCode: code,
+		Message:    e.Error(),
+	}
+	render.Status(r, code)
+	render.Respond(w, r, ew)
+}
 
 type Methoder interface {
 	Method(method, pattern string, h http.Handler)
@@ -22,72 +94,68 @@ type ResErrer interface {
 type Handlerer interface {
 	Handler() any
 }
-
-func write(w http.ResponseWriter, code int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(v)
-}
-
-func writeErr(w http.ResponseWriter, code int, e ErrType) {
-	DefaultErrorWriter.WriteError(w, code, e)
-}
-
-func writeBytes(w http.ResponseWriter, code int, bytes []byte) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(bytes)
+type Docer interface {
+	Docs() string
 }
 
 type ErrType = error
 
 type Err error
 
+func handleErr(w http.ResponseWriter, r *http.Request, err ErrType, code int, errorFn ErrorResponderFunc) bool {
+	if !isErr(err) {
+		return false
+	}
+	errorFn(w, r, code, err)
+	return true
+}
+
+func isErr[Err ErrType](err Err) bool {
+	return !reflect.ValueOf(&err).Elem().IsZero()
+}
+
 type ErrWrap struct {
 	Err        error
 	StatusCode int
-	Error      string
+	Message    string
 }
 
 // TODO figure out how to do this without multiple json.Marshal/Unmarshal calls
 func (ew *ErrWrap) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
-		"error":       ew.Error,
+		"error":       ew.Message,
 		"status_code": ew.StatusCode,
 	}
-
 	b, err := json.Marshal(ew.Err)
 	if err != nil {
 		return nil, err
 	}
-
 	err = json.Unmarshal(b, &m)
 	if err != nil {
 		return nil, err
 	}
-
 	return json.Marshal(m)
 }
 
-type ErrorWriter interface {
-	WriteError(w http.ResponseWriter, code int, e ErrType)
+type DecoderFunc[Req any] func(*http.Request) (Req, ErrType)
+type ResponderFunc[Res any] func(w http.ResponseWriter, r *http.Request, code int, res Res)
+type ErrorResponderFunc func(w http.ResponseWriter, r *http.Request, code int, e ErrType)
+type ValidatorFunc[Req any] func(req Req) ErrType
+
+func defaultDecoder[Req any](r *http.Request) (Req, ErrType) {
+	req := new(Req)
+	err := DefaultDecoder(req, r)
+	return *req, err
 }
 
-type defaultErrorWriter struct{}
-
-func (defaultErrorWriter) WriteError(w http.ResponseWriter, code int, e ErrType) {
-	ew := &ErrWrap{
-		Err:        e,
-		StatusCode: code,
-		Error:      e.Error(),
-	}
-
-	b, err := json.Marshal(ew)
-	if err != nil {
-		panic(err)
-	}
-
-	writeBytes(w, code, b)
+func defaultResponder[Res any](w http.ResponseWriter, r *http.Request, code int, res Res) {
+	DefaultResponder(w, r, code, res)
 }
 
-var DefaultErrorWriter = &defaultErrorWriter{}
+func defaultErrorResponder[Err ErrType](w http.ResponseWriter, r *http.Request, code int, err Err) {
+	DefaultErrorResponder(w, r, code, err)
+}
+
+func defaultValidator[Req any](req Req) ErrType {
+	return DefaultValidator(req)
+}

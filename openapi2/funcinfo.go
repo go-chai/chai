@@ -9,10 +9,14 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+
+	"github.com/go-chai/chai/internal/log"
 )
 
 type funcInfo struct {
 	Pkg          string         `json:"pkg"`
+	PkgPath      string         `json:"pkgPath"`
+	Name         string         `json:"name"`
 	Func         string         `json:"func"`
 	Comment      string         `json:"comment"`
 	File         string         `json:"file,omitempty"`
@@ -21,6 +25,18 @@ type funcInfo struct {
 	Line         int            `json:"line,omitempty"`
 	Anonymous    bool           `json:"anonymous,omitempty"`
 	Unresolvable bool           `json:"unresolvable,omitempty"`
+
+	fn any
+}
+
+func (fi *funcInfo) Dump() {
+	log.Printf("-----------\n")
+	log.Printf("PkgPath %q\n", fi.PkgPath)
+	log.Printf("Name %q\n", fi.Name)
+	log.Printf("Pkg: %q\n", fi.Pkg)
+	log.Printf("Func %q\n", fi.Func)
+	log.Printf("Line %d\n", fi.Line)
+	log.Printf("-----------\n")
 }
 
 func getFuncInfo(fn any) funcInfo {
@@ -28,7 +44,9 @@ func getFuncInfo(fn any) funcInfo {
 }
 
 func getFuncInfoWithSrc(fn any, src any) funcInfo {
-	fi := funcInfo{}
+	fi := funcInfo{
+		fn: fn,
+	}
 	frame := getCallerFrame(fn)
 	goPathSrc := filepath.Join(os.Getenv("GOPATH"), "src")
 
@@ -38,6 +56,9 @@ func getFuncInfoWithSrc(fn any, src any) funcInfo {
 	}
 
 	pkgName := getPkgName(frame.File, src)
+	fi.PkgPath = reflect.TypeOf(fn).PkgPath()
+	fi.Name = reflect.TypeOf(fn).Name()
+
 	funcPath := frame.Func.Name()
 
 	idx := strings.Index(funcPath, "/"+pkgName)
@@ -70,6 +91,7 @@ func getCallerFrame(fn any) *runtime.Frame {
 	if frames == nil {
 		return nil
 	}
+
 	frame, _ := frames.Next()
 	if frame.Entry == 0 {
 		return nil

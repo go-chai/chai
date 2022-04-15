@@ -137,6 +137,32 @@ func TestGetFuncInfo(t *testing.T) {
 		})
 	}
 }
+func TestGetFuncInfo2(t *testing.T) {
+	type args struct {
+		fn any
+	}
+	type want struct {
+		comment string
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "with receiver",
+			args: args{
+				fn: (&tests.Controller{}).WithReceiver,
+			},
+			want: want{comment: "WithReceiver correct comment\n"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want.comment, getFuncInfo(tt.args.fn).Comment)
+		})
+	}
+}
 
 // wrong comment 2
 func TestGetFuncInfoLocal(t *testing.T) {
