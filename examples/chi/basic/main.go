@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	chai "github.com/go-chai/chai/chi"
 	_ "github.com/go-chai/chai/examples/docs/basic" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/shared/controller"
@@ -17,6 +18,7 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/gofrs/uuid"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
@@ -33,7 +35,6 @@ func main() {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/examples", func(r chi.Router) {
 			chai.Post(r, "/post", PostHandler).
-				WithSwagAnnotations(PostHandlerDocs).
 				WithValidator(func(a *model.Address) error {
 					err := validation.ValidateStruct(&a,
 						// State cannot be empty, and must be a string consisting of five digits
@@ -44,7 +45,8 @@ func main() {
 					}
 					return nil
 				}).
-				WithSpec(&spec.Operation{}).
+				Operation(operations.Operation{}).
+				ID("123123123").
 				WithValidator((*model.Address).ValidateStep1).
 				WithValidator((*model.Address).ValidateStep2)
 
@@ -78,19 +80,19 @@ func main() {
 
 	addCustomDocs(docs)
 
-	// openapi2.LogYAML(docs)
+	openapi2.LogYAML(docs)
 
 	// This must be used only during development to store the swagger spec
-	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
-		OutputDir: "examples/docs/basic",
-	})
+	// err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
+	// OutputDir: "examples/docs/basic",
+	// })
 	if err != nil {
 		panic(fmt.Sprintf("failed to write the swagger spec: %+v", err))
 	}
 
-	// fmt.Println("The swagger spec is available at http://localhost:8080/swagger/")
+	fmt.Println("The swagger spec is available at http://localhost:8080/swagger/")
 
-	// http.ListenAndServe(":8080", r)
+	http.ListenAndServe(":8080", r)
 }
 
 type Int struct {
@@ -295,37 +297,23 @@ func AttributeHandler(w http.ResponseWriter, r *http.Request) (string, int, erro
 	), http.StatusOK, nil
 }
 
-func addCustomDocs(docs *spec.Swagger) {
-	docs.Swagger = "2.0"
-	docs.Host = "localhost:8080"
-	docs.Info = &spec.Info{
-		InfoProps: spec.InfoProps{
-			Description:    "This is a sample celler server.",
-			Title:          "Swagger Example API",
-			TermsOfService: "http://swagger.io/terms/",
-			Contact: &spec.ContactInfo{
-				ContactInfoProps: spec.ContactInfoProps{
-					Name:  "API Support",
-					URL:   "http://www.swagger.io/support",
-					Email: "support@swagger.io",
-				},
-			},
-			License: &spec.License{
-				LicenseProps: spec.LicenseProps{
-					Name: "Apache 2.0",
-					URL:  "http://www.apache.org/licenses/LICENSE-2.0.html",
-				},
-			},
-			Version: "1.0",
+func addCustomDocs(docs operations.OpenAPI) {
+	docs.OpenAPI = "3.0"
+	docs.Servers = openapi3.Servers{{URL: "localhost:8080"}}
+
+	docs.Info = &openapi3.Info{
+		Description:    "This is a sample celler server.",
+		Title:          "Swagger Example API",
+		TermsOfService: "http://swagger.io/terms/",
+		Contact: &openapi3.Contact{
+			Name:  "API Support",
+			URL:   "http://www.swagger.io/support",
+			Email: "support@swagger.io",
 		},
-	}
-	docs.SecurityDefinitions = map[string]*spec.SecurityScheme{
-		"ApiKeyAuth": {
-			SecuritySchemeProps: spec.SecuritySchemeProps{
-				Type: "apiKey",
-				In:   "header",
-				Name: "Authorization",
-			},
+		License: &openapi3.License{
+			Name: "Apache 2.0",
+			URL:  "http://www.apache.org/licenses/LICENSE-2.0.html",
 		},
+		Version: "1.0",
 	}
 }

@@ -4,9 +4,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
+	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
 )
 
 var integerSchema = spec.SimpleSchema{Type: "integer"}
@@ -18,7 +20,7 @@ var RegexPatternSchemas = map[string]spec.SimpleSchema{
 	"[+-]?([0-9]*[.])?[0-9]+": numberSchema,
 }
 
-func OpenAPI2(r chi.Routes) (*spec.Swagger, error) {
+func OpenAPI2(r chi.Routes) (operations.OpenAPI, error) {
 	routes, err := getChiRoutes(r)
 
 	if err != nil {
@@ -50,8 +52,8 @@ func getChiRoutes(r chi.Routes) ([]*openapi2.Route, error) {
 	return routes, nil
 }
 
-func ParsePathParams(path string) ([]spec.Parameter, string) {
-	res := make([]spec.Parameter, 0)
+func ParsePathParams(path string) (openapi3.Parameters, string) {
+	res := make(openapi3.Parameters, 0)
 	regexlessPath := ""
 
 	for {
@@ -62,16 +64,16 @@ func ParsePathParams(path string) ([]spec.Parameter, string) {
 			break
 		}
 
-		regexlessPath += "{" + param.Name + "}"
+		regexlessPath += "{" + param.Value.Name + "}"
 
-		res = append(res, *param)
+		res = append(res, param)
 		path = after
 	}
 
 	return res, regexlessPath
 }
 
-func nextParam(pattern string) (param *spec.Parameter, before string, after string) {
+func nextParam(pattern string) (param *openapi3.ParameterRef, before string, after string) {
 	before, after, found := strings.Cut(pattern, "{")
 	if !found {
 		return nil, before, after
@@ -108,22 +110,17 @@ func nextParam(pattern string) (param *spec.Parameter, before string, after stri
 		}
 	}
 
-	schema, ok := RegexPatternSchemas[rexpat]
-	if !ok {
-		schema = spec.SimpleSchema{
-			Type: "string",
-		}
-	}
-
-	return &spec.Parameter{
-		CommonValidations: spec.CommonValidations{
-			Pattern: rexpat,
-		},
-		ParamProps: spec.ParamProps{
+	return &openapi3.ParameterRef{
+		Ref: "",
+		Value: &openapi3.Parameter{
 			Name:     key,
 			In:       "path",
 			Required: true,
-		},
-		SimpleSchema: schema,
+			Schema: &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					Type:    "string",
+					Pattern: rexpat,
+				},
+			}},
 	}, before, after
 }

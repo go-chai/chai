@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/spec"
-	"github.com/go-chai/swag"
 )
 
 func newSpec() *spec.Swagger {
@@ -27,24 +26,6 @@ func newSpec() *spec.Swagger {
 			SecurityDefinitions: make(map[string]*spec.SecurityScheme),
 		},
 	}
-}
-
-func addOperation(swagger *spec.Swagger, path string, method string, operation *swag.Operation) {
-	paths := swagger.Paths
-	if paths == nil {
-		paths = &spec.Paths{}
-		swagger.Paths = paths
-	}
-
-	if paths.Paths == nil {
-		paths.Paths = make(map[string]spec.PathItem)
-	}
-
-	// doc.Paths.Paths
-
-	pathItem := paths.Paths[path]
-	SetOperation(&pathItem, method, &operation.Operation)
-	paths.Paths[path] = pathItem
 }
 
 func SetOperation(pathItem *spec.PathItem, method string, operation *spec.Operation) {

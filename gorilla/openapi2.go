@@ -5,11 +5,11 @@ import (
 
 	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/openapi2"
-	"github.com/go-openapi/spec"
 	"github.com/gorilla/mux"
+	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
 )
 
-func OpenAPI2(r *mux.Router) (*spec.Swagger, error) {
+func OpenAPI2(r *mux.Router) (operations.OpenAPI, error) {
 	routes, err := getGorillaRoutes(r)
 
 	if err != nil {

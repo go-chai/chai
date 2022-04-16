@@ -286,7 +286,7 @@ func TestDocs(t *testing.T) {
 						// @Produce      json
 						// @Success      200
 						// @Failure      400,404,500
-						Handler: chai.NewReqResHandler(func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
+						Handler: chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
 							return nil, 0, nil
 						}),
 					},
@@ -314,7 +314,7 @@ func TestDocs(t *testing.T) {
 						// @Tags         bottles
 						// @Success      200
 						// @Failure      400,404,500
-						Handler: chai.NewReqResHandler(func(req []*tests.TestRequest, w http.ResponseWriter, r *http.Request) ([]*tests.TestResponse, int, error) {
+						Handler: chai.NewReqResHandler("", "", func(req []*tests.TestRequest, w http.ResponseWriter, r *http.Request) ([]*tests.TestResponse, int, error) {
 							return nil, 0, nil
 						}),
 					},

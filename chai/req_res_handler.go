@@ -1,33 +1,39 @@
 package chai
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 
-	"github.com/go-openapi/spec"
+	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
 )
 
 type ReqResHandlerFunc[Req any, Res any, Err ErrType] func(Req, http.ResponseWriter, *http.Request) (Res, int, Err)
 
 type ReqResHandler[Req any, Res any, Err ErrType] struct {
-	f               ReqResHandlerFunc[Req, Res, Err]
-	req             *Req
-	res             *Res
-	err             *Err
-	swagAnnotations string
-	spec            *spec.Operation
-	decodeFn        DecoderFunc[Req]
-	validateFn      ValidatorFunc[Req]
-	respondFn       ResponderFunc[Res]
-	errorFn         ErrorResponderFunc
+	method     string
+	pattern    string
+	fn         ReqResHandlerFunc[Req, Res, Err]
+	req        *Req
+	res        *Res
+	err        *Err
+	op         operations.Operation
+	decodeFn   DecoderFunc[Req]
+	validateFn ValidatorFunc[Req]
+	respondFn  ResponderFunc[Res]
+	errorFn    ErrorResponderFunc
 }
 
-func NewReqResHandler[Req any, Res any, Err ErrType](h ReqResHandlerFunc[Req, Res, Err]) *ReqResHandler[Req, Res, Err] {
+func NewReqResHandler[Req any, Res any, Err ErrType](method string, pattern string, fn ReqResHandlerFunc[Req, Res, Err]) *ReqResHandler[Req, Res, Err] {
 	return &ReqResHandler[Req, Res, Err]{
-		f:          h,
+		method:     method,
+		pattern:    pattern,
+		fn:         fn,
 		decodeFn:   defaultDecoder[Req],
-		respondFn:  defaultResponder[Res],
 		validateFn: defaultValidator[Req],
+		respondFn:  defaultResponder[Res],
 		errorFn:    DefaultErrorResponder,
+		op:         operations.Operation{},
 	}
 }
 
@@ -40,16 +46,11 @@ func (h *ReqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.
 	if handleErr(w, r, err, http.StatusBadRequest, h.errorFn) {
 		return
 	}
-	res, code, err := h.f(req, w, r)
+	res, code, err := h.fn(req, w, r)
 	if handleErr(w, r, err, code, h.errorFn) {
 		return
 	}
 	h.respondFn(w, r, code, res)
-}
-
-func (h *ReqResHandler[Req, Res, Err]) WithSwagAnnotations(swagAnnotations string) *ReqResHandler[Req, Res, Err] {
-	h.swagAnnotations = swagAnnotations
-	return h
 }
 
 func (h *ReqResHandler[Req, Res, Err]) WithDecoder(decodeFn DecoderFunc[Req]) *ReqResHandler[Req, Res, Err] {
@@ -72,9 +73,64 @@ func (h *ReqResHandler[Req, Res, Err]) WithErrorResponder(errorFn ErrorResponder
 	return h
 }
 
-func (h *ReqResHandler[Req, Res, Err]) WithSpec(spec *spec.Operation) *ReqResHandler[Req, Res, Err] {
-	h.spec = spec
+func (h *ReqResHandler[Req, Res, Err]) Operation(op operations.Operation) *ReqResHandler[Req, Res, Err] {
+	h.op = op
 	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) Extensions(data operations.ExtensionData) *ReqResHandler[Req, Res, Err] {
+	var err error
+	h.op, err = operations.Extensions(data)(nil, h.op)
+	requireValidSpec(err, h.method, h.pattern)
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) NoSecurity() *ReqResHandler[Req, Res, Err] {
+	var err error
+	h.op, err = operations.NoSecurity()(nil, h.op)
+	requireValidSpec(err, h.method, h.pattern)
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) Security(name string, scopes ...string) *ReqResHandler[Req, Res, Err] {
+	var err error
+	h.op, err = operations.Security(name, scopes...)(nil, h.op)
+	requireValidSpec(err, h.method, h.pattern)
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) ID(id string) *ReqResHandler[Req, Res, Err] {
+	var err error
+	h.op, err = operations.ID(id)(nil, h.op)
+	requireValidSpec(err, h.method, h.pattern)
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) Tags(tags ...string) *ReqResHandler[Req, Res, Err] {
+	var err error
+	h.op, err = operations.Tags(tags...)(nil, h.op)
+	requireValidSpec(err, h.method, h.pattern)
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) Deprecated() *ReqResHandler[Req, Res, Err] {
+	var err error
+	h.op, err = operations.Deprecated()(nil, h.op)
+	requireValidSpec(err, h.method, h.pattern)
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) Summary(summary string) *ReqResHandler[Req, Res, Err] {
+	var err error
+	h.op, err = operations.Summary(summary)(nil, h.op)
+	requireValidSpec(err, h.method, h.pattern)
+	return h
+}
+
+func requireValidSpec(err error, method string, pattern string) {
+	if err != nil {
+		log.Fatal(fmt.Sprintf("invalid spec for handler %s %s: %v", method, pattern, err))
+	}
 }
 
 func (h *ReqResHandler[Req, Res, Err]) Req() any {
@@ -90,9 +146,9 @@ func (h *ReqResHandler[Req, Res, Err]) Err() any {
 }
 
 func (h *ReqResHandler[Req, Res, Err]) Handler() any {
-	return h.f
+	return h.fn
 }
 
-func (h *ReqResHandler[Req, Res, Err]) Docs() string {
-	return h.swagAnnotations
+func (h *ReqResHandler[Req, Res, Err]) Op() operations.Operation {
+	return h.op
 }

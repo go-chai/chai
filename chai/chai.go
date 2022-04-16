@@ -6,9 +6,11 @@ import (
 	"net/url"
 	"reflect"
 
+	"github.com/go-chai/chai/internal/log"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
+	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
 )
 
 func init() {
@@ -26,7 +28,10 @@ var DefaultDecoder = func(req any, r *http.Request) ErrType {
 	if err != nil {
 		return err
 	}
-	if err := schemaDecoder.Decode(req, queryParams); err != nil {
+	v := reflect.New(reflect.ValueOf(req).Elem().Type().Elem()).Interface()
+	log.Dump(v)
+	log.Dump(reflect.ValueOf(v).Elem().Kind())
+	if err := schemaDecoder.Decode(v, queryParams); err != nil {
 		return err
 	}
 	err = render.Decode(r, req)
@@ -96,6 +101,10 @@ type Handlerer interface {
 }
 type Docer interface {
 	Docs() string
+}
+
+type Oper interface {
+	Op() operations.Operation
 }
 
 type ErrType = error

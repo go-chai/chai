@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/ghodss/yaml"
+	"github.com/zhamlin/chi-openapi/pkg/openapi"
 
 	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/examples/shared/controller"
 
 	_ "github.com/go-chai/chai/examples/docs/celler" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/shared/httputil"
-	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-openapi/spec"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -41,105 +41,95 @@ func main() {
 	LogYAML(docs)
 
 	// This must be used only during development to store the swagger spec
-	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
-		OutputDir: "examples/docs/celler",
-	})
-	if err != nil {
-		panic(fmt.Sprintf("failed to write the swagger spec: %+v", err))
-	}
+	// err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
+	// OutputDir: "examples/docs/celler",
+	// })
+	// if err != nil {
+	// panic(fmt.Sprintf("failed to write the swagger spec: %+v", err))
+	// }
 
 	fmt.Println("The swagger spec is available at http://localhost:8080/swagger/")
 
 	http.ListenAndServe(":8080", r)
 }
 
-func addCustomDocs(docs *spec.Swagger) {
-	docs.Swagger = "2.0"
-	docs.Host = "localhost:8080"
-	docs.Info = &spec.Info{
-		InfoProps: spec.InfoProps{
-			Description:    "This is a sample celler server.",
-			Title:          "Swagger Example API",
-			TermsOfService: "http://swagger.io/terms/",
-			Contact: &spec.ContactInfo{
-				ContactInfoProps: spec.ContactInfoProps{
-					Name:  "API Support",
-					URL:   "http://www.swagger.io/support",
-					Email: "support@swagger.io",
-				},
-			},
-			License: &spec.License{
-				LicenseProps: spec.LicenseProps{
-					Name: "Apache 2.0",
-					URL:  "http://www.apache.org/licenses/LICENSE-2.0.html",
-				},
-			},
-			Version: "1.0",
-		},
-	}
-	docs.SecurityDefinitions = map[string]*spec.SecurityScheme{
-		"BasicAuth": {
-			SecuritySchemeProps: spec.SecuritySchemeProps{
-				Type: "basic",
-			},
-		},
-		"ApiKeyAuth": {
-			SecuritySchemeProps: spec.SecuritySchemeProps{
-				Type: "apiKey",
-				In:   "header",
-				Name: "Authorization",
-			},
-		},
-		"OAuth2Implicit": {
-			SecuritySchemeProps: spec.SecuritySchemeProps{
-				Description:      "Use with the OAuth2 Implicit Grant to retrieve a token",
-				Type:             "oauth2",
-				Flow:             "implicit",
-				AuthorizationURL: "https://example.com/oauth/authorize",
-				TokenURL:         "",
-				Scopes: map[string]string{
-					"admin": "Grants read and write access to administrative information",
-					"write": "Grants write access",
-				},
-			},
-		},
-		"OAuth2Application": {
-			SecuritySchemeProps: spec.SecuritySchemeProps{
-				Description: "Use with the OAuth2 Implicit Grant to retrieve a token",
-				Type:        "oauth2",
-				Flow:        "application",
-				TokenURL:    "https://example.com/oauth/token",
-				Scopes: map[string]string{
-					"admin": "Grants read and write access to administrative information",
-					"write": "Grants write access",
-				},
-			},
-		},
+func addCustomDocs(docs *openapi.OpenAPI) {
+	docs.OpenAPI = "3.0"
+	docs.Servers = openapi3.Servers{{URL: "localhost:8080"}}
 
-		"OAuth2Password": {
-			SecuritySchemeProps: spec.SecuritySchemeProps{
-				Type:     "oauth2",
-				Flow:     "password",
-				TokenURL: "https://example.com/oauth/token",
-				Scopes: map[string]string{
-					"admin": "Grants read and write access to administrative information",
-					"write": "Grants write access",
-					"read":  "Grants read access",
-				},
-			},
+	docs.Info = &openapi3.Info{
+		Description:    "This is a sample celler server.",
+		Title:          "Swagger Example API",
+		TermsOfService: "http://swagger.io/terms/",
+		Contact: &openapi3.Contact{
+			Name:  "API Support",
+			URL:   "http://www.swagger.io/support",
+			Email: "support@swagger.io",
 		},
-		"OAuth2AccessToken": {
-			SecuritySchemeProps: spec.SecuritySchemeProps{
-				Type:             "oauth2",
-				Flow:             "accessCode",
-				AuthorizationURL: "https://example.com/oauth/authorize",
-				TokenURL:         "https://example.com/oauth/token",
-				Scopes: map[string]string{
-					"admin": "Grants read and write access to administrative information",
-				},
-			},
+		License: &openapi3.License{
+			Name: "Apache 2.0",
+			URL:  "http://www.apache.org/licenses/LICENSE-2.0.html",
 		},
+		Version: "1.0",
 	}
+	docs.Components.SecuritySchemes = map[string]*openapi3.SecuritySchemeRef{
+		"BasicAuth": {Value: &openapi3.SecurityScheme{Type: "basic"}},
+		"ApiKeyAuth": {Value: &openapi3.SecurityScheme{
+			Type: "apiKey",
+			In:   "header",
+			Name: "Authorization",
+		}},
+	}
+	// "OAuth2Implicit": {
+	// 	SecuritySchemeProps: spec.SecuritySchemeProps{
+	// 		Description:      "",
+	// 		Type:             "oauth2",
+	// 		Flow:             "implicit",
+	// 		AuthorizationURL: "https://example.com/oauth/authorize",
+	// 		TokenURL:         "",
+	// 		Scopes: map[string]string{
+	// 			"admin": "Grants read and write access to administrative information",
+	// 			"write": "Grants write access",
+	// 		},
+	// 	},
+	// },
+	// "OAuth2Application": {
+	// 	SecuritySchemeProps: spec.SecuritySchemeProps{
+	// 		Description: "Use with the OAuth2 Implicit Grant to retrieve a token",
+	// 		Type:        "oauth2",
+	// 		Flow:        "application",
+	// 		TokenURL:    "https://example.com/oauth/token",
+	// 		Scopes: map[string]string{
+	// 			"admin": "Grants read and write access to administrative information",
+	// 			"write": "Grants write access",
+	// 		},
+	// 	},
+	// },
+
+	// "OAuth2Password": {
+	// 	SecuritySchemeProps: spec.SecuritySchemeProps{
+	// 		Type:     "oauth2",
+	// 		Flow:     "password",
+	// 		TokenURL: "https://example.com/oauth/token",
+	// 		Scopes: map[string]string{
+	// 			"admin": "Grants read and write access to administrative information",
+	// 			"write": "Grants write access",
+	// 			"read":  "Grants read access",
+	// 		},
+	// 	},
+	// },
+	// "OAuth2AccessToken": {
+	// 	SecuritySchemeProps: spec.SecuritySchemeProps{
+	// 		Type:             "oauth2",
+	// 		Flow:             "accessCode",
+	// 		AuthorizationURL: "https://example.com/oauth/authorize",
+	// 		TokenURL:         "https://example.com/oauth/token",
+	// 		Scopes: map[string]string{
+	// 			"admin": "Grants read and write access to administrative information",
+	// 		},
+	// 	},
+	// },
+	// }
 }
 
 func auth(next http.Handler) http.Handler {

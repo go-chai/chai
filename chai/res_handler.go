@@ -3,42 +3,43 @@ package chai
 import (
 	"net/http"
 
-	"github.com/go-openapi/spec"
+	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
 )
 
 type ResHandlerFunc[Res any, Err ErrType] func(http.ResponseWriter, *http.Request) (Res, int, Err)
 
 type ResHandler[Res any, Err ErrType] struct {
-	f               ResHandlerFunc[Res, Err]
-	res             *Res
-	err             *Err
-	swagAnnotations string
-	spec            *spec.Operation
-	respondFn       ResponderFunc[Res]
-	errorFn         ErrorResponderFunc
+	method    string
+	pattern   string
+	fn        ResHandlerFunc[Res, Err]
+	res       *Res
+	err       *Err
+	op        operations.Operation
+	respondFn ResponderFunc[Res]
+	errorFn   ErrorResponderFunc
 }
 
-func NewResHandler[Res any, Err ErrType](h ResHandlerFunc[Res, Err]) *ResHandler[Res, Err] {
+func NewResHandler[Res any, Err ErrType](method string, pattern string, fn ResHandlerFunc[Res, Err]) *ResHandler[Res, Err] {
 	return &ResHandler[Res, Err]{
-		f: h,
+		method:    method,
+		pattern:   pattern,
+		fn:        fn,
+		respondFn: defaultResponder[Res],
+		errorFn:   DefaultErrorResponder,
+		op:        operations.Operation{},
 	}
 }
 
 func (h *ResHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	res, code, err := h.f(w, r)
+	res, code, err := h.fn(w, r)
 	if handleErr(w, r, err, code, h.errorFn) {
 		return
 	}
 	h.respondFn(w, r, code, res)
 }
 
-func (h *ResHandler[Res, Err]) WithSwagAnnotations(swagAnnotations string) *ResHandler[Res, Err] {
-	h.swagAnnotations = swagAnnotations
-	return h
-}
-
-func (h *ResHandler[Res, Err]) WithSpec(spec *spec.Operation) *ResHandler[Res, Err] {
-	h.spec = spec
+func (h *ResHandler[Res, Err]) WithSpec(op operations.Operation) *ResHandler[Res, Err] {
+	h.op = op
 	return h
 }
 
@@ -61,9 +62,9 @@ func (h *ResHandler[Res, Err]) Err() any {
 }
 
 func (h *ResHandler[Res, Err]) Handler() any {
-	return h.f
+	return h.fn
 }
 
-func (h *ResHandler[Res, Err]) Docs() string {
-	return h.swagAnnotations
+func (h *ResHandler[Res, Err]) Op() operations.Operation {
+	return h.op
 }
