@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/getkin/kin-openapi/openapi3gen"
 	"github.com/go-chai/chai/chai"
 	"github.com/go-chai/swag/gen"
 	"github.com/go-openapi/spec"
@@ -71,7 +70,7 @@ type HandlerInfo struct {
 	IsErrer        bool
 	Err            any
 	IsOper         bool
-	Op             operations.Operation
+	Op             *operations.Operation
 	IsChaiHandler  bool
 	HandlerFunc    any
 	HandlerWrapper http.Handler
@@ -110,33 +109,6 @@ func GetHandlerInfo(fn http.Handler) *HandlerInfo {
 	return hi
 }
 
-func SpecGen(value any) (*spec.Schema, error) {
-	schemas := openapi3.Schemas{}
-
-	g := openapi3gen.NewGenerator()
-
-	// schemaRef, err := openapi3gen.NewSchemaRefForValue(value, schemas)
-	ref, err := g.NewSchemaRefForValue(value, schemas)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create schema ref")
-	}
-
-	LogYAML(ref)
-	LogYAML(schemas)
-
-	return nil, nil
-}
-
-func SpecGen2(value any) (*spec.Schema, error) {
-	schemas := openapi.Schemas{}
-	schemaRef := openapi.SchemaFromObj(value, schemas, nil)
-
-	LogYAML(schemaRef)
-	LogYAML(schemas)
-
-	return nil, nil
-}
-
 func RegisterRoute(spec operations.OpenAPI, route *Route) error {
 	var err error
 	hi := GetHandlerInfo(route.Handler)
@@ -158,45 +130,46 @@ func RegisterRoute(spec operations.OpenAPI, route *Route) error {
 	return nil
 }
 
-func updateRequests(spec operations.OpenAPI, op operations.Operation, hi *HandlerInfo, params openapi3.Parameters) error {
+func updateRequests(spec operations.OpenAPI, op *operations.Operation, hi *HandlerInfo, params openapi3.Parameters) error {
 	var err error
 
 	if !hi.IsReqer {
-		op.Parameters = mergeParameters(params, op.Parameters)
+		op.Parameters = mergeSlices(makeKey, cmpKeys, params, op.Parameters)
 
 		return nil
 	}
 
-	reqParams, err := openapi.ParamsFromType(reflect.TypeOf(hi.Req).Elem().Elem(), openapi.Schemas(spec.Components.Schemas), spec.RegisteredTypes)
+	inferredParams, err := openapi.ParamsFromType(reflect.TypeOf(hi.Req).Elem().Elem(), openapi.Schemas(spec.Components.Schemas), spec.RegisteredTypes)
 	if err != nil {
 		return errors.Wrap(err, "failed to parse schema")
 	}
 
-	op.Parameters = mergeParameters(params, reqParams, op.Parameters)
+	op.Parameters = mergeSlices(makeKey, cmpKeys, params, inferredParams, op.Parameters)
 
 	return nil
 }
 
-type pk struct {
+type key struct {
 	In   string
 	Name string
 }
 
-func less(pk, pk2 pk) bool {
-	if pk.In == pk2.In {
-		return pk.Name < pk2.Name
+func makeKey(p *openapi3.ParameterRef) key {
+	return key{p.Value.In, p.Value.Name}
+}
+func cmpKeys(a, b key) bool {
+	if a.In == b.In {
+		return a.Name < b.Name
 	}
 
-	return pk.In < pk2.In
+	return a.In < b.In
 }
 
-func mergeParameters(paramsList ...openapi3.Parameters) openapi3.Parameters {
-	m := make(map[pk]*openapi3.ParameterRef)
+func mergeSlices[T any, K comparable](keyFn func(T) K, less func(K, K) bool, paramsList ...[]T) []T {
+	m := make(map[K]T)
 
 	for _, params := range paramsList {
-		m = mergeMaps(m, associateBy(params, func(p *openapi3.ParameterRef) pk {
-			return pk{p.Value.In, p.Value.Name}
-		}))
+		m = mergeMaps(m, associateBy(params, keyFn))
 	}
 
 	return sortedValues(m, less)
@@ -251,7 +224,7 @@ func sortedKeys[K comparable, V any](m map[K]V, less func(K, K) bool) []K {
 	return keys
 }
 
-func updateResponses(spec operations.OpenAPI, op operations.Operation, hi *HandlerInfo) error {
+func updateResponses(spec operations.OpenAPI, op *operations.Operation, hi *HandlerInfo) error {
 	if !hi.IsReser {
 		return nil
 	}

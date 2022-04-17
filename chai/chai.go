@@ -99,12 +99,9 @@ type ResErrer interface {
 type Handlerer interface {
 	Handler() any
 }
-type Docer interface {
-	Docs() string
-}
 
 type Oper interface {
-	Op() operations.Operation
+	Op() *operations.Operation
 }
 
 type ErrType = error

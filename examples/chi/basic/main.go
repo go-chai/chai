@@ -10,7 +10,6 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	chai "github.com/go-chai/chai/chi"
 	_ "github.com/go-chai/chai/examples/docs/basic" // This is required to be able to serve the stored swagger spec in prod
-	"github.com/go-chai/chai/examples/shared/controller"
 	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chai/chai/examples/shared/model"
 	"github.com/go-chai/chai/openapi2"
@@ -25,19 +24,17 @@ import (
 
 func main() {
 	r := chi.NewRouter()
-
-	s := &s{}
-	s2 := &controller.S{}
-
-	_ = s
-	_ = s2
-
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/examples", func(r chi.Router) {
 			chai.Post(r, "/post", PostHandler).
+				ID("123123123").
+				Deprecated().
+				Summary(`some text used as a summary
+				for this example post handler`)
+
+			chai.Post(r, "/post2", PostHandler).
 				WithValidator(func(a *model.Address) error {
 					err := validation.ValidateStruct(&a,
-						// State cannot be empty, and must be a string consisting of five digits
 						validation.Field(a.Zip, validation.Required, validation.Match(regexp.MustCompile("^[0-9]{5}$"))),
 					)
 					if err != nil {
@@ -45,25 +42,17 @@ func main() {
 					}
 					return nil
 				}).
-				Operation(operations.Operation{}).
 				ID("123123123").
 				WithValidator((*model.Address).ValidateStep1).
 				WithValidator((*model.Address).ValidateStep2)
 
-			// chai.Get(r, "/uuid", s2.UUIDHandler)
-			// chai.Get(r, "/uuid3", s.UUIDHandler)
-			// chai.Get(r, "/uuid4", controller.UUIDHandler)
-			// chai.Get(r, "/uuid2", UUIDHandler)
-			// chai.Get(r, "/calc2", CalcHandler)
-			chai.Get(r, "/calc", s.CalcHandler)
-			// chai.Get(r, "/calc2", CalcHandler2)
-			// chai.Get(r, "/calc", s.CalcHandler2)
-			// chai.Get(r, "/calc", CalcHandler, chaiopts.WithSpec(CalcHandlerSpec))
-			// chai.Get(r, "/ping", PingHandler)
-			// chai.Get(r, "/groups/{group_id}/accounts/{account_id}", PathParamsHandler)
-			// chai.Get(r, "/header", HeaderHandler)
-			// chai.Get(r, "/securities", SecuritiesHandler)
-			// chai.Get(r, "/attribute", AttributeHandler)
+			chai.Get(r, "/uuid2", UUIDHandler)
+			chai.Get(r, "/calc2", CalcHandler)
+			chai.Get(r, "/ping", PingHandler)
+			chai.Get(r, "/groups/{group_id}/accounts/{account_id}", PathParamsHandler)
+			chai.Get(r, "/header", HeaderHandler)
+			chai.Get(r, "/securities", SecuritiesHandler)
+			chai.Get(r, "/attribute", AttributeHandler)
 		})
 	})
 

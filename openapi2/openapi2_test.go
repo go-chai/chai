@@ -166,7 +166,7 @@ func TestMergeParameters(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			wantJSON := js(tt.want)
-			got := mergeParameters(tt.args.params...)
+			got := mergeSlices(tt.args.params...)
 			gotJSON := js(got)
 
 			assert.JSONEq(t, string(wantJSON), string(gotJSON))
@@ -182,12 +182,12 @@ func js(v any) string {
 func TestAssociateBy(t *testing.T) {
 	type args struct {
 		ts []spec.Parameter
-		fn func(spec.Parameter) pk
+		fn func(spec.Parameter) key
 	}
 	tests := []struct {
 		name string
 		args args
-		want map[pk]spec.Parameter
+		want map[key]spec.Parameter
 	}{
 		{
 			name: "t1",
@@ -197,11 +197,11 @@ func TestAssociateBy(t *testing.T) {
 					{ParamProps: spec.ParamProps{Name: "p2", In: "path", Description: "d2", Required: true}},
 					{ParamProps: spec.ParamProps{Name: "p1", In: "body", Description: "d11", Required: true}},
 				},
-				fn: func(p spec.Parameter) pk {
-					return pk{p.In, p.Name}
+				fn: func(p spec.Parameter) key {
+					return key{p.In, p.Name}
 				},
 			},
-			want: map[pk]spec.Parameter{
+			want: map[key]spec.Parameter{
 				{In: "path", Name: "p1"}: {ParamProps: spec.ParamProps{Name: "p1", In: "path", Description: "d1", Required: true}},
 				{In: "path", Name: "p2"}: {ParamProps: spec.ParamProps{Name: "p2", In: "path", Description: "d2", Required: true}},
 				{In: "body", Name: "p1"}: {ParamProps: spec.ParamProps{Name: "p1", In: "body", Description: "d11", Required: true}},
@@ -219,26 +219,26 @@ func TestAssociateBy(t *testing.T) {
 
 func TestSortedKeys(t *testing.T) {
 	type args struct {
-		m    map[pk]string
-		less func(pk, pk) bool
+		m    map[key]string
+		less func(key, key) bool
 	}
 	tests := []struct {
 		name string
 		args args
-		want []pk
+		want []key
 	}{
 		{
 			name: "t1",
 			args: args{
-				m: map[pk]string{
+				m: map[key]string{
 					{"path", "p1"}: "1",
 					{"path", "p2"}: "2",
 					{"body", "p3"}: "3",
 					{"body", "p2"}: "4",
 				},
-				less: less,
+				less: cmpKeys,
 			},
-			want: []pk{
+			want: []key{
 				{"body", "p2"},
 				{"body", "p3"},
 				{"path", "p1"},
