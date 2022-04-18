@@ -16,7 +16,13 @@ type TestResponse struct {
 	TestInnerResponse TestInnerResponse `json:"test_inner_response"`
 }
 
+type TestRequests struct {
+	Requests []*TestRequest `json:"requests"`
+}
 type TestRequest struct {
+	P1  int    `path:"p1"`
+	MM  string `query:"mm"`
+	GG  string
 	Foo string `json:"foob"`
 	Bar string `json:"barb"`
 

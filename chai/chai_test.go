@@ -229,6 +229,8 @@ func TestHandlers(t *testing.T) {
 			},
 			response: `{"error":"test error map ptr", "message":"zz", "status_code":500}`,
 		},
+		// TODO add test cases for parsing the requests (body, query, path)
+		// TODO add test cases for validating the requests
 	}
 
 	for _, tt := range tests {
@@ -238,7 +240,10 @@ func TestHandlers(t *testing.T) {
 
 				w := httptest.NewRecorder()
 
-				h.ServeHTTP(w, httptest.NewRequest(http.MethodPost, "/", newReq()))
+				r := httptest.NewRequest(http.MethodPost, "/", newReq())
+				r.Header.Set("Content-Type", "application/json")
+
+				h.ServeHTTP(w, r)
 
 				fmt.Printf("%q\n", w.Body.String())
 

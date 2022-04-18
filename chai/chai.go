@@ -11,7 +11,6 @@ import (
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
-	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
 )
 
 func init() {
@@ -46,8 +45,8 @@ var DefaultDecoder = func(req any, r *http.Request) ErrType {
 	return nil
 }
 
-// modified version of reflect.indirect
-func indirect(vv any) any {
+// modified version of reflect.Indirect
+func Indirect(vv any, ptr bool) any {
 	v := reflect.ValueOf(vv)
 	// If v is a named type and is addressable,
 	// start with its address, so that if the type has pointer methods,
@@ -80,7 +79,11 @@ func indirect(vv any) any {
 		v = v.Elem()
 	}
 
-	return v.Addr().Interface()
+	if ptr {
+		return v.Addr().Interface()
+	}
+
+	return v.Interface()
 }
 
 func decodeQueryParams(r *http.Request, req any) error {
@@ -89,7 +92,7 @@ func decodeQueryParams(r *http.Request, req any) error {
 		return err
 	}
 	log.Dump(req)
-	req = indirect(req)
+	req = Indirect(req, true)
 	log.Dump(req)
 	log.Dump(queryParams)
 
@@ -100,15 +103,19 @@ func decodeQueryParams(r *http.Request, req any) error {
 }
 
 func decodePathParams(r *http.Request, req any) error {
-	routeContextParams := chi.RouteContext(r.Context()).URLParams
+	routeContext := chi.RouteContext(r.Context())
+	if routeContext == nil {
+		return nil
+	}
+
 	pathParams := make(url.Values)
-	for i, key := range routeContextParams.Keys {
+	for i, key := range routeContext.URLParams.Keys {
 		if key == "*" {
 			continue
 		}
-		pathParams[key] = append(pathParams[key], routeContextParams.Values[i])
+		pathParams[key] = append(pathParams[key], routeContext.URLParams.Values[i])
 	}
-	req = indirect(req)
+	req = Indirect(req, true)
 	if err := pathParamDecoder.Decode(req, pathParams); err != nil {
 		return err
 	}
@@ -125,7 +132,7 @@ func (e *ValidationError) Error() string {
 }
 
 var DefaultValidator = func(req any) ErrType {
-	req = indirect(req)
+	req = Indirect(req, true)
 	err := Validate.Struct(req)
 	if err != nil {
 		log.Dump(err)
@@ -161,23 +168,6 @@ var DefaultErrorResponder = func(w http.ResponseWriter, r *http.Request, code in
 
 type Methoder interface {
 	Method(method, pattern string, h http.Handler)
-}
-
-type Reqer interface {
-	Req() any
-}
-
-type ResErrer interface {
-	Res() any
-	Err() any
-}
-
-type Handlerer interface {
-	Handler() any
-}
-
-type Oper interface {
-	Op() *operations.Operation
 }
 
 type ErrType = error

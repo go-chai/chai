@@ -7,7 +7,6 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/ghodss/yaml"
-	"github.com/zhamlin/chi-openapi/pkg/openapi"
 
 	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/examples/shared/controller"
@@ -26,7 +25,7 @@ func main() {
 	r.Mount("/", c.ChiRoutes())
 
 	// This must be used only during development to generate the swagger spec
-	docs, err := chai.OpenAPI2(r)
+	docs, err := chai.OpenAPI3(r)
 	if err != nil {
 		panic(fmt.Sprintf("failed to generate the swagger spec: %+v", err))
 	}
@@ -53,7 +52,7 @@ func main() {
 	http.ListenAndServe(":8080", r)
 }
 
-func addCustomDocs(docs *openapi.OpenAPI) {
+func addCustomDocs(docs *openapi3.T) {
 	docs.OpenAPI = "3.0"
 	docs.Servers = openapi3.Servers{{URL: "localhost:8080"}}
 

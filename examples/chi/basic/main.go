@@ -11,7 +11,7 @@ import (
 	_ "github.com/go-chai/chai/examples/docs/basic" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chai/chai/examples/shared/model"
-	"github.com/go-chai/chai/openapi2"
+	chaiopenapi "github.com/go-chai/chai/openapi3"
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -51,10 +51,8 @@ func main() {
 		})
 	})
 
-	docs := new(openapi3.T)
-	var err error
 	// This must be used only during development to generate the swagger spec
-	// docs, err = chai.OpenAPI2(r)
+	docs, err := chai.OpenAPI3(r)
 	if err != nil {
 		panic(fmt.Sprintf("failed to generate the swagger spec: %+v", err))
 	}
@@ -66,7 +64,7 @@ func main() {
 
 	addCustomDocs(docs)
 
-	openapi2.LogYAML(docs)
+	chaiopenapi.LogYAML(docs)
 
 	// This must be used only during development to store the swagger spec
 	// err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
@@ -93,10 +91,6 @@ func PostHandler(account ***model.Address, w http.ResponseWriter, r *http.Reques
 	return **account, http.StatusOK, nil
 }
 
-// PingExample godoc
-// @Summary      ping example
-// @Description  do ping
-// @Tags         example
 func CalcHandler2(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
 	if err != nil {
@@ -125,21 +119,10 @@ func UUIDHandler(w http.ResponseWriter, r *http.Request) (uuid.UUID, int, error)
 	return uuid.Must(uuid.NewV4()), http.StatusOK, nil
 }
 
-// PingExample godoc
-// @Summary      ping example
-// @Description  do ping
-// @Tags         example
 func PingHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "pong", http.StatusOK, nil
 }
 
-// PathParamsHandler godoc
-// @Summary      path params example
-// @Description  path params
-// @Tags         example
-// @Param        group_id    path      int     true  "Group ID"
-// @Param        account_id  path      int     true  "Account ID"
-// @Failure      400,404
 func PathParamsHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	groupID, err := strconv.Atoi(chi.URLParam(r, "group_id"))
 	if err != nil {
@@ -153,39 +136,14 @@ func PathParamsHandler(w http.ResponseWriter, r *http.Request) (string, int, err
 	return fmt.Sprintf("group_id=%d account_id=%d", groupID, accountID), http.StatusOK, nil
 }
 
-// HeaderHandler godoc
-// @Summary      custome header example
-// @Description  custome header
-// @Tags         example
-// @Param        Authorization  header    string  true  "Authentication header"
-// @Failure      400,404
 func HeaderHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return r.Header.Get("Authorization"), http.StatusOK, nil
 }
 
-// SecuritiesHandler godoc
-// @Summary      custome header example
-// @Description  custome header
-// @Tags         example
-// @Param        Authorization  header    string  true  "Authentication header"
-// @Failure      400,404
-// @Security     ApiKeyAuth
 func SecuritiesHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "ok", http.StatusOK, nil
 }
 
-// AttributeHandler godoc
-// @Summary      attribute example
-// @Description  attribute
-// @Tags         example
-// @Param        enumstring  query     string  false  "string enums"    Enums(A, B, C)
-// @Param        enumint     query     int     false  "int enums"       Enums(1, 2, 3)
-// @Param        enumnumber  query     number  false  "int enums"       Enums(1.1, 1.2, 1.3)
-// @Param        string      query     string  false  "string valid"    minlength(5)  maxlength(10)
-// @Param        int         query     int     false  "int valid"       minimum(1)    maximum(10)
-// @Param        default     query     string  false  "string default"  default(A)
-// @Success      200 "answer"
-// @Failure      400,404 "ok"
 func AttributeHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return fmt.Sprintf("enumstring=%s enumint=%s enumnumber=%s string=%s int=%s default=%s",
 		r.URL.Query().Get("enumstring"),

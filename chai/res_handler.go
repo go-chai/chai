@@ -2,35 +2,36 @@ package chai
 
 import (
 	"net/http"
+	"strconv"
 
-	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 type ResHandlerFunc[Res any, Err ErrType] func(http.ResponseWriter, *http.Request) (Res, int, Err)
 
-type resHandler[Res any, Err ErrType] struct {
+type ResHandler[Res any, Err ErrType] struct {
 	method    string
 	pattern   string
 	fn        ResHandlerFunc[Res, Err]
 	res       *Res
 	err       *Err
-	op        *operations.Operation
+	op        *openapi3.Operation
 	respondFn ResponderFunc[Res]
 	errorFn   ErrorResponderFunc
 }
 
-func NewResHandler[Res any, Err ErrType](method string, pattern string, fn ResHandlerFunc[Res, Err]) ResHandler[Res, Err] {
-	return &resHandler[Res, Err]{
+func NewResHandler[Res any, Err ErrType](method string, pattern string, fn ResHandlerFunc[Res, Err]) *ResHandler[Res, Err] {
+	return &ResHandler[Res, Err]{
 		method:    method,
 		pattern:   pattern,
 		fn:        fn,
 		respondFn: defaultResponder[Res],
 		errorFn:   DefaultErrorResponder,
-		op:        &operations.Operation{},
+		op:        &openapi3.Operation{},
 	}
 }
 
-func (h *resHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *ResHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	res, code, err := h.fn(w, r)
 	if handleErr(w, r, err, code, h.errorFn) {
 		return
@@ -38,75 +39,84 @@ func (h *resHandler[Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	h.respondFn(w, r, code, res)
 }
 
-type ResHandler[Res any, Err ErrType] interface {
-	ServeHTTP(w http.ResponseWriter, r *http.Request)
-	ID(id string) ResHandler[Res, Err]
-	Tags(tags ...string) ResHandler[Res, Err]
-	Summary(summary string) ResHandler[Res, Err]
-	Deprecated() ResHandler[Res, Err]
-	Security(name string, scopes ...string) ResHandler[Res, Err]
-	NoSecurity() ResHandler[Res, Err]
-	Extensions(data operations.ExtensionData) ResHandler[Res, Err]
-	WithResponder(respondFn ResponderFunc[Res]) ResHandler[Res, Err]
-	WithErrorResponder(errorFn ErrorResponderFunc) ResHandler[Res, Err]
-}
-
-func (h *resHandler[Res, Err]) WithResponder(respondFn ResponderFunc[Res]) ResHandler[Res, Err] {
+func (h *ResHandler[Res, Err]) WithResponder(respondFn ResponderFunc[Res]) *ResHandler[Res, Err] {
 	h.respondFn = respondFn
 	return h
 }
 
-func (h *resHandler[Res, Err]) WithErrorResponder(errorFn ErrorResponderFunc) ResHandler[Res, Err] {
+func (h *ResHandler[Res, Err]) WithErrorResponder(errorFn ErrorResponderFunc) *ResHandler[Res, Err] {
 	h.errorFn = errorFn
 	return h
 }
 
-func (h *resHandler[Res, Err]) Extensions(data operations.ExtensionData) ResHandler[Res, Err] {
-	var err error
-	*h.op, err = operations.Extensions(data)(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
+func (h *ResHandler[Res, Err]) Extensions(data map[string]interface{}) *ResHandler[Res, Err] {
+	h.op.Extensions = data
 	return h
 }
 
-func (h *resHandler[Res, Err]) NoSecurity() ResHandler[Res, Err] {
-	var err error
-	*h.op, err = operations.NoSecurity()(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
+func (h *ResHandler[Res, Err]) NoSecurity() *ResHandler[Res, Err] {
+	h.op.Security = openapi3.NewSecurityRequirements()
 	return h
 }
 
-func (h *resHandler[Res, Err]) Security(name string, scopes ...string) ResHandler[Res, Err] {
-	var err error
-	*h.op, err = operations.Security(name, scopes...)(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
+func (h *ResHandler[Res, Err]) Security(name string, scopes ...string) *ResHandler[Res, Err] {
+	if h.op.Security == nil {
+		h.op.Security = openapi3.NewSecurityRequirements()
+	}
+
+	h.op.Security = h.op.Security.With(openapi3.
+		NewSecurityRequirement().
+		Authenticate(name, scopes...))
 	return h
 }
 
-func (h *resHandler[Res, Err]) ID(id string) ResHandler[Res, Err] {
-	var err error
-	*h.op, err = operations.ID(id)(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
+func (h *ResHandler[Res, Err]) ID(id string) *ResHandler[Res, Err] {
+	h.op.OperationID = id
 	return h
 }
 
-func (h *resHandler[Res, Err]) Tags(tags ...string) ResHandler[Res, Err] {
-	var err error
-	*h.op, err = operations.Tags(tags...)(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
+func (h *ResHandler[Res, Err]) Tags(tags ...string) *ResHandler[Res, Err] {
+	h.op.Tags = tags
 	return h
 }
 
-func (h *resHandler[Res, Err]) Deprecated() ResHandler[Res, Err] {
-	var err error
-	*h.op, err = operations.Deprecated()(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
+func (h *ResHandler[Res, Err]) Deprecated() *ResHandler[Res, Err] {
+	h.op.Deprecated = true
 	return h
 }
 
-func (h *resHandler[Res, Err]) Summary(summary string) ResHandler[Res, Err] {
-	var err error
-	*h.op, err = operations.Summary(summary)(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
+func (h *ResHandler[Res, Err]) Summary(summary string) *ResHandler[Res, Err] {
+	h.op.Summary = summary
+	return h
+}
+
+func (h *ResHandler[Res, Err]) Description(description string) *ResHandler[Res, Err] {
+	h.op.Description = description
+	return h
+}
+
+func AddResponse(operation *openapi3.Operation, status int, response *openapi3.Response) {
+	responses := operation.Responses
+	if responses == nil {
+		responses = make(openapi3.Responses)
+		operation.Responses = responses
+	}
+	code := "default"
+	if status != 0 {
+		code = strconv.FormatInt(int64(status), 10)
+	}
+	responses[code] = &openapi3.ResponseRef{Value: response}
+}
+
+func (h *ResHandler[Res, Err]) AddResponse(code int, description string) *ResHandler[Res, Err] {
+	AddResponse(h.op, code, openapi3.NewResponse().WithDescription(description))
+	return h
+}
+
+func (h *ResHandler[Res, Err]) ResponseCodes(description string, codes ...int) *ResHandler[Res, Err] {
+	for _, code := range codes {
+		AddResponse(h.op, code, openapi3.NewResponse().WithDescription(description))
+	}
 	return h
 }
 
@@ -114,12 +124,12 @@ type Metadata struct {
 	Req            any
 	Res            any
 	Err            any
-	Op             *operations.Operation
+	Op             *openapi3.Operation
 	HandlerFunc    any
 	HandlerWrapper http.Handler
 }
 
-func (h *resHandler[Res, Err]) GetMetadata() *Metadata {
+func (h *ResHandler[Res, Err]) GetMetadata() *Metadata {
 	return &Metadata{
 		Req:            nil,
 		Res:            h.res,
@@ -128,20 +138,4 @@ func (h *resHandler[Res, Err]) GetMetadata() *Metadata {
 		HandlerFunc:    h.fn,
 		HandlerWrapper: h,
 	}
-}
-
-func (h *resHandler[Res, Err]) Res() any {
-	return h.res
-}
-
-func (h *resHandler[Res, Err]) Err() any {
-	return h.err
-}
-
-func (h *resHandler[Res, Err]) Handler() any {
-	return h.fn
-}
-
-func (h *resHandler[Res, Err]) Op() *operations.Operation {
-	return h.op
 }

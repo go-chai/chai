@@ -1,398 +1,319 @@
 {
-    "info": {
-        "contact": {}
+    "components": {
+        "schemas": {
+            "Account": {
+                "properties": {
+                    "id": {
+                        "format": "int64",
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "some_number": {
+                        "type": "integer"
+                    },
+                    "uuid": {
+                        "format": "uuid",
+                        "items": {},
+                        "type": "array"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "some_number",
+                    "uuid"
+                ],
+                "type": "object"
+            },
+            "Account2": {
+                "properties": {
+                    "custom_type_4567": {
+                        "items": {
+                            "$ref": "#/components/schemas/CustomType456"
+                        },
+                        "type": "array"
+                    },
+                    "custom_val_123": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "format": "int64",
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "some_number": {
+                        "type": "integer"
+                    },
+                    "uuid": {
+                        "format": "uuid",
+                        "items": {},
+                        "type": "array"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "some_number",
+                    "custom_val_123",
+                    "custom_type_4567",
+                    "uuid"
+                ],
+                "type": "object"
+            },
+            "AddAccount": {
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "type": "object"
+            },
+            "Admin": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "type": "object"
+            },
+            "Bottle": {
+                "properties": {
+                    "account": {
+                        "$ref": "#/components/schemas/Account"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "account"
+                ],
+                "type": "object"
+            },
+            "CustomType456": {
+                "properties": {
+                    "zz": {
+                        "type": "integer"
+                    },
+                    "zzStr": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "zz",
+                    "zzStr"
+                ],
+                "type": "object"
+            },
+            "Error": {
+                "properties": {
+                    "error": {
+                        "type": "string"
+                    },
+                    "error_debug": {
+                        "type": "string"
+                    },
+                    "error_description": {
+                        "type": "string"
+                    },
+                    "status_code": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "error",
+                    "error_debug",
+                    "error_description",
+                    "status_code"
+                ],
+                "type": "object"
+            }
+        }
     },
+    "info": {
+        "title": "Title",
+        "version": "0.0.1"
+    },
+    "openapi": "3.0.0",
     "paths": {
         "/api/v1/accounts/": {
             "get": {
-                "description": "get accounts",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts"
-                ],
-                "summary": "List accounts",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "format": "email",
-                        "description": "name search by q",
-                        "name": "q",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Account"
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/Account"
+                                    },
+                                    "type": "array"
+                                }
                             }
                         }
                     },
-                    "202": {
-                        "description": "Accepted",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Account"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
                             }
-                        }
-                    },
-                    "203": {
-                        "description": "Non-Authoritative Information",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Account"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
                         }
                     }
                 }
             },
             "post": {
-                "description": "add by json account",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts"
-                ],
-                "summary": "Add an account",
-                "parameters": [
-                    {
-                        "description": "Add account",
-                        "name": "account",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.AddAccount"
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddAccount"
+                            }
                         }
-                    }
-                ],
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Account"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Account"
+                                }
+                            }
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 }
             }
         },
         "/api/v1/accounts/{id}": {
-            "get": {
-                "description": "get string by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts"
-                ],
-                "summary": "Show an account",
+            "delete": {
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Account ID",
-                        "name": "id",
                         "in": "path",
-                        "required": true
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "pattern": "^[0-9]+$",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": null
+            },
+            "get": {
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Account"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Account"
+                                }
+                            }
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete by account ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts"
-                ],
-                "summary": "Delete an account",
-                "parameters": [
-                    {
-                        "pattern": "^[0-9]+$",
-                        "type": "integer",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "$ref": "#/definitions/model.Account"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 }
             },
             "patch": {
-                "description": "Update by json account",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts"
-                ],
-                "summary": "Update an account",
                 "parameters": [
                     {
-                        "description": "Update account",
-                        "name": "account",
-                        "in": "body",
+                        "in": "path",
+                        "name": "id",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.UpdateAccount"
+                            "type": "string"
                         }
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Account ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Account"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    }
-                }
+                "responses": null
             }
         },
         "/api/v1/accounts/{id}/images": {
             "post": {
                 "description": "Upload file",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts"
-                ],
-                "summary": "Upload account image",
                 "parameters": [
                     {
-                        "type": "file",
-                        "description": "account image",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Account ID",
-                        "name": "id",
                         "in": "path",
-                        "required": true
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.Message"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    }
-                }
+                "responses": null,
+                "summary": "Upload an image",
+                "tags": [
+                    "accounts"
+                ]
             }
         },
         "/api/v1/admin/auth": {
             "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "get admin info",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts",
-                    "admin"
-                ],
-                "summary": "Auth admin",
-                "parameters": [
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/model.Admin"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Admin"
+                                }
+                            }
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 }
@@ -400,61 +321,26 @@
         },
         "/api/v1/bottles/": {
             "get": {
-                "description": "get bottles",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "bottles"
-                ],
-                "summary": "List bottles",
                 "responses": {
                     "200": {
-                        "description": "",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Bottle"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/Bottle"
+                                    },
+                                    "type": "array"
+                                }
                             }
                         }
                     },
-                    "201": {
-                        "description": "",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Bottle"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
                             }
-                        }
-                    },
-                    "202": {
-                        "description": "",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Bottle"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
                         }
                     }
                 }
@@ -462,50 +348,33 @@
         },
         "/api/v1/bottles/{id}": {
             "get": {
-                "description": "get string by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "bottles"
-                ],
-                "summary": "Show a bottle",
-                "operationId": "get-string-by-int",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Bottle ID",
-                        "name": "id",
                         "in": "path",
-                        "required": true
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Bottle"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Bottle"
+                                }
+                            }
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 }
@@ -513,131 +382,55 @@
         },
         "/api/v1/examples/attribute": {
             "get": {
-                "description": "attribute",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "example"
-                ],
-                "summary": "attribute example",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "A",
-                        "description": "string default",
-                        "name": "default",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            1,
-                            2,
-                            3
-                        ],
-                        "type": "integer",
-                        "description": "int enums",
-                        "name": "enumint",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            1.1,
-                            1.2,
-                            1.3
-                        ],
-                        "type": "number",
-                        "description": "int enums",
-                        "name": "enumnumber",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "A",
-                            "B",
-                            "C"
-                        ],
-                        "type": "string",
-                        "description": "string enums",
-                        "name": "enumstring",
-                        "in": "query"
-                    },
-                    {
-                        "maximum": 10,
-                        "minimum": 1,
-                        "type": "integer",
-                        "description": "int valid",
-                        "name": "int",
-                        "in": "query"
-                    },
-                    {
-                        "maxLength": 10,
-                        "minLength": 5,
-                        "type": "string",
-                        "description": "string valid",
-                        "name": "string",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "answer",
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
-                    "400": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 }
             },
             "post": {
-                "description": "post request example",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "post request example",
-                "parameters": [
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/model.Account"
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Account"
+                            }
                         }
-                    }
-                ],
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/model.Account2"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Account2"
+                                }
+                            }
                         }
                     },
                     "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/httputil.Error"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
                         }
                     }
                 }
@@ -645,56 +438,23 @@
         },
         "/api/v1/examples/calc": {
             "get": {
-                "description": "plus",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "example"
-                ],
-                "summary": "calc example",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "used for calc",
-                        "name": "val1",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "used for calc",
-                        "name": "val2",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "answer",
-                        "schema": {
-                            "type": "integer"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
-                    "400": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 }
@@ -702,56 +462,41 @@
         },
         "/api/v1/examples/groups/{group_id}/accounts/{account_id}": {
             "get": {
-                "description": "path params",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "example"
-                ],
-                "summary": "path params example",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Account ID",
-                        "name": "account_id",
                         "in": "path",
-                        "required": true
+                        "name": "account_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     {
-                        "type": "integer",
-                        "description": "Group ID",
-                        "name": "group_id",
                         "in": "path",
-                        "required": true
+                        "name": "group_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "answer",
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
-                    "400": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 }
@@ -759,49 +504,23 @@
         },
         "/api/v1/examples/header": {
             "get": {
-                "description": "custome header",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "example"
-                ],
-                "summary": "custome header example",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Authentication header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "answer",
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
-                    "400": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 }
@@ -809,40 +528,23 @@
         },
         "/api/v1/examples/ping": {
             "get": {
-                "description": "do ping",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "example"
-                ],
-                "summary": "ping example",
                 "responses": {
                     "200": {
-                        "description": "pong",
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
-                    "400": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 }
@@ -850,208 +552,25 @@
         },
         "/api/v1/examples/securities": {
             "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    },
-                    {
-                        "OAuth2Implicit": [
-                            "admin",
-                            "write"
-                        ]
-                    }
-                ],
-                "description": "custome header",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "example"
-                ],
-                "summary": "custome header example",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Authentication header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "answer",
-                        "schema": {
-                            "type": "string"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
-                    "400": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
-                }
-            }
-        }
-    },
-    "definitions": {
-        "controller.Message": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "message"
-                }
-            }
-        },
-        "httputil.Error": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "error_debug": {
-                    "type": "string"
-                },
-                "error_description": {
-                    "type": "string"
-                },
-                "status_code": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.Account": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "format": "int64",
-                    "example": 1
-                },
-                "name": {
-                    "type": "string",
-                    "example": "account name"
-                },
-                "some_number": {
-                    "type": "integer",
-                    "example": 1234
-                },
-                "uuid": {
-                    "type": "string",
-                    "format": "uuid",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                }
-            }
-        },
-        "model.Account2": {
-            "type": "object",
-            "properties": {
-                "custom_type_4567": {
-                    "description": "zzz",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.CustomType456"
-                    }
-                },
-                "custom_val_123": {
-                    "type": "string",
-                    "example": "custom val 123"
-                },
-                "id": {
-                    "type": "integer",
-                    "format": "int64",
-                    "maximum": 195,
-                    "example": 113
-                },
-                "name": {
-                    "type": "string",
-                    "example": "account name"
-                },
-                "some_number": {
-                    "type": "integer",
-                    "example": 1234
-                },
-                "uuid": {
-                    "type": "string",
-                    "format": "uuid",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                }
-            }
-        },
-        "model.AddAccount": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "example": "account name"
-                }
-            }
-        },
-        "model.Admin": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "name": {
-                    "type": "string",
-                    "example": "admin name"
-                }
-            }
-        },
-        "model.Bottle": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "$ref": "#/definitions/model.Account"
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "name": {
-                    "type": "string",
-                    "example": "bottle_name"
-                }
-            }
-        },
-        "model.CustomType456": {
-            "type": "object",
-            "properties": {
-                "zz": {
-                    "type": "integer",
-                    "example": 34
-                },
-                "zzStr": {
-                    "type": "string",
-                    "example": "zz string value"
-                }
-            }
-        },
-        "model.UpdateAccount": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "example": "account name"
                 }
             }
         }

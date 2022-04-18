@@ -1,0 +1,156 @@
+{
+    "components": {
+        "schemas": {
+            "TestInnerResponse": {
+                "properties": {
+                    "bar_bar": {
+                        "type": "integer"
+                    },
+                    "foo_foo": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "foo_foo",
+                    "bar_bar"
+                ],
+                "type": "object"
+            },
+            "TestRequest": {
+                "properties": {
+                    "barb": {
+                        "type": "string"
+                    },
+                    "foob": {
+                        "type": "string"
+                    },
+                    "test_inner_responseb": {
+                        "$ref": "#/components/schemas/TestInnerResponse"
+                    }
+                },
+                "required": [
+                    "foob",
+                    "barb",
+                    "test_inner_responseb"
+                ],
+                "type": "object"
+            },
+            "TestResponse": {
+                "properties": {
+                    "bar": {
+                        "type": "string"
+                    },
+                    "foo": {
+                        "type": "string"
+                    },
+                    "test_inner_response": {
+                        "$ref": "#/components/schemas/TestInnerResponse"
+                    }
+                },
+                "required": [
+                    "foo",
+                    "bar",
+                    "test_inner_response"
+                ],
+                "type": "object"
+            }
+        }
+    },
+    "info": {
+        "title": "Title",
+        "version": "0.0.1"
+    },
+    "openapi": "3.0.0",
+    "paths": {
+        "/test1/{p1}/{p2}": {
+            "post": {
+                "description": "get string by ID",
+                "operationId": "get-string-by-int",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "p1",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "d2",
+                        "in": "path",
+                        "name": "p2",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "explode": true,
+                        "in": "query",
+                        "name": "mm",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "style": "form"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TestRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TestResponse"
+                                }
+                            }
+                        },
+                        "description": "test"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "test"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "test"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "test"
+                    }
+                },
+                "summary": "Test Handler",
+                "tags": [
+                    "bottles"
+                ]
+            }
+        }
+    }
+}

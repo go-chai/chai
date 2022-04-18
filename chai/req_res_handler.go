@@ -1,31 +1,31 @@
 package chai
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/go-chai/chai/internal/log"
-	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 type ReqResHandlerFunc[Req any, Res any, Err ErrType] func(Req, http.ResponseWriter, *http.Request) (Res, int, Err)
 
-type reqResHandler[Req any, Res any, Err ErrType] struct {
+type ReqResHandler[Req any, Res any, Err ErrType] struct {
 	method     string
 	pattern    string
 	fn         ReqResHandlerFunc[Req, Res, Err]
 	req        *Req
 	res        *Res
 	err        *Err
-	op         *operations.Operation
+	op         *openapi3.Operation
 	decodeFn   DecoderFunc[Req]
 	validateFn ValidatorFunc[Req]
 	respondFn  ResponderFunc[Res]
 	errorFn    ErrorResponderFunc
 }
 
-func NewReqResHandler[Req any, Res any, Err ErrType](method string, pattern string, fn ReqResHandlerFunc[Req, Res, Err]) ReqResHandler[Req, Res, Err] {
-	return &reqResHandler[Req, Res, Err]{
+func NewReqResHandler[Req any, Res any, Err ErrType](method string, pattern string, fn ReqResHandlerFunc[Req, Res, Err]) *ReqResHandler[Req, Res, Err] {
+	// TODO? panic if the Req type has a path param that is not specified in the pattern
+
+	return &ReqResHandler[Req, Res, Err]{
 		method:     method,
 		pattern:    pattern,
 		fn:         fn,
@@ -33,11 +33,11 @@ func NewReqResHandler[Req any, Res any, Err ErrType](method string, pattern stri
 		validateFn: defaultValidator[Req],
 		respondFn:  defaultResponder[Res],
 		errorFn:    DefaultErrorResponder,
-		op:         &operations.Operation{},
+		op:         &openapi3.Operation{},
 	}
 }
 
-func (h *reqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *ReqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	req, err := h.decodeFn(r)
 	if handleErr(w, r, err, http.StatusBadRequest, h.errorFn) {
 		return
@@ -50,110 +50,91 @@ func (h *reqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.
 	// the error check inside handleErr would be incorrect if we pass Err wrapped in error
 	// due to how Go handles comparing nil values of different types
 	res, code, err2 := h.fn(req, w, r)
-	if handleErr(w, r, err2, http.StatusBadRequest, h.errorFn) {
+	if handleErr(w, r, err2, code, h.errorFn) {
 		return
 	}
 	h.respondFn(w, r, code, res)
 }
 
-type ReqResHandler[Req any, Res any, Err ErrType] interface {
-	ServeHTTP(w http.ResponseWriter, r *http.Request)
-	ID(id string) ReqResHandler[Req, Res, Err]
-	Tags(tags ...string) ReqResHandler[Req, Res, Err]
-	Summary(summary string) ReqResHandler[Req, Res, Err]
-	// Description(description string) ReqResHandler[Req, Res, Err]
-	Deprecated() ReqResHandler[Req, Res, Err]
-	Security(name string, scopes ...string) ReqResHandler[Req, Res, Err]
-	NoSecurity() ReqResHandler[Req, Res, Err]
-	Extensions(data operations.ExtensionData) ReqResHandler[Req, Res, Err]
-	WithDecoder(decodeFn DecoderFunc[Req]) ReqResHandler[Req, Res, Err]
-	WithValidator(validateFn ValidatorFunc[Req]) ReqResHandler[Req, Res, Err]
-	WithResponder(respondFn ResponderFunc[Res]) ReqResHandler[Req, Res, Err]
-	WithErrorResponder(errorFn ErrorResponderFunc) ReqResHandler[Req, Res, Err]
-}
-
-func (h *reqResHandler[Req, Res, Err]) WithDecoder(decodeFn DecoderFunc[Req]) ReqResHandler[Req, Res, Err] {
+func (h *ReqResHandler[Req, Res, Err]) WithDecoder(decodeFn DecoderFunc[Req]) *ReqResHandler[Req, Res, Err] {
 	h.decodeFn = decodeFn
 	return h
 }
 
-func (h *reqResHandler[Req, Res, Err]) WithValidator(validateFn ValidatorFunc[Req]) ReqResHandler[Req, Res, Err] {
+func (h *ReqResHandler[Req, Res, Err]) WithValidator(validateFn ValidatorFunc[Req]) *ReqResHandler[Req, Res, Err] {
 	h.validateFn = validateFn
 	return h
 }
 
-func (h *reqResHandler[Req, Res, Err]) WithResponder(respondFn ResponderFunc[Res]) ReqResHandler[Req, Res, Err] {
+func (h *ReqResHandler[Req, Res, Err]) WithResponder(respondFn ResponderFunc[Res]) *ReqResHandler[Req, Res, Err] {
 	h.respondFn = respondFn
 	return h
 }
 
-func (h *reqResHandler[Req, Res, Err]) WithErrorResponder(errorFn ErrorResponderFunc) ReqResHandler[Req, Res, Err] {
+func (h *ReqResHandler[Req, Res, Err]) WithErrorResponder(errorFn ErrorResponderFunc) *ReqResHandler[Req, Res, Err] {
 	h.errorFn = errorFn
 	return h
 }
 
-func (h *reqResHandler[Req, Res, Err]) Extensions(data operations.ExtensionData) ReqResHandler[Req, Res, Err] {
-	var err error
-	*h.op, err = operations.Extensions(data)(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
+func (h *ReqResHandler[Req, Res, Err]) Extensions(data map[string]interface{}) *ReqResHandler[Req, Res, Err] {
+	h.op.Extensions = data
 	return h
 }
 
-func (h *reqResHandler[Req, Res, Err]) NoSecurity() ReqResHandler[Req, Res, Err] {
-	var err error
-	*h.op, err = operations.NoSecurity()(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
+func (h *ReqResHandler[Req, Res, Err]) NoSecurity() *ReqResHandler[Req, Res, Err] {
+	h.op.Security = openapi3.NewSecurityRequirements()
 	return h
 }
 
-func (h *reqResHandler[Req, Res, Err]) Security(name string, scopes ...string) ReqResHandler[Req, Res, Err] {
-	var err error
-	*h.op, err = operations.Security(name, scopes...)(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
-	return h
-}
-
-func (h *reqResHandler[Req, Res, Err]) ID(id string) ReqResHandler[Req, Res, Err] {
-	var err error
-	*h.op, err = operations.ID(id)(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
-	return h
-}
-
-func (h *reqResHandler[Req, Res, Err]) Tags(tags ...string) ReqResHandler[Req, Res, Err] {
-	var err error
-	*h.op, err = operations.Tags(tags...)(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
-	return h
-}
-
-func (h *reqResHandler[Req, Res, Err]) Deprecated() ReqResHandler[Req, Res, Err] {
-	var err error
-	*h.op, err = operations.Deprecated()(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
-	return h
-}
-
-func (h *reqResHandler[Req, Res, Err]) Summary(summary string) ReqResHandler[Req, Res, Err] {
-	var err error
-	*h.op, err = operations.Summary(summary)(nil, *h.op)
-	requireValidSpec(err, h.method, h.pattern)
-	return h
-}
-
-// func (h *reqResHandler[Req, Res, Err]) Description(description string) ReqResHandler[Req, Res, Err] {
-// 	var err error
-
-// 	return h
-// }
-
-func requireValidSpec(err error, method string, pattern string) {
-	if err != nil {
-		log.Fatal(fmt.Sprintf("invalid spec for handler %s %s: %v", method, pattern, err))
+func (h *ReqResHandler[Req, Res, Err]) Security(name string, scopes ...string) *ReqResHandler[Req, Res, Err] {
+	if h.op.Security == nil {
+		h.op.Security = openapi3.NewSecurityRequirements()
 	}
+
+	h.op.Security = h.op.Security.With(openapi3.
+		NewSecurityRequirement().
+		Authenticate(name, scopes...))
+	return h
 }
 
-func (h *reqResHandler[Req, Res, Err]) GetMetadata() *Metadata {
+func (h *ReqResHandler[Req, Res, Err]) ID(id string) *ReqResHandler[Req, Res, Err] {
+	h.op.OperationID = id
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) Tags(tags ...string) *ReqResHandler[Req, Res, Err] {
+	h.op.Tags = tags
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) Deprecated() *ReqResHandler[Req, Res, Err] {
+	h.op.Deprecated = true
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) Summary(summary string) *ReqResHandler[Req, Res, Err] {
+	h.op.Summary = summary
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) Description(description string) *ReqResHandler[Req, Res, Err] {
+	h.op.Description = description
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) AddResponse(code int, description string) *ReqResHandler[Req, Res, Err] {
+	AddResponse(h.op, code, openapi3.NewResponse().WithDescription(description))
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) ResponseCodes(description string, codes ...int) *ReqResHandler[Req, Res, Err] {
+	for _, code := range codes {
+		AddResponse(h.op, code, openapi3.NewResponse().WithDescription(description))
+	}
+	return h
+}
+
+func (h *ReqResHandler[Req, Res, Err]) GetMetadata() *Metadata {
 	return &Metadata{
 		Req:            h.req,
 		Res:            h.res,
@@ -162,24 +143,4 @@ func (h *reqResHandler[Req, Res, Err]) GetMetadata() *Metadata {
 		HandlerFunc:    h.fn,
 		HandlerWrapper: h,
 	}
-}
-
-func (h *reqResHandler[Req, Res, Err]) Req() any {
-	return h.req
-}
-
-func (h *reqResHandler[Req, Res, Err]) Res() any {
-	return h.res
-}
-
-func (h *reqResHandler[Req, Res, Err]) Err() any {
-	return h.err
-}
-
-func (h *reqResHandler[Req, Res, Err]) Handler() any {
-	return h.fn
-}
-
-func (h *reqResHandler[Req, Res, Err]) Op() *operations.Operation {
-	return h.op
 }

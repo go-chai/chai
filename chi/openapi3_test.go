@@ -6,11 +6,12 @@ import (
 	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/examples/shared/controller"
 	"github.com/go-chai/chai/internal/tests"
+	"github.com/go-chai/chai/openapi3"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
 )
 
-func TestOpenAPI2(t *testing.T) {
+func TestOpenAPI3(t *testing.T) {
 	type args struct {
 		r chi.Routes
 	}
@@ -30,8 +31,9 @@ func TestOpenAPI2(t *testing.T) {
 	}
 	for _, tt := range tcs {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := chai.OpenAPI2(tt.args.r)
+			got, err := chai.OpenAPI3(tt.args.r)
 			require.NoError(t, err)
+			openapi3.LogJSON(got)
 			require.JSONEq(t, tests.LoadFile(t, tt.filePath), tests.JS(got))
 		})
 	}

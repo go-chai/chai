@@ -12,7 +12,7 @@ func LogYAML(v any) {
 		panic(err)
 	}
 
-	fmt.Fprintln(os.Stdout, string(bytes))
+	fmt.Fprintln(os.Stderr, string(bytes))
 
 	return
 }

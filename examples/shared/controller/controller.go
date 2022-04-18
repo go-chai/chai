@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chai/chai/examples/shared/model"
@@ -28,24 +29,13 @@ func (c *Controller) ChiRoutes() chi.Router {
 			chai.Get(r, "/{id}", c.ShowAccount)
 			chai.Get(r, "/", c.ListAccounts)
 			chai.Post(r, "/", c.AddAccount)
-			r.Delete("/{id:[0-9]+}", c.DeleteAccount)
-			r.Patch("/{id}", c.UpdateAccount)
-			r.Post("/{id}/images", c.UploadAccountImage)
+			chai.DeleteB(r, "/{id:[0-9]+}", c.DeleteAccount)
+			chai.PatchB(r, "/{id}", c.UpdateAccount)
+			chai.PostB(r, "/{id}/images", c.UploadAccountImage).
+				Operation(UploadAccountImageOperation())
 		})
 
 		r.Route("/bottles", func(r chi.Router) {
-			// ShowBottle godoc
-			// @Summary      Show a bottle
-			// @Description  get string by ID
-			// @ID           get-string-by-int
-			// @Tags         bottles
-			// @Accept       json
-			// @Produce      json
-			// @Param        id   path      int  true  "Bottle ID"
-			// @Success      200  {object}  model.Bottle
-			// @Failure      400  {object}  httputil.Error
-			// @Failure      404  {object}  httputil.Error
-			// @Failure      500  {object}  httputil.Error
 			chai.Get(r, "/{id}", func(w http.ResponseWriter, r *http.Request) (*model.Bottle, int, error) {
 				id := chi.URLParam(r, "id")
 				bid, err := strconv.Atoi(id)
@@ -99,4 +89,13 @@ type Message struct {
 
 type Message2 struct {
 	Message string `json:"message" example:"message"`
+}
+
+func UploadAccountImageOperation() *openapi3.Operation {
+	op := openapi3.NewOperation()
+	op.Summary = "Upload an image"
+	op.Description = "Upload file"
+	op.Tags = []string{"accounts"}
+
+	return op
 }
