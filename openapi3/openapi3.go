@@ -8,7 +8,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chai/chai/chai"
-	"github.com/go-chai/chai/internal/log"
+	"github.com/go-chai/chai/log"
 	"github.com/pkg/errors"
 	"github.com/zhamlin/chi-openapi/pkg/openapi"
 	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"

@@ -9,6 +9,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chai/chai/chai"
 	"github.com/go-chai/chai/internal/tests"
+	"github.com/go-chai/chai/log"
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -261,7 +262,7 @@ func TestDocs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := Docs(tt.args.routes)
 
-			LogJSON(got)
+			log.JSON(got)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Docs() error = %+v, wantErr %v", err, tt.wantErr)

@@ -1,6 +1,8 @@
 package log
 
 import (
+	"encoding/json"
+
 	"github.com/davecgh/go-spew/spew"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -98,4 +100,27 @@ func Info(args ...interface{}) {
 
 func Fatal(args ...interface{}) {
 	DefaultLogger.Fatal(args...)
+}
+
+func YAML(v any) {
+	bytes, err := MarshalYAML(v)
+	if err != nil {
+		panic(err)
+	}
+
+	DefaultLogger.Printf("%s\n", string(bytes))
+
+	return
+}
+
+func JSON(v any) {
+	bytes, err := json.MarshalIndent(v, "", "  ")
+
+	if err != nil {
+		panic(err)
+	}
+
+	DefaultLogger.Printf("%s\n", string(bytes))
+
+	return
 }

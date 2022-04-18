@@ -6,7 +6,7 @@ import (
 	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/examples/shared/controller"
 	"github.com/go-chai/chai/internal/tests"
-	"github.com/go-chai/chai/openapi3"
+	"github.com/go-chai/chai/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
 )
@@ -33,7 +33,7 @@ func TestOpenAPI3(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := chai.OpenAPI3(tt.args.r)
 			require.NoError(t, err)
-			openapi3.LogJSON(got)
+			log.JSON(got)
 			require.JSONEq(t, tests.LoadFile(t, tt.filePath), tests.JS(got))
 		})
 	}

@@ -1,4 +1,4 @@
-package openapi3
+package log
 
 import (
 	"encoding/json"

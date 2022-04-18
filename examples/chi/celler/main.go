@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/ghodss/yaml"
 
 	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/examples/shared/controller"
+	"github.com/go-chai/chai/log"
 
 	_ "github.com/go-chai/chai/examples/docs/celler" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/shared/httputil"
@@ -37,7 +37,7 @@ func main() {
 
 	addCustomDocs(docs)
 
-	LogYAML(docs)
+	log.YAML(docs)
 
 	// This must be used only during development to store the swagger spec
 	// err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
@@ -139,15 +139,4 @@ func auth(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func LogYAML(v any) {
-	bytes, err := yaml.Marshal(v)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(bytes))
-
-	return
 }

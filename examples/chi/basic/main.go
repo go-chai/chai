@@ -11,7 +11,7 @@ import (
 	_ "github.com/go-chai/chai/examples/docs/basic" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chai/chai/examples/shared/model"
-	chaiopenapi "github.com/go-chai/chai/openapi3"
+	"github.com/go-chai/chai/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -64,7 +64,7 @@ func main() {
 
 	addCustomDocs(docs)
 
-	chaiopenapi.LogYAML(docs)
+	log.YAML(docs)
 
 	// This must be used only during development to store the swagger spec
 	// err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
