@@ -109,9 +109,25 @@ func (h *resHandler[Res, Err]) Summary(summary string) ResHandler[Res, Err] {
 	requireValidSpec(err, h.method, h.pattern)
 	return h
 }
-func (h *resHandler[Res, Err]) WithSpec(op *operations.Operation) ResHandler[Res, Err] {
-	h.op = op
-	return h
+
+type Metadata struct {
+	Req            any
+	Res            any
+	Err            any
+	Op             *operations.Operation
+	HandlerFunc    any
+	HandlerWrapper http.Handler
+}
+
+func (h *resHandler[Res, Err]) GetMetadata() *Metadata {
+	return &Metadata{
+		Req:            nil,
+		Res:            h.res,
+		Err:            h.err,
+		Op:             h.op,
+		HandlerFunc:    h.fn,
+		HandlerWrapper: h,
+	}
 }
 
 func (h *resHandler[Res, Err]) Res() any {

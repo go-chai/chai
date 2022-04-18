@@ -9,10 +9,12 @@ import (
 )
 
 type Address struct {
-	Street string
-	City   string
-	State  string
-	Zip    string
+	Street     string `json:"street"`
+	City       string `json:"city"`
+	State      string `json:"state"`
+	Zip        string `json:"zip"`
+	QueryParam int    `query:"queryParam"`
+	PathParam  string `path:"pathParam"`
 }
 
 func (a *Address) ValidateStep1() error {

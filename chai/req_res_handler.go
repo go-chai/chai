@@ -2,9 +2,9 @@ package chai
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
+	"github.com/go-chai/chai/internal/log"
 	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
 )
 
@@ -46,8 +46,11 @@ func (h *reqResHandler[Req, Res, Err]) ServeHTTP(w http.ResponseWriter, r *http.
 	if handleErr(w, r, err, http.StatusBadRequest, h.errorFn) {
 		return
 	}
-	res, code, err := h.fn(req, w, r)
-	if handleErr(w, r, err, code, h.errorFn) {
+	// Note: err is of type error, while err2 is of type Err
+	// the error check inside handleErr would be incorrect if we pass Err wrapped in error
+	// due to how Go handles comparing nil values of different types
+	res, code, err2 := h.fn(req, w, r)
+	if handleErr(w, r, err2, http.StatusBadRequest, h.errorFn) {
 		return
 	}
 	h.respondFn(w, r, code, res)
@@ -147,6 +150,17 @@ func (h *reqResHandler[Req, Res, Err]) Summary(summary string) ReqResHandler[Req
 func requireValidSpec(err error, method string, pattern string) {
 	if err != nil {
 		log.Fatal(fmt.Sprintf("invalid spec for handler %s %s: %v", method, pattern, err))
+	}
+}
+
+func (h *reqResHandler[Req, Res, Err]) GetMetadata() *Metadata {
+	return &Metadata{
+		Req:            h.req,
+		Res:            h.res,
+		Err:            h.err,
+		Op:             h.op,
+		HandlerFunc:    h.fn,
+		HandlerWrapper: h,
 	}
 }
 

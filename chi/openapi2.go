@@ -8,7 +8,6 @@ import (
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-openapi/spec"
-	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
 )
 
 var integerSchema = spec.SimpleSchema{Type: "integer"}
@@ -20,7 +19,7 @@ var RegexPatternSchemas = map[string]spec.SimpleSchema{
 	"[+-]?([0-9]*[.])?[0-9]+": numberSchema,
 }
 
-func OpenAPI2(r chi.Routes) (operations.OpenAPI, error) {
+func OpenAPI2(r chi.Routes) (*openapi3.T, error) {
 	routes, err := getChiRoutes(r)
 
 	if err != nil {

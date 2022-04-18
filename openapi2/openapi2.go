@@ -30,7 +30,7 @@ type Route struct {
 	Middlewares []func(http.Handler) http.Handler
 }
 
-func Docs(routes []*Route) (operations.OpenAPI, error) {
+func Docs(routes []*Route) (*openapi3.T, error) {
 	var err error
 
 	var spec = &openapi.OpenAPI{
@@ -59,7 +59,7 @@ func Docs(routes []*Route) (operations.OpenAPI, error) {
 		}
 	}
 
-	return spec, nil
+	return spec.T, nil
 }
 
 type HandlerInfo struct {
@@ -76,37 +76,16 @@ type HandlerInfo struct {
 	HandlerWrapper http.Handler
 }
 
-func GetHandlerInfo(fn http.Handler) *HandlerInfo {
-	hi := new(HandlerInfo)
-	hi.HandlerWrapper = fn
+type Metadater interface {
+	GetMetadata() *chai.Metadata
+}
 
-	ch, ok := fn.(chai.Handlerer)
-	if ok {
-		hi.IsChaiHandler = true
-		hi.HandlerFunc = ch.Handler()
+func GetHandlerInfo(fn http.Handler) *chai.Metadata {
+	if fn, ok := fn.(Metadater); ok {
+		return fn.GetMetadata()
 	}
 
-	reqer, ok := fn.(chai.Reqer)
-	if ok {
-		hi.IsReqer = true
-		hi.Req = reqer.Req()
-	}
-
-	resErrer, ok := fn.(chai.ResErrer)
-	if ok {
-		hi.IsReser = true
-		hi.Res = resErrer.Res()
-		hi.IsErrer = true
-		hi.Err = resErrer.Err()
-	}
-
-	oper, ok := fn.(chai.Oper)
-	if ok {
-		hi.IsOper = true
-		hi.Op = oper.Op()
-	}
-
-	return hi
+	return nil
 }
 
 func RegisterRoute(spec operations.OpenAPI, route *Route) error {
@@ -130,21 +109,29 @@ func RegisterRoute(spec operations.OpenAPI, route *Route) error {
 	return nil
 }
 
-func updateRequests(spec operations.OpenAPI, op *operations.Operation, hi *HandlerInfo, params openapi3.Parameters) error {
+func updateRequests(spec operations.OpenAPI, op *operations.Operation, hi *chai.Metadata, pathParams openapi3.Parameters) error {
 	var err error
 
-	if !hi.IsReqer {
-		op.Parameters = mergeSlices(makeKey, cmpKeys, params, op.Parameters)
+	if reflect.TypeOf(hi.Req) == nil {
+		// log.Dump(op)
+		op.Parameters = mergeSlices(makeKey, cmpKeys, mergeParamsFn, pathParams, op.Parameters)
 
 		return nil
 	}
+
+	// inferredParams2 := openapi.SchemaFromObj(hi.Req, openapi.Schemas(spec.Components.Schemas), spec.RegisteredTypes)
 
 	inferredParams, err := openapi.ParamsFromType(reflect.TypeOf(hi.Req).Elem().Elem(), openapi.Schemas(spec.Components.Schemas), spec.RegisteredTypes)
 	if err != nil {
 		return errors.Wrap(err, "failed to parse schema")
 	}
+	// log.Dump(inferredParams2)
+	// log.Dump(inferredParams)
+	// log.Dump(reflect.TypeOf(hi.Req).Elem().Elem())
+	// log.Dump(reflect.TypeOf(hi.Req).Elem())
+	// log.Dump(reflect.TypeOf(hi.Req))
 
-	op.Parameters = mergeSlices(makeKey, cmpKeys, params, inferredParams, op.Parameters)
+	op.Parameters = mergeSlices(makeKey, cmpKeys, mergeParamsFn, pathParams, inferredParams, op.Parameters)
 
 	return nil
 }
@@ -165,22 +152,26 @@ func cmpKeys(a, b key) bool {
 	return a.In < b.In
 }
 
-func mergeSlices[T any, K comparable](keyFn func(T) K, less func(K, K) bool, paramsList ...[]T) []T {
-	m := make(map[K]T)
-
-	for _, params := range paramsList {
-		m = mergeMaps(m, associateBy(params, keyFn))
-	}
-
-	return sortedValues(m, less)
+func mergeParamsFn(a, b *openapi3.ParameterRef) *openapi3.ParameterRef {
+	return b
 }
 
-func mergeMaps[K comparable, V any](maps ...map[K]V) map[K]V {
+func mergeSlices[K comparable, V any](keyFn func(V) K, cmp func(K, K) bool, mergeFn func(V, V) V, slices ...[]V) []V {
+	m := make(map[K]V)
+
+	for _, slice := range slices {
+		m = mergeMaps(mergeFn, m, associateBy(slice, keyFn))
+	}
+
+	return sortedValues(m, cmp)
+}
+
+func mergeMaps[K comparable, V any](mergeFn func(V, V) V, maps ...map[K]V) map[K]V {
 	res := make(map[K]V)
 
 	for _, m := range maps {
 		for k, v := range m {
-			res[k] = v
+			res[k] = mergeFn(res[k], v)
 		}
 	}
 
@@ -197,10 +188,10 @@ func associateBy[K comparable, V any](slice []V, keyFn func(V) K) map[K]V {
 	return m
 }
 
-func sortedValues[K comparable, V any](m map[K]V, less func(K, K) bool) []V {
+func sortedValues[K comparable, V any](m map[K]V, cmp func(K, K) bool) []V {
 	res := make([]V, len(m))
 
-	for i, k := range sortedKeys(m, less) {
+	for i, k := range sortedKeys(m, cmp) {
 		res[i] = m[k]
 	}
 
@@ -224,8 +215,8 @@ func sortedKeys[K comparable, V any](m map[K]V, less func(K, K) bool) []K {
 	return keys
 }
 
-func updateResponses(spec operations.OpenAPI, op *operations.Operation, hi *HandlerInfo) error {
-	if !hi.IsReser {
+func updateResponses(spec operations.OpenAPI, op *operations.Operation, hi *chai.Metadata) error {
+	if reflect.TypeOf(hi.Res) == nil {
 		return nil
 	}
 

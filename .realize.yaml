@@ -1,0 +1,28 @@
+settings:
+  legacy:
+    force: false
+    interval: 0s
+server:
+  status: true
+  open: false
+  host: 0.0.0.0
+  port: 5001
+schema:
+  - name: chai
+    path: .
+    commands:
+      install:
+        status: true
+        method: go build -o ./bin/basic ./examples/chi/basic/...
+      run:
+        status: true
+        method: ./bin/basic
+    watcher:
+      extensions:
+        - go
+      paths:
+        - /
+      ignored_paths:
+        - .git
+        # - .realize
+        - vendor

@@ -95,3 +95,7 @@ func (l *Logger) Info(args ...interface{}) {
 func Info(args ...interface{}) {
 	DefaultLogger.Info(args...)
 }
+
+func Fatal(args ...interface{}) {
+	DefaultLogger.Fatal(args...)
+}

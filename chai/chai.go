@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/go-chai/chai/internal/log"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
@@ -14,28 +15,101 @@ import (
 )
 
 func init() {
-	schemaDecoder = schema.NewDecoder()
-	schemaDecoder.SetAliasTag("query")
+	queryParamDecoder = schema.NewDecoder()
+	queryParamDecoder.SetAliasTag("query")
+
+	pathParamDecoder = schema.NewDecoder()
+	pathParamDecoder.SetAliasTag("path")
 
 	Validate = validator.New()
 }
 
-var schemaDecoder *schema.Decoder
+var queryParamDecoder *schema.Decoder
+var pathParamDecoder *schema.Decoder
 var Validate *validator.Validate
 
 var DefaultDecoder = func(req any, r *http.Request) ErrType {
-	queryParams, err := url.ParseQuery(r.URL.RawQuery)
+	err := decodeQueryParams(r, req)
 	if err != nil {
 		return err
 	}
-	v := reflect.New(reflect.ValueOf(req).Elem().Type().Elem()).Interface()
-	log.Dump(v)
-	log.Dump(reflect.ValueOf(v).Elem().Kind())
-	if err := schemaDecoder.Decode(v, queryParams); err != nil {
+	err = decodePathParams(r, req)
+	if err != nil {
 		return err
 	}
 	err = render.Decode(r, req)
 	if err != nil {
+		return err
+	}
+
+	// TODO populate the path/header/cookie params
+	return nil
+}
+
+// modified version of reflect.indirect
+func indirect(vv any) any {
+	v := reflect.ValueOf(vv)
+	// If v is a named type and is addressable,
+	// start with its address, so that if the type has pointer methods,
+	// we find them.
+	if v.Kind() != reflect.Ptr && v.Type().Name() != "" && v.CanAddr() {
+		v = v.Addr()
+	}
+	for {
+		// Load value from interface, but only if the result will be
+		// usefully addressable.
+		if v.Kind() == reflect.Interface && !v.IsNil() {
+			e := v.Elem()
+			if e.Kind() == reflect.Ptr && !e.IsNil() {
+				v = e
+				continue
+			}
+		}
+
+		if v.Kind() != reflect.Ptr {
+			break
+		}
+
+		if v.IsNil() {
+			if v.CanSet() {
+				v.Set(reflect.New(v.Type().Elem()))
+			} else {
+				v = reflect.New(v.Type().Elem())
+			}
+		}
+		v = v.Elem()
+	}
+
+	return v.Addr().Interface()
+}
+
+func decodeQueryParams(r *http.Request, req any) error {
+	queryParams, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		return err
+	}
+	log.Dump(req)
+	req = indirect(req)
+	log.Dump(req)
+	log.Dump(queryParams)
+
+	if err := queryParamDecoder.Decode(req, queryParams); err != nil {
+		return err
+	}
+	return nil
+}
+
+func decodePathParams(r *http.Request, req any) error {
+	routeContextParams := chi.RouteContext(r.Context()).URLParams
+	pathParams := make(url.Values)
+	for i, key := range routeContextParams.Keys {
+		if key == "*" {
+			continue
+		}
+		pathParams[key] = append(pathParams[key], routeContextParams.Values[i])
+	}
+	req = indirect(req)
+	if err := pathParamDecoder.Decode(req, pathParams); err != nil {
 		return err
 	}
 	return nil
@@ -51,8 +125,10 @@ func (e *ValidationError) Error() string {
 }
 
 var DefaultValidator = func(req any) ErrType {
+	req = indirect(req)
 	err := Validate.Struct(req)
 	if err != nil {
+		log.Dump(err)
 		err := err.(validator.ValidationErrors)
 		return &ValidationError{
 			Message: "validation error",
@@ -108,15 +184,26 @@ type ErrType = error
 
 type Err error
 
-func handleErr(w http.ResponseWriter, r *http.Request, err ErrType, code int, errorFn ErrorResponderFunc) bool {
+func handleErr[Err ErrType](w http.ResponseWriter, r *http.Request, err Err, code int, errorFn ErrorResponderFunc) bool {
+	log.Dump(err)
 	if !isErr(err) {
 		return false
 	}
+	log.Dump(err)
 	errorFn(w, r, code, err)
 	return true
 }
 
 func isErr[Err ErrType](err Err) bool {
+	log.Dump(reflect.ValueOf(&err))
+	log.Dump(reflect.ValueOf(&err).Elem())
+	log.Dump(reflect.ValueOf(&err).Elem().IsZero())
+
+	if !reflect.ValueOf(&err).Elem().IsZero() {
+		log.Dump(err)
+		log.Dump(reflect.ValueOf(err))
+		log.Dump(reflect.ValueOf(err).IsZero())
+	}
 	return !reflect.ValueOf(&err).Elem().IsZero()
 }
 

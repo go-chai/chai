@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
-	"regexp"
 	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -14,12 +13,8 @@ import (
 	"github.com/go-chai/chai/examples/shared/model"
 	"github.com/go-chai/chai/openapi2"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-openapi/spec"
 	"github.com/gofrs/uuid"
 	httpSwagger "github.com/swaggo/http-swagger"
-	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
-
-	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
 func main() {
@@ -32,19 +27,19 @@ func main() {
 				Summary(`some text used as a summary
 				for this example post handler`)
 
-			chai.Post(r, "/post2", PostHandler).
-				WithValidator(func(a *model.Address) error {
-					err := validation.ValidateStruct(&a,
-						validation.Field(a.Zip, validation.Required, validation.Match(regexp.MustCompile("^[0-9]{5}$"))),
-					)
-					if err != nil {
-						return &httputil.Error{Message: err.Error(), StatusCode: http.StatusBadRequest}
-					}
-					return nil
-				}).
-				ID("123123123").
-				WithValidator((*model.Address).ValidateStep1).
-				WithValidator((*model.Address).ValidateStep2)
+			chai.Post(r, "/{pathParam}/post2", PostHandler).
+				// WithValidator(func(a *model.Address) error {
+				// 	err := validation.ValidateStruct(&a,
+				// 		validation.Field(a.Zip, validation.Required, validation.Match(regexp.MustCompile("^[0-9]{5}$"))),
+				// 	)
+				// 	if err != nil {
+				// 		return &httputil.Error{Message: err.Error(), StatusCode: http.StatusBadRequest}
+				// 	}
+				// 	return nil
+				// }).
+				ID("123123123")
+			// WithValidator((*model.Address).ValidateStep1).
+			// WithValidator((*model.Address).ValidateStep2)
 
 			chai.Get(r, "/uuid2", UUIDHandler)
 			chai.Get(r, "/calc2", CalcHandler)
@@ -56,8 +51,10 @@ func main() {
 		})
 	})
 
+	docs := new(openapi3.T)
+	var err error
 	// This must be used only during development to generate the swagger spec
-	docs, err := chai.OpenAPI2(r)
+	// docs, err = chai.OpenAPI2(r)
 	if err != nil {
 		panic(fmt.Sprintf("failed to generate the swagger spec: %+v", err))
 	}
@@ -92,63 +89,8 @@ func (i *Int) Validate() error {
 	return nil
 }
 
-var PostHandlerDocs = `
-// PostHandler godoc
-// @Summary      post example
-// @Description  do a post
-// @Tags         example
-`
-
-func PostHandler(account *model.Address, w http.ResponseWriter, r *http.Request) (*model.Account, int, *httputil.Error) {
-	return new(model.Account), http.StatusOK, nil
-}
-
-var CalcHandlerDocs = `
-// @Success      203
-// @Failure      400,404
-`
-var CalcHandlerSpec = &spec.Operation{
-	OperationProps: spec.OperationProps{
-		Parameters: []spec.Parameter{
-			{
-				ParamProps: spec.ParamProps{
-					Name:     "val1",
-					In:       "query",
-					Required: true,
-					Schema: &spec.Schema{
-						SchemaProps: spec.SchemaProps{
-							Type:        []string{"integer"},
-							Format:      "int32",
-							Description: "used for calc",
-						},
-					},
-				},
-			},
-			{
-				ParamProps: spec.ParamProps{
-					Name:     "val2",
-					In:       "query",
-					Required: true,
-					Schema: &spec.Schema{
-						SchemaProps: spec.SchemaProps{
-							Type:        []string{"integer"},
-							Format:      "int32",
-							Description: "used for calc",
-						},
-					},
-				},
-			},
-		},
-		Responses: &spec.Responses{
-			ResponsesProps: spec.ResponsesProps{
-				StatusCodeResponses: map[int]spec.Response{
-					http.StatusOK:         {},
-					http.StatusBadRequest: {},
-					http.StatusNotFound:   {},
-				},
-			},
-		},
-	},
+func PostHandler(account ***model.Address, w http.ResponseWriter, r *http.Request) (*model.Address, int, *httputil.Error) {
+	return **account, http.StatusOK, nil
 }
 
 // PingExample godoc
@@ -156,33 +98,6 @@ var CalcHandlerSpec = &spec.Operation{
 // @Description  do ping
 // @Tags         example
 func CalcHandler2(w http.ResponseWriter, r *http.Request) (string, int, error) {
-	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
-	if err != nil {
-		return "", http.StatusBadRequest, err
-	}
-	val2, err := strconv.Atoi(r.URL.Query().Get("val2"))
-	if err != nil {
-		return "", http.StatusBadRequest, err
-	}
-	return fmt.Sprintf("%d", val1*val2), http.StatusOK, nil
-}
-
-type s struct {
-}
-
-func (*s) CalcHandler(w http.ResponseWriter, r *http.Request) (*Int, int, error) {
-	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
-	if err != nil {
-		return nil, http.StatusBadRequest, err
-	}
-	val2, err := strconv.Atoi(r.URL.Query().Get("val2"))
-	if err != nil {
-		return nil, http.StatusBadRequest, err
-	}
-	return &Int{big.NewInt(int64(val1 + val2))}, http.StatusOK, nil
-}
-
-func (*s) CalcHandler2(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
 	if err != nil {
 		return "", http.StatusBadRequest, err
@@ -207,10 +122,6 @@ func CalcHandler(w http.ResponseWriter, r *http.Request) (*big.Int, int, error) 
 }
 
 func UUIDHandler(w http.ResponseWriter, r *http.Request) (uuid.UUID, int, error) {
-	return uuid.Must(uuid.NewV4()), http.StatusOK, nil
-}
-
-func (*s) UUIDHandler(w http.ResponseWriter, r *http.Request) (uuid.UUID, int, error) {
 	return uuid.Must(uuid.NewV4()), http.StatusOK, nil
 }
 
@@ -286,7 +197,7 @@ func AttributeHandler(w http.ResponseWriter, r *http.Request) (string, int, erro
 	), http.StatusOK, nil
 }
 
-func addCustomDocs(docs operations.OpenAPI) {
+func addCustomDocs(docs *openapi3.T) {
 	docs.OpenAPI = "3.0"
 	docs.Servers = openapi3.Servers{{URL: "localhost:8080"}}
 
