@@ -30,6 +30,13 @@ var pathParamDecoder *schema.Decoder
 var Validate *validator.Validate
 
 var DefaultDecoder = func(req any, r *http.Request) ErrType {
+	// panic(spew.Sdump(req))
+	req = Indirect(req, true)
+	// panic(spew.Sdump(req))
+	// panic(reflect.TypeOf(req).Elem().Kind() == reflect.Interface)
+	if reflect.TypeOf(req).Elem().Kind() == reflect.Interface {
+		return nil
+	}
 	err := decodeQueryParams(r, req)
 	if err != nil {
 		return err
@@ -93,11 +100,6 @@ func decodeQueryParams(r *http.Request, req any) error {
 	if err != nil {
 		return err
 	}
-	log.Dump(req)
-	req = Indirect(req, true)
-	log.Dump(req)
-	log.Dump(queryParams)
-
 	if err := queryParamDecoder.Decode(req, queryParams); err != nil {
 		return err
 	}
@@ -117,7 +119,6 @@ func decodePathParams(r *http.Request, req any) error {
 		}
 		pathParams[key] = append(pathParams[key], routeContext.URLParams.Values[i])
 	}
-	req = Indirect(req, true)
 	if err := pathParamDecoder.Decode(req, pathParams); err != nil {
 		return err
 	}
@@ -134,7 +135,14 @@ func (e *ValidationError) Error() string {
 }
 
 var DefaultValidator = func(req any) ErrType {
+	if !reflect.ValueOf(req).IsValid() {
+		return nil
+	}
 	req = Indirect(req, true)
+	if reflect.TypeOf(req).Elem().Kind() == reflect.Interface {
+		return nil
+	}
+
 	err := Validate.Struct(req)
 	if err != nil {
 		log.Dump(err)
@@ -233,16 +241,16 @@ func defaultDecoder[Req any](r *http.Request) (Req, ErrType) {
 	return *req, err
 }
 
+func defaultValidator[Req any](req Req) ErrType {
+	return DefaultValidator(req)
+}
+
 func defaultResponder[Res any](w http.ResponseWriter, r *http.Request, code int, res Res) {
 	DefaultResponder(w, r, code, res)
 }
 
 func defaultErrorResponder[Err ErrType](w http.ResponseWriter, r *http.Request, code int, err Err) {
 	DefaultErrorResponder(w, r, code, err)
-}
-
-func defaultValidator[Req any](req Req) ErrType {
-	return DefaultValidator(req)
 }
 
 type Metadata struct {

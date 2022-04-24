@@ -138,6 +138,15 @@ func TestHandlers(t *testing.T) {
 			},
 			response: `{"error":"test error map ptr", "message":"zz", "status_code":500}`,
 		},
+		{
+			name: "req res handler with any request with custom map error type with a pointer receiver with error",
+			makeHandler: func(t *testing.T) http.Handler {
+				return chai.NewHandler("", "", func(req any, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorMapPtr) {
+					return nil, http.StatusInternalServerError, &tests.TestErrorMapPtr{"message": "zz"}
+				})
+			},
+			response: `{"error":"test error map ptr", "message":"zz", "status_code":500}`,
+		},
 		// TODO add test cases for parsing the requests (body, query, path)
 		// TODO add test cases for validating the requests
 	}
