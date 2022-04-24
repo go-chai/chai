@@ -10,6 +10,7 @@ import (
 	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chai/chai/examples/shared/model"
 	"github.com/go-chi/chi/v5"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
 // Controller example
@@ -26,9 +27,23 @@ func (c *Controller) ChiRoutes() chi.Router {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/accounts", func(r chi.Router) {
-			chai.Get(r, "/{id}", c.ShowAccount)
+			chai.Get(r, "/{id}", c.ShowAccount).
+				ID("show-account").
+				Tags("accounts").
+				Summary("Show an account")
 			chai.Get(r, "/", c.ListAccounts)
-			chai.Post(r, "/", c.AddAccount)
+			chai.Post(r, "/", c.AddAccount).
+				WithValidator(func(a *model.AddAccount) error {
+					err := validation.ValidateStruct(&a,
+						validation.Field(a.Name, validation.Required),
+					)
+					if err != nil {
+						return &httputil.Error{Message: err.Error(), StatusCode: http.StatusBadRequest}
+					}
+					return nil
+				})
+			chai.Post(r, "/v2", c.AddAccount).
+				WithValidator((*model.AddAccount).Validation)
 			chai.DeleteB(r, "/{id:[0-9]+}", c.DeleteAccount)
 			chai.PatchB(r, "/{id}", c.UpdateAccount)
 			chai.PostB(r, "/{id}/images", c.UploadAccountImage).
@@ -36,7 +51,7 @@ func (c *Controller) ChiRoutes() chi.Router {
 		})
 
 		r.Route("/bottles", func(r chi.Router) {
-			chai.Get(r, "/{id}", func(w http.ResponseWriter, r *http.Request) (*model.Bottle, int, error) {
+			chai.Get(r, "/{id}", func(req any, w http.ResponseWriter, r *http.Request) (*model.Bottle, int, error) {
 				id := chi.URLParam(r, "id")
 				bid, err := strconv.Atoi(id)
 				if err != nil {

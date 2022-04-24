@@ -26,7 +26,7 @@ type Int struct {
 // @Failure      400  {string}  string  "ok"
 // @Failure      404  {string}  string  "ok"
 // @Failure      500  {string}  string  "ok"
-func (c *Controller) PingExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func (c *Controller) PingExample(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "pong", http.StatusOK, nil
 }
 
@@ -42,7 +42,7 @@ func (c *Controller) PingExample(w http.ResponseWriter, r *http.Request) (string
 // @Failure      400   {string}   string  "ok"
 // @Failure      404   {string}   string  "ok"
 // @Failure      500   {string}   string  "ok"
-func (c *Controller) CalcExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func (c *Controller) CalcExample(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
 	if err != nil {
 		return "", http.StatusBadRequest, err
@@ -67,7 +67,7 @@ func (c *Controller) CalcExample(w http.ResponseWriter, r *http.Request) (string
 // @Failure      400         {string}  string  "ok"
 // @Failure      404         {string}  string  "ok"
 // @Failure      500         {string}  string  "ok"
-func (c *Controller) PathParamsExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func (c *Controller) PathParamsExample(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	groupID, err := strconv.Atoi(chi.URLParam(r, "group_id"))
 	if err != nil {
 		return "", http.StatusBadRequest, err
@@ -91,7 +91,7 @@ func (c *Controller) PathParamsExample(w http.ResponseWriter, r *http.Request) (
 // @Failure      400            {string}  string  "ok"
 // @Failure      404            {string}  string  "ok"
 // @Failure      500            {string}  string  "ok"
-func (c *Controller) HeaderExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func (c *Controller) HeaderExample(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return r.Header.Get("Authorization"), http.StatusOK, nil
 }
 
@@ -108,7 +108,7 @@ func (c *Controller) HeaderExample(w http.ResponseWriter, r *http.Request) (stri
 // @Failure      500            {string}  string  "ok"
 // @Security     ApiKeyAuth
 // @Security     OAuth2Implicit[admin, write]
-func (c *Controller) SecuritiesExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func (c *Controller) SecuritiesExample(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "ok", http.StatusOK, nil
 }
 
@@ -128,7 +128,7 @@ func (c *Controller) SecuritiesExample(w http.ResponseWriter, r *http.Request) (
 // @Failure      400         {string}  string  "ok"
 // @Failure      404         {string}  string  "ok"
 // @Failure      500         {string}  string  "ok"
-func (c *Controller) AttributeExample(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func (c *Controller) AttributeExample(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return fmt.Sprintf("enumstring=%s enumint=%s enumnumber=%s string=%s int=%s default=%s",
 		r.URL.Query().Get("enumstring"),
 		r.URL.Query().Get("enumint"),

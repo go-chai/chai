@@ -11,10 +11,8 @@ import (
 	"github.com/go-chai/chai/examples/shared/controller"
 	"github.com/go-chai/chai/log"
 
-	_ "github.com/go-chai/chai/examples/docs/celler" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chi/chi/v5"
-	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
@@ -24,28 +22,16 @@ func main() {
 
 	r.Mount("/", c.ChiRoutes())
 
-	// This must be used only during development to generate the swagger spec
 	docs, err := chai.OpenAPI3(r)
 	if err != nil {
 		panic(fmt.Sprintf("failed to generate the swagger spec: %+v", err))
 	}
-
-	// This should be used in prod to serve the swagger spec
-	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
-	))
-
 	addCustomDocs(docs)
 
-	log.YAML(docs)
+	// Serve the swagger spec
+	r.Get("/swagger/*", chai.SwaggerHandler(docs))
 
-	// This must be used only during development to store the swagger spec
-	// err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
-	// OutputDir: "examples/docs/celler",
-	// })
-	// if err != nil {
-	// panic(fmt.Sprintf("failed to write the swagger spec: %+v", err))
-	// }
+	log.YAML(docs)
 
 	fmt.Println("The swagger spec is available at http://localhost:8080/swagger/")
 
@@ -53,7 +39,6 @@ func main() {
 }
 
 func addCustomDocs(docs *openapi3.T) {
-	docs.OpenAPI = "3.0"
 	docs.Servers = openapi3.Servers{{URL: "localhost:8080"}}
 
 	docs.Info = &openapi3.Info{

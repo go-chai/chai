@@ -51,7 +51,7 @@ func TestHandlers(t *testing.T) {
 		{
 			name: "req res handler",
 			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
+				return chai.NewHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
 					return newRes(), http.StatusOK, nil
 				})
 			},
@@ -60,7 +60,7 @@ func TestHandlers(t *testing.T) {
 		{
 			name: "req res handler with error",
 			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
+				return chai.NewHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
 					return nil, http.StatusInternalServerError, errors.New("zz")
 				})
 			},
@@ -69,7 +69,7 @@ func TestHandlers(t *testing.T) {
 		{
 			name: "req res handler with custom struct error type with a pointer receiver with no error",
 			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorPtr) {
+				return chai.NewHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorPtr) {
 					return newRes(), http.StatusOK, nil
 				})
 			},
@@ -78,7 +78,7 @@ func TestHandlers(t *testing.T) {
 		{
 			name: "req res handler with custom struct error type with a pointer receiver with error",
 			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorPtr) {
+				return chai.NewHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorPtr) {
 					return nil, http.StatusInternalServerError, &tests.TestErrorPtr{Message: "zz"}
 				})
 			},
@@ -87,7 +87,7 @@ func TestHandlers(t *testing.T) {
 		{
 			name: "req res handler with custom struct error type with no error",
 			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestError) {
+				return chai.NewHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestError) {
 					return newRes(), http.StatusOK, tests.TestError{}
 				})
 			},
@@ -96,7 +96,7 @@ func TestHandlers(t *testing.T) {
 		{
 			name: "req res handler with custom struct error type with error",
 			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestError) {
+				return chai.NewHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestError) {
 					return nil, http.StatusInternalServerError, tests.TestError{Message: "zz"}
 				})
 			},
@@ -105,7 +105,7 @@ func TestHandlers(t *testing.T) {
 		{
 			name: "req res handler with custom map error type with no error",
 			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestErrorMap) {
+				return chai.NewHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestErrorMap) {
 					return newRes(), http.StatusOK, nil
 				})
 			},
@@ -114,7 +114,7 @@ func TestHandlers(t *testing.T) {
 		{
 			name: "req res handler with custom map error type with error",
 			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestErrorMap) {
+				return chai.NewHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestErrorMap) {
 					return nil, http.StatusInternalServerError, tests.TestErrorMap{"message": "zz"}
 				})
 			},
@@ -123,7 +123,7 @@ func TestHandlers(t *testing.T) {
 		{
 			name: "req res handler with custom map error type with a pointer receiver with no error",
 			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorMapPtr) {
+				return chai.NewHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorMapPtr) {
 					return newRes(), http.StatusOK, nil
 				})
 			},
@@ -132,98 +132,7 @@ func TestHandlers(t *testing.T) {
 		{
 			name: "req res handler with custom map error type with a pointer receiver with error",
 			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorMapPtr) {
-					return nil, http.StatusInternalServerError, &tests.TestErrorMapPtr{"message": "zz"}
-				})
-			},
-			response: `{"error":"test error map ptr", "message":"zz", "status_code":500}`,
-		},
-		{
-			name: "res handler",
-			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewResHandler("", "", func(w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
-					return newRes(), http.StatusOK, nil
-				})
-			},
-			response: `{"foo":"f","bar":"b","test_inner_response":{"foo_foo":123,"bar_bar":12}}`,
-		},
-		{
-			name: "res handler with error",
-			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewResHandler("", "", func(w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
-					return nil, http.StatusInternalServerError, errors.New("zz")
-				})
-			},
-			response: `{"error":"zz", "status_code":500}`,
-		},
-		{
-			name: "res handler with custom struct error type with a pointer receiver with no error",
-			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewResHandler("", "", func(w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorPtr) {
-					return newRes(), http.StatusOK, nil
-				})
-			},
-			response: `{"foo":"f","bar":"b","test_inner_response":{"foo_foo":123,"bar_bar":12}}`,
-		},
-		{
-			name: "res handler with custom struct error type with a pointer receiver with error",
-			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewResHandler("", "", func(w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorPtr) {
-					return nil, http.StatusInternalServerError, &tests.TestErrorPtr{Message: "zz"}
-				})
-			},
-			response: `{"error":"zz", "message":"zz", "status_code":500}`,
-		},
-
-		{
-			name: "res handler with custom struct error type with no error",
-			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewResHandler("", "", func(w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestError) {
-					return newRes(), http.StatusOK, tests.TestError{}
-				})
-			},
-			response: `{"foo":"f","bar":"b","test_inner_response":{"foo_foo":123,"bar_bar":12}}`,
-		},
-		{
-			name: "res handler with custom struct error type with error",
-			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewResHandler("", "", func(w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestError) {
-					return nil, http.StatusInternalServerError, tests.TestError{Message: "zz"}
-				})
-			},
-			response: `{"error":"zz", "message":"zz", "status_code":500}`,
-		},
-		{
-			name: "res handler with custom map error type with no error",
-			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewResHandler("", "", func(w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestErrorMap) {
-					return newRes(), http.StatusOK, nil
-				})
-			},
-			response: `{"foo":"f","bar":"b","test_inner_response":{"foo_foo":123,"bar_bar":12}}`,
-		},
-		{
-			name: "res handler with custom map error type with error",
-			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewResHandler("", "", func(w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, tests.TestErrorMap) {
-					return nil, http.StatusInternalServerError, tests.TestErrorMap{"message": "zz"}
-				})
-			},
-			response: `{"error":"test error map", "message":"zz", "status_code":500}`,
-		},
-		{
-			name: "res handler with custom map error type with a pointer receiver with no error",
-			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewResHandler("", "", func(w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorMapPtr) {
-					return newRes(), http.StatusOK, nil
-				})
-			},
-			response: `{"foo":"f","bar":"b","test_inner_response":{"foo_foo":123,"bar_bar":12}}`,
-		},
-		{
-			name: "res handler with custom map error type with a pointer receiver with error",
-			makeHandler: func(t *testing.T) http.Handler {
-				return chai.NewResHandler("", "", func(w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorMapPtr) {
+				return chai.NewHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, *tests.TestErrorMapPtr) {
 					return nil, http.StatusInternalServerError, &tests.TestErrorMapPtr{"message": "zz"}
 				})
 			},

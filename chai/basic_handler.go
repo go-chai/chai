@@ -88,7 +88,7 @@ func (h *BasicHandler) ResponseType(res any) *BasicHandler {
 }
 
 func (h *BasicHandler) AddResponse(res any, code int, description string) *BasicHandler {
-	AddResponse(h.op, code, openapi3.NewResponse().WithDescription(description))
+	addResponse(h.op, code, openapi3.NewResponse().WithDescription(description))
 	h.res = res
 	return h
 }

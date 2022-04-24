@@ -193,7 +193,7 @@ func TestSortedKeys(t *testing.T) {
 }
 
 func TestDocs(t *testing.T) {
-	h1 := chai.NewReqResHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
+	h1 := chai.NewHandler("", "", func(req *tests.TestRequest, w http.ResponseWriter, r *http.Request) (*tests.TestResponse, int, error) {
 		return nil, 0, nil
 	}).
 		Summary("Test Handler").
@@ -202,7 +202,7 @@ func TestDocs(t *testing.T) {
 		Tags("bottles").
 		ResponseCodes("test", 200, 400, 404, 500)
 
-	h2 := chai.NewReqResHandler("", "", func(req *tests.TestRequests, w http.ResponseWriter, r *http.Request) ([]*tests.TestResponse, int, error) {
+	h2 := chai.NewHandler("", "", func(req *tests.TestRequests, w http.ResponseWriter, r *http.Request) ([]*tests.TestResponse, int, error) {
 		return nil, 0, nil
 	}).
 		Summary("Test Handler").

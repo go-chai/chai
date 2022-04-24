@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strconv"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chai/chai/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -241,4 +243,26 @@ func defaultErrorResponder[Err ErrType](w http.ResponseWriter, r *http.Request, 
 
 func defaultValidator[Req any](req Req) ErrType {
 	return DefaultValidator(req)
+}
+
+type Metadata struct {
+	Req            any
+	Res            any
+	Err            any
+	Op             *openapi3.Operation
+	HandlerFunc    any
+	HandlerWrapper http.Handler
+}
+
+func addResponse(operation *openapi3.Operation, status int, response *openapi3.Response) {
+	responses := operation.Responses
+	if responses == nil {
+		responses = make(openapi3.Responses)
+		operation.Responses = responses
+	}
+	code := "default"
+	if status != 0 {
+		code = strconv.FormatInt(int64(status), 10)
+	}
+	responses[code] = &openapi3.ResponseRef{Value: response}
 }

@@ -8,13 +8,11 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	chai "github.com/go-chai/chai/chi"
-	_ "github.com/go-chai/chai/examples/docs/basic" // This is required to be able to serve the stored swagger spec in prod
 	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chai/chai/examples/shared/model"
 	"github.com/go-chai/chai/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
-	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
@@ -22,25 +20,15 @@ func main() {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/examples", func(r chi.Router) {
 			chai.Post(r, "/post", PostHandler).
-				ID("123123123").
+				ID("example").
+				Tags("Examples").
 				Deprecated().
 				Summary(`some text used as a summary
 				for this example post handler`)
 
 			chai.Post(r, "/{pathParam}/post2", PostHandler).
-				// WithValidator(func(a *model.Address) error {
-				// 	err := validation.ValidateStruct(&a,
-				// 		validation.Field(a.Zip, validation.Required, validation.Match(regexp.MustCompile("^[0-9]{5}$"))),
-				// 	)
-				// 	if err != nil {
-				// 		return &httputil.Error{Message: err.Error(), StatusCode: http.StatusBadRequest}
-				// 	}
-				// 	return nil
-				// }).
-				ID("123123123")
-			// WithValidator((*model.Address).ValidateStep1).
-			// WithValidator((*model.Address).ValidateStep2)
-
+				Tags("Examples").
+				ID("example2")
 			chai.Get(r, "/uuid2", UUIDHandler)
 			chai.Get(r, "/calc2", CalcHandler)
 			chai.Get(r, "/ping", PingHandler)
@@ -51,28 +39,15 @@ func main() {
 		})
 	})
 
-	// This must be used only during development to generate the swagger spec
 	docs, err := chai.OpenAPI3(r)
 	if err != nil {
 		panic(fmt.Sprintf("failed to generate the swagger spec: %+v", err))
 	}
-
-	// This should be used in prod to serve the swagger spec
-	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
-	))
-
 	addCustomDocs(docs)
-
 	log.YAML(docs)
 
-	// This must be used only during development to store the swagger spec
-	// err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
-	// OutputDir: "examples/docs/basic",
-	// })
-	if err != nil {
-		panic(fmt.Sprintf("failed to write the swagger spec: %+v", err))
-	}
+	// Serve the swagger spec
+	r.Get("/swagger/*", chai.SwaggerHandler(docs))
 
 	fmt.Println("The swagger spec is available at http://localhost:8080/swagger/")
 
@@ -91,7 +66,7 @@ func PostHandler(account ***model.Address, w http.ResponseWriter, r *http.Reques
 	return **account, http.StatusOK, nil
 }
 
-func CalcHandler2(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func CalcHandler2(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
 	if err != nil {
 		return "", http.StatusBadRequest, err
@@ -103,7 +78,7 @@ func CalcHandler2(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return fmt.Sprintf("%d", val1*val2), http.StatusOK, nil
 }
 
-func CalcHandler(w http.ResponseWriter, r *http.Request) (*big.Int, int, error) {
+func CalcHandler(req any, w http.ResponseWriter, r *http.Request) (*big.Int, int, error) {
 	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
 	if err != nil {
 		return nil, http.StatusBadRequest, err
@@ -115,15 +90,15 @@ func CalcHandler(w http.ResponseWriter, r *http.Request) (*big.Int, int, error) 
 	return big.NewInt(int64(val1 + val2)), http.StatusOK, nil
 }
 
-func UUIDHandler(w http.ResponseWriter, r *http.Request) (uuid.UUID, int, error) {
+func UUIDHandler(req any, w http.ResponseWriter, r *http.Request) (uuid.UUID, int, error) {
 	return uuid.Must(uuid.NewV4()), http.StatusOK, nil
 }
 
-func PingHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func PingHandler(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "pong", http.StatusOK, nil
 }
 
-func PathParamsHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func PathParamsHandler(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	groupID, err := strconv.Atoi(chi.URLParam(r, "group_id"))
 	if err != nil {
 		return "", http.StatusBadRequest, err
@@ -136,15 +111,15 @@ func PathParamsHandler(w http.ResponseWriter, r *http.Request) (string, int, err
 	return fmt.Sprintf("group_id=%d account_id=%d", groupID, accountID), http.StatusOK, nil
 }
 
-func HeaderHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func HeaderHandler(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return r.Header.Get("Authorization"), http.StatusOK, nil
 }
 
-func SecuritiesHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func SecuritiesHandler(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "ok", http.StatusOK, nil
 }
 
-func AttributeHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func AttributeHandler(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return fmt.Sprintf("enumstring=%s enumint=%s enumnumber=%s string=%s int=%s default=%s",
 		r.URL.Query().Get("enumstring"),
 		r.URL.Query().Get("enumint"),
@@ -156,7 +131,6 @@ func AttributeHandler(w http.ResponseWriter, r *http.Request) (string, int, erro
 }
 
 func addCustomDocs(docs *openapi3.T) {
-	docs.OpenAPI = "3.0"
 	docs.Servers = openapi3.Servers{{URL: "localhost:8080"}}
 
 	docs.Info = &openapi3.Info{

@@ -11,7 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func (c *Controller) ShowAccount(w http.ResponseWriter, r *http.Request) (*model.Account, int, error) {
+func (c *Controller) ShowAccount(req any, w http.ResponseWriter, r *http.Request) (*model.Account, int, error) {
 	id := chi.URLParam(r, "id")
 	aid, err := strconv.Atoi(id)
 	if err != nil {
@@ -25,7 +25,7 @@ func (c *Controller) ShowAccount(w http.ResponseWriter, r *http.Request) (*model
 	return &account, http.StatusOK, nil
 }
 
-func (c *Controller) ListAccounts(w http.ResponseWriter, r *http.Request) (*[]model.Account, int, error) {
+func (c *Controller) ListAccounts(req any, w http.ResponseWriter, r *http.Request) (*[]model.Account, int, error) {
 	q := r.URL.Query().Get("q")
 	accounts, err := model.AccountsAll(q)
 	if err != nil {

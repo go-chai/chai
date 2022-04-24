@@ -6,19 +6,18 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/getkin/kin-openapi v0.88.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-chai/swag v1.7.8-fork2
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/render v1.0.2-0.20210429130946-996350ff55de
 	github.com/go-openapi/spec v0.20.4
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/go-playground/validator/v10 v10.10.1
 	github.com/gofrs/uuid v4.2.0+incompatible
-	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/schema v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
-	github.com/swaggo/http-swagger v1.1.2
-	github.com/swaggo/swag v1.7.8
+	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
+	github.com/swaggo/http-swagger v1.2.6
+	github.com/swaggo/swag v1.7.9
 	github.com/zhamlin/chi-openapi v0.0.0-20211228181444-11d5829eeb0c
 	go.uber.org/zap v1.21.0
 )
@@ -37,7 +36,6 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect

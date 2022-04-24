@@ -214,6 +214,40 @@
                 }
             }
         },
+        "/api/v1/accounts/v2": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddAccount"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Account"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/accounts/{id}": {
             "delete": {
                 "parameters": [
@@ -230,6 +264,7 @@
                 "responses": null
             },
             "get": {
+                "operationId": "show-account",
                 "parameters": [
                     {
                         "in": "path",
@@ -259,7 +294,11 @@
                             }
                         }
                     }
-                }
+                },
+                "summary": "Show an account",
+                "tags": [
+                    "accounts"
+                ]
             },
             "patch": {
                 "parameters": [
