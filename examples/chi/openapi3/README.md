@@ -1,9 +1,0 @@
-# Celler example for github.com/go-chai/chai
-
-Run the app
-
-```console
-$ go run -gcflags -N ./examples/chi/openapi3/main.go
-```
-
-[open swagger](http://localhost:8080/swagger/index.html)

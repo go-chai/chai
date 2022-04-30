@@ -43,7 +43,7 @@ func (c *Controller) ShowBottle(w http.ResponseWriter, r *http.Request) (*model.
 // @Produce      json
 // @Success      200,201,202
 // @Failure      400,404,500
-func (c *Controller) ListBottles(w http.ResponseWriter, r *http.Request) (*[]model.Bottle, int, *httputil.Error) {
+func (c *Controller) ListBottles(req any, w http.ResponseWriter, r *http.Request) (*[]model.Bottle, int, *httputil.Error) {
 	bottles, err := model.BottlesAll()
 	if err != nil {
 		return nil, http.StatusNotFound, &httputil.Error{

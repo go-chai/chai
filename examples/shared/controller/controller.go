@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chai/chai/examples/shared/model"
 	"github.com/go-chi/chi/v5"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
 // Controller example
@@ -25,28 +27,31 @@ func (c *Controller) ChiRoutes() chi.Router {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/accounts", func(r chi.Router) {
-			chai.Get(r, "/{id}", c.ShowAccount)
+			chai.Get(r, "/{id}", c.ShowAccount).
+				ID("show-account").
+				Tags("accounts").
+				Summary("Show an account")
 			chai.Get(r, "/", c.ListAccounts)
-			chai.Post(r, "/", c.AddAccount)
-			r.Delete("/{id:[0-9]+}", c.DeleteAccount)
-			r.Patch("/{id}", c.UpdateAccount)
-			r.Post("/{id}/images", c.UploadAccountImage)
+			chai.Post(r, "/", c.AddAccount).
+				WithValidator(func(a *model.AddAccount) error {
+					err := validation.ValidateStruct(&a,
+						validation.Field(a.Name, validation.Required),
+					)
+					if err != nil {
+						return &httputil.Error{Message: err.Error(), StatusCode: http.StatusBadRequest}
+					}
+					return nil
+				})
+			chai.Post(r, "/v2", c.AddAccount).
+				WithValidator((*model.AddAccount).Validation)
+			chai.DeleteB(r, "/{id:[0-9]+}", c.DeleteAccount)
+			chai.PatchB(r, "/{id}", c.UpdateAccount)
+			chai.PostB(r, "/{id}/images", c.UploadAccountImage).
+				Operation(UploadAccountImageOperation())
 		})
 
 		r.Route("/bottles", func(r chi.Router) {
-			// ShowBottle godoc
-			// @Summary      Show a bottle
-			// @Description  get string by ID
-			// @ID           get-string-by-int
-			// @Tags         bottles
-			// @Accept       json
-			// @Produce      json
-			// @Param        id   path      int  true  "Bottle ID"
-			// @Success      200  {object}  model.Bottle
-			// @Failure      400  {object}  httputil.Error
-			// @Failure      404  {object}  httputil.Error
-			// @Failure      500  {object}  httputil.Error
-			chai.Get(r, "/{id}", func(w http.ResponseWriter, r *http.Request) (*model.Bottle, int, error) {
+			chai.Get(r, "/{id}", func(req any, w http.ResponseWriter, r *http.Request) (*model.Bottle, int, error) {
 				id := chi.URLParam(r, "id")
 				bid, err := strconv.Atoi(id)
 				if err != nil {
@@ -99,4 +104,13 @@ type Message struct {
 
 type Message2 struct {
 	Message string `json:"message" example:"message"`
+}
+
+func UploadAccountImageOperation() *openapi3.Operation {
+	op := openapi3.NewOperation()
+	op.Summary = "Upload an image"
+	op.Description = "Upload file"
+	op.Tags = []string{"accounts"}
+
+	return op
 }
