@@ -4,22 +4,25 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/ghodss/yaml"
+	"github.com/go-chi/chi/v5"
+	"github.com/gofrs/uuid"
+
 	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/examples/shared/httputil"
 	"github.com/go-chai/chai/examples/shared/model"
 	"github.com/go-chai/chai/log"
-	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid"
 )
 
 func main() {
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/examples", func(r chi.Router) {
-			chai.Post(r, "/post", PostHandler).
+			chai.Post(r, "/{pathParam}/post", PostHandler).
 				ID("example").
 				Tags("Examples").
 				Deprecated().
@@ -28,7 +31,8 @@ func main() {
 
 			chai.Post(r, "/{pathParam}/post2", PostHandler).
 				Tags("Examples").
-				ID("example2")
+				ID("example2").
+				ResponseCodes("success code", 202)
 			chai.Get(r, "/uuid2", UUIDHandler)
 			chai.Get(r, "/calc2", CalcHandler)
 			chai.Get(r, "/ping", PingHandler)
@@ -46,20 +50,22 @@ func main() {
 	addCustomDocs(docs)
 	log.YAML(docs)
 
+	yamlDocs, err := yaml.Marshal(docs)
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal the swagger spec: %+v", err))
+	}
+
+	err = os.WriteFile("./examples/docs/basic/swagger.yaml", yamlDocs, 0644)
+	if err != nil {
+		panic(fmt.Sprintf("failed to write the swagger spec: %+v", err))
+	}
+
 	// Serve the swagger spec
 	r.Get("/swagger/*", chai.SwaggerHandler(docs))
 
 	fmt.Println("The swagger spec is available at http://localhost:8080/swagger/")
 
 	http.ListenAndServe(":8080", r)
-}
-
-type Int struct {
-	*big.Int
-}
-
-func (i *Int) Validate() error {
-	return nil
 }
 
 func PostHandler(account ***model.Address, w http.ResponseWriter, r *http.Request) (*model.Address, int, *httputil.Error) {

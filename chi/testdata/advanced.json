@@ -168,7 +168,8 @@
                                     "type": "array"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -177,7 +178,8 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             },
@@ -200,7 +202,8 @@
                                     "$ref": "#/components/schemas/Account"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -209,7 +212,8 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -234,7 +238,8 @@
                                     "$ref": "#/components/schemas/Account"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -243,38 +248,35 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             }
         },
         "/api/v1/accounts/{id}": {
             "delete": {
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "required": true,
-                        "schema": {
-                            "pattern": "^[0-9]+$",
-                            "type": "string"
-                        }
+                "parameters": [{
+                    "in": "path",
+                    "name": "id",
+                    "required": true,
+                    "schema": {
+                        "pattern": "^[0-9]+$",
+                        "type": "string"
                     }
-                ],
+                }],
                 "responses": null
             },
             "get": {
                 "operationId": "show-account",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                "parameters": [{
+                    "in": "path",
+                    "name": "id",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
                     }
-                ],
+                }],
                 "responses": {
                     "200": {
                         "content": {
@@ -283,7 +285,8 @@
                                     "$ref": "#/components/schemas/Account"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -292,7 +295,8 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 },
                 "summary": "Show an account",
@@ -301,32 +305,28 @@
                 ]
             },
             "patch": {
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                "parameters": [{
+                    "in": "path",
+                    "name": "id",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
                     }
-                ],
+                }],
                 "responses": null
             }
         },
         "/api/v1/accounts/{id}/images": {
             "post": {
                 "description": "Upload file",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                "parameters": [{
+                    "in": "path",
+                    "name": "id",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
                     }
-                ],
+                }],
                 "responses": null,
                 "summary": "Upload an image",
                 "tags": [
@@ -344,7 +344,8 @@
                                     "$ref": "#/components/schemas/Admin"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -353,7 +354,8 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -371,7 +373,8 @@
                                     "type": "array"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -380,23 +383,22 @@
                                     "$ref": "#/components/schemas/Error"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             }
         },
         "/api/v1/bottles/{id}": {
             "get": {
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                "parameters": [{
+                    "in": "path",
+                    "name": "id",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
                     }
-                ],
+                }],
                 "responses": {
                     "200": {
                         "content": {
@@ -405,7 +407,8 @@
                                     "$ref": "#/components/schemas/Bottle"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -414,7 +417,8 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -429,7 +433,8 @@
                                     "type": "string"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -438,7 +443,8 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             },
@@ -461,7 +467,8 @@
                                     "$ref": "#/components/schemas/Account2"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -470,7 +477,8 @@
                                     "$ref": "#/components/schemas/Error"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -485,7 +493,8 @@
                                     "type": "string"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -494,15 +503,15 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             }
         },
         "/api/v1/examples/groups/{group_id}/accounts/{account_id}": {
             "get": {
-                "parameters": [
-                    {
+                "parameters": [{
                         "in": "path",
                         "name": "account_id",
                         "required": true,
@@ -527,7 +536,8 @@
                                     "type": "string"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -536,7 +546,8 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -551,7 +562,8 @@
                                     "type": "string"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -560,7 +572,8 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -575,7 +588,8 @@
                                     "type": "string"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -584,7 +598,8 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -599,7 +614,8 @@
                                     "type": "string"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     },
                     "default": {
                         "content": {
@@ -608,7 +624,8 @@
                                     "type": "object"
                                 }
                             }
-                        }
+                        },
+                        "description": ""
                     }
                 }
             }

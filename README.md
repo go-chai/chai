@@ -10,7 +10,6 @@
 ## Supported http routers
 
 - [chi](https://github.com/go-chi/chi)
-- [gorilla/mux](https://github.com/gorilla/mux)
 
 ## Project status
 `chai` is still a work in progress
@@ -19,12 +18,11 @@
 
 - YAML marshalling
 
-	Currently only https://github.com/ghodss/yaml is supported as a yaml marshaller for the generated swagger spec, which is also provided via `openapi2.MarshalYAML()` as an alias
+	Currently only https://github.com/ghodss/yaml is supported as a yaml marshaller for the generated swagger spec
 
 ## Examples
 
 - chi - [./examples/chi](./examples/chi)
-- gorilla/mux - [./examples/gorilla](./examples/gorilla)
 - standalone repo - https://github.com/go-chai/examples
 
 ## Usage
@@ -38,25 +36,39 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 	"net/http"
+	"os"
 	"strconv"
 
-	chai "github.com/go-chai/chai/chi"
-	_ "github.com/go-chai/chai/examples/docs/basic" // This is required to be able to serve the stored swagger spec in prod
-	"github.com/go-chai/chai/examples/shared/model"
-	"github.com/go-chai/chai/openapi2"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/ghodss/yaml"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-openapi/spec"
-	httpSwagger "github.com/swaggo/http-swagger"
+	"github.com/gofrs/uuid"
+
+	chai "github.com/go-chai/chai/chi"
+	"github.com/go-chai/chai/examples/shared/httputil"
+	"github.com/go-chai/chai/examples/shared/model"
+	"github.com/go-chai/chai/log"
 )
 
 func main() {
 	r := chi.NewRouter()
-
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/examples", func(r chi.Router) {
-			chai.Post(r, "/post", PostHandler)
-			chai.Get(r, "/calc", CalcHandler)
+			chai.Post(r, "/post", PostHandler).
+				ID("example").
+				Tags("Examples").
+				Deprecated().
+				Summary(`some text used as a summary
+				for this example post handler`)
+
+			chai.Post(r, "/{pathParam}/post2", PostHandler).
+				Tags("Examples").
+				ID("example2").
+				ResponseCodes("success code", 202)
+			chai.Get(r, "/uuid2", UUIDHandler)
+			chai.Get(r, "/calc2", CalcHandler)
 			chai.Get(r, "/ping", PingHandler)
 			chai.Get(r, "/groups/{group_id}/accounts/{account_id}", PathParamsHandler)
 			chai.Get(r, "/header", HeaderHandler)
@@ -65,54 +77,36 @@ func main() {
 		})
 	})
 
-	// This must be used only during development to generate the swagger spec
-	docs, err := chai.OpenAPI2(r)
+	docs, err := chai.OpenAPI3(r)
 	if err != nil {
 		panic(fmt.Sprintf("failed to generate the swagger spec: %+v", err))
 	}
-
-	// This should be used in prod to serve the swagger spec
-	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
-	))
-
 	addCustomDocs(docs)
+	log.YAML(docs)
 
-	openapi2.LogYAML(docs)
+	yamlDocs, err := yaml.Marshal(docs)
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal the swagger spec: %+v", err))
+	}
 
-	// This must be used only during development to store the swagger spec
-	err = openapi2.WriteDocs(docs, &openapi2.GenConfig{
-		OutputDir: "examples/docs/basic",
-	})
+	err = os.WriteFile("./examples/docs/basic/swagger.yaml", yamlDocs, 0644)
 	if err != nil {
 		panic(fmt.Sprintf("failed to write the swagger spec: %+v", err))
 	}
+
+	// Serve the swagger spec
+	r.Get("/swagger/*", chai.SwaggerHandler(docs))
 
 	fmt.Println("The swagger spec is available at http://localhost:8080/swagger/")
 
 	http.ListenAndServe(":8080", r)
 }
 
-type Error struct {
-	Message          string `json:"error"`
-	ErrorDebug       string `json:"error_debug,omitempty"`
-	ErrorDescription string `json:"error_description,omitempty"`
-	StatusCode       int    `json:"status_code,omitempty"`
+func PostHandler(account ***model.Address, w http.ResponseWriter, r *http.Request) (*model.Address, int, *httputil.Error) {
+	return **account, http.StatusOK, nil
 }
 
-func (e *Error) Error() string {
-	return e.Message
-}
-
-func PostHandler(account *model.Account, w http.ResponseWriter, r *http.Request) (*model.Account, int, *Error) {
-	return account, http.StatusOK, nil
-}
-
-// @Param        val1  query      int     true  "used for calc"
-// @Param        val2  query      int     true  "used for calc"
-// @Success      203
-// @Failure      400,404
-func CalcHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func CalcHandler2(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
 	if err != nil {
 		return "", http.StatusBadRequest, err
@@ -124,22 +118,27 @@ func CalcHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return fmt.Sprintf("%d", val1*val2), http.StatusOK, nil
 }
 
-// PingExample godoc
-// @Summary      ping example
-// @Description  do ping
-// @Tags         example
-func PingHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func CalcHandler(req any, w http.ResponseWriter, r *http.Request) (*big.Int, int, error) {
+	val1, err := strconv.Atoi(r.URL.Query().Get("val1"))
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+	val2, err := strconv.Atoi(r.URL.Query().Get("val2"))
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+	return big.NewInt(int64(val1 + val2)), http.StatusOK, nil
+}
+
+func UUIDHandler(req any, w http.ResponseWriter, r *http.Request) (uuid.UUID, int, error) {
+	return uuid.Must(uuid.NewV4()), http.StatusOK, nil
+}
+
+func PingHandler(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "pong", http.StatusOK, nil
 }
 
-// PathParamsHandler godoc
-// @Summary      path params example
-// @Description  path params
-// @Tags         example
-// @Param        group_id    path      int     true  "Group ID"
-// @Param        account_id  path      int     true  "Account ID"
-// @Failure      400,404
-func PathParamsHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func PathParamsHandler(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	groupID, err := strconv.Atoi(chi.URLParam(r, "group_id"))
 	if err != nil {
 		return "", http.StatusBadRequest, err
@@ -152,40 +151,15 @@ func PathParamsHandler(w http.ResponseWriter, r *http.Request) (string, int, err
 	return fmt.Sprintf("group_id=%d account_id=%d", groupID, accountID), http.StatusOK, nil
 }
 
-// HeaderHandler godoc
-// @Summary      custome header example
-// @Description  custome header
-// @Tags         example
-// @Param        Authorization  header    string  true  "Authentication header"
-// @Failure      400,404
-func HeaderHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func HeaderHandler(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return r.Header.Get("Authorization"), http.StatusOK, nil
 }
 
-// SecuritiesHandler godoc
-// @Summary      custome header example
-// @Description  custome header
-// @Tags         example
-// @Param        Authorization  header    string  true  "Authentication header"
-// @Failure      400,404
-// @Security     ApiKeyAuth
-func SecuritiesHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func SecuritiesHandler(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return "ok", http.StatusOK, nil
 }
 
-// AttributeHandler godoc
-// @Summary      attribute example
-// @Description  attribute
-// @Tags         example
-// @Param        enumstring  query     string  false  "string enums"    Enums(A, B, C)
-// @Param        enumint     query     int     false  "int enums"       Enums(1, 2, 3)
-// @Param        enumnumber  query     number  false  "int enums"       Enums(1.1, 1.2, 1.3)
-// @Param        string      query     string  false  "string valid"    minlength(5)  maxlength(10)
-// @Param        int         query     int     false  "int valid"       minimum(1)    maximum(10)
-// @Param        default     query     string  false  "string default"  default(A)
-// @Success      200 "answer"
-// @Failure      400,404 "ok"
-func AttributeHandler(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func AttributeHandler(req any, w http.ResponseWriter, r *http.Request) (string, int, error) {
 	return fmt.Sprintf("enumstring=%s enumint=%s enumnumber=%s string=%s int=%s default=%s",
 		r.URL.Query().Get("enumstring"),
 		r.URL.Query().Get("enumint"),
@@ -196,39 +170,23 @@ func AttributeHandler(w http.ResponseWriter, r *http.Request) (string, int, erro
 	), http.StatusOK, nil
 }
 
-func addCustomDocs(docs *spec.Swagger) {
-	docs.Swagger = "2.0"
-	docs.Host = "localhost:8080"
-	docs.Info = &spec.Info{
-		InfoProps: spec.InfoProps{
-			Description:    "This is a sample celler server.",
-			Title:          "Swagger Example API",
-			TermsOfService: "http://swagger.io/terms/",
-			Contact: &spec.ContactInfo{
-				ContactInfoProps: spec.ContactInfoProps{
-					Name:  "API Support",
-					URL:   "http://www.swagger.io/support",
-					Email: "support@swagger.io",
-				},
-			},
-			License: &spec.License{
-				LicenseProps: spec.LicenseProps{
-					Name: "Apache 2.0",
-					URL:  "http://www.apache.org/licenses/LICENSE-2.0.html",
-				},
-			},
-			Version: "1.0",
+func addCustomDocs(docs *openapi3.T) {
+	docs.Servers = openapi3.Servers{{URL: "localhost:8080"}}
+
+	docs.Info = &openapi3.Info{
+		Description:    "This is a sample celler server.",
+		Title:          "Swagger Example API",
+		TermsOfService: "http://swagger.io/terms/",
+		Contact: &openapi3.Contact{
+			Name:  "API Support",
+			URL:   "http://www.swagger.io/support",
+			Email: "support@swagger.io",
 		},
-	}
-	docs.SecurityDefinitions = map[string]*spec.SecurityScheme{
-		"ApiKeyAuth": {
-			SecuritySchemeProps: spec.SecuritySchemeProps{
-				Type: "apiKey",
-				In:   "header",
-				Name: "Authorization",
-			},
+		License: &openapi3.License{
+			Name: "Apache 2.0",
+			URL:  "http://www.apache.org/licenses/LICENSE-2.0.html",
 		},
+		Version: "1.0",
 	}
 }
-
 ```

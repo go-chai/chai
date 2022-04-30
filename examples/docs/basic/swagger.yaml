@@ -1,7 +1,39 @@
-definitions:
-  big.Int:
-    type: object
-host: localhost:8080
+components:
+  schemas:
+    Address:
+      properties:
+        city:
+          type: string
+        state:
+          type: string
+        street:
+          type: string
+        zip:
+          type: string
+      required:
+      - street
+      - city
+      - state
+      - zip
+      type: object
+    Error:
+      properties:
+        error:
+          type: string
+        error_debug:
+          type: string
+        error_description:
+          type: string
+        status_code:
+          type: integer
+      required:
+      - error
+      - error_debug
+      - error_description
+      - status_code
+      type: object
+    Int:
+      type: object
 info:
   contact:
     email: support@swagger.io
@@ -14,23 +46,198 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Swagger Example API
   version: "1.0"
+openapi: 3.0.0
 paths:
-  /api/v1/examples/calc2:
-    get:
-      produces:
-      - application/json
+  /api/v1/examples/{pathParam}/post:
+    post:
+      deprecated: true
+      operationId: example
+      parameters:
+      - in: path
+        name: pathParam
+        required: true
+        schema:
+          type: string
+      - explode: true
+        in: query
+        name: queryParam
+        schema:
+          type: integer
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+        required: true
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
           description: ""
-          schema:
-            $ref: '#/definitions/big.Int'
         default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
           description: ""
-          schema:
-            type: string
-securityDefinitions:
-  ApiKeyAuth:
-    in: header
-    name: Authorization
-    type: apiKey
-swagger: "2.0"
+      summary: "some text used as a summary\n\t\t\t\tfor this example post handler"
+      tags:
+      - Examples
+  /api/v1/examples/{pathParam}/post2:
+    post:
+      operationId: example2
+      parameters:
+      - in: path
+        name: pathParam
+        required: true
+        schema:
+          type: string
+      - explode: true
+        in: query
+        name: queryParam
+        schema:
+          type: integer
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+        required: true
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: success code
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ""
+      tags:
+      - Examples
+  /api/v1/examples/attribute:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: ""
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ""
+  /api/v1/examples/calc2:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Int'
+          description: ""
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ""
+  /api/v1/examples/groups/{group_id}/accounts/{account_id}:
+    get:
+      parameters:
+      - in: path
+        name: account_id
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: group_id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: ""
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ""
+  /api/v1/examples/header:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: ""
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ""
+  /api/v1/examples/ping:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: ""
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ""
+  /api/v1/examples/securities:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: ""
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ""
+  /api/v1/examples/uuid2:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items: {}
+                type: array
+          description: ""
+        default:
+          content:
+            application/json:
+              schema:
+                type: object
+          description: ""
+servers:
+- url: localhost:8080

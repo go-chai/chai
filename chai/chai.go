@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/go-chai/chai/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
@@ -37,6 +36,7 @@ var DefaultDecoder = func(req any, r *http.Request) ErrType {
 	if reflect.TypeOf(req).Elem().Kind() == reflect.Interface {
 		return nil
 	}
+
 	err := decodeQueryParams(r, req)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ var DefaultDecoder = func(req any, r *http.Request) ErrType {
 		return err
 	}
 
-	// TODO populate the path/header/cookie params
+	// TODO populate the header/cookie params
 	return nil
 }
 
@@ -145,7 +145,6 @@ var DefaultValidator = func(req any) ErrType {
 
 	err := Validate.Struct(req)
 	if err != nil {
-		log.Dump(err)
 		err := err.(validator.ValidationErrors)
 		return &ValidationError{
 			Message: "validation error",
@@ -185,25 +184,14 @@ type ErrType = error
 type Err error
 
 func handleErr[Err ErrType](w http.ResponseWriter, r *http.Request, err Err, code int, errorFn ErrorResponderFunc) bool {
-	log.Dump(err)
 	if !isErr(err) {
 		return false
 	}
-	log.Dump(err)
 	errorFn(w, r, code, err)
 	return true
 }
 
 func isErr[Err ErrType](err Err) bool {
-	log.Dump(reflect.ValueOf(&err))
-	log.Dump(reflect.ValueOf(&err).Elem())
-	log.Dump(reflect.ValueOf(&err).Elem().IsZero())
-
-	if !reflect.ValueOf(&err).Elem().IsZero() {
-		log.Dump(err)
-		log.Dump(reflect.ValueOf(err))
-		log.Dump(reflect.ValueOf(err).IsZero())
-	}
 	return !reflect.ValueOf(&err).Elem().IsZero()
 }
 

@@ -4,15 +4,16 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/ghodss/yaml"
+	"github.com/go-chi/chi/v5"
 
 	chai "github.com/go-chai/chai/chi"
 	"github.com/go-chai/chai/examples/shared/controller"
-	"github.com/go-chai/chai/log"
-
 	"github.com/go-chai/chai/examples/shared/httputil"
-	"github.com/go-chi/chi/v5"
+	"github.com/go-chai/chai/log"
 )
 
 func main() {
@@ -33,6 +34,15 @@ func main() {
 
 	log.YAML(docs)
 
+	yamlDocs, err := yaml.Marshal(docs)
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal the swagger spec: %+v", err))
+	}
+
+	err = os.WriteFile("./examples/docs/advanced/swagger.yaml", yamlDocs, 0644)
+	if err != nil {
+		panic(fmt.Sprintf("failed to write the swagger spec: %+v", err))
+	}
 	fmt.Println("The swagger spec is available at http://localhost:8080/swagger/")
 
 	http.ListenAndServe(":8080", r)

@@ -8,7 +8,6 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chai/chai/chai"
-	"github.com/go-chai/chai/log"
 	"github.com/pkg/errors"
 	"github.com/zhamlin/chi-openapi/pkg/openapi"
 	"github.com/zhamlin/chi-openapi/pkg/openapi/operations"
@@ -68,7 +67,6 @@ func Docs(routes []*Route) (*openapi3.T, error) {
 func RegisterRoute(spec operations.OpenAPI, route *Route) error {
 	var err error
 	hi := route.Metadata
-	log.Dump(hi)
 	if hi == nil {
 		return nil
 	}
@@ -211,7 +209,6 @@ func updateResponses(spec operations.OpenAPI, op *openapi3.Operation, hi *chai.M
 	}
 	noErrors := true
 	noResponses := true
-	log.Dump(op.Responses)
 	for status := range op.Responses {
 		code := 0
 		var err error
@@ -233,10 +230,10 @@ func updateResponses(spec operations.OpenAPI, op *openapi3.Operation, hi *chai.M
 		}
 	}
 	if noResponses {
-		op.AddResponse(http.StatusOK, openapi3.NewResponse().WithJSONSchemaRef(resSchema))
+		op.AddResponse(http.StatusOK, openapi3.NewResponse().WithJSONSchemaRef(resSchema).WithDescription(""))
 	}
 	if noErrors {
-		op.AddResponse(0, openapi3.NewResponse().WithJSONSchemaRef(errSchema))
+		op.AddResponse(0, openapi3.NewResponse().WithJSONSchemaRef(errSchema).WithDescription(""))
 	}
 
 	return nil

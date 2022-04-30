@@ -108,7 +108,7 @@ func YAML(v any) {
 		panic(err)
 	}
 
-	DefaultLogger.Printf("%s\n", string(bytes))
+	DefaultLogger.Printf("\n%s\n", string(bytes))
 
 	return
 }
@@ -120,7 +120,7 @@ func JSON(v any) {
 		panic(err)
 	}
 
-	DefaultLogger.Printf("%s\n", string(bytes))
+	DefaultLogger.Printf("\n%s\n", string(bytes))
 
 	return
 }

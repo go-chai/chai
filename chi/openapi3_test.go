@@ -22,11 +22,11 @@ func TestOpenAPI3(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name: "celler",
+			name: "advanced",
 			args: args{
 				r: controller.NewController().ChiRoutes(),
 			},
-			filePath: "testdata/celler.json",
+			filePath: "testdata/advanced.json",
 		},
 	}
 	for _, tt := range tcs {
